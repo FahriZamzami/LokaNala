@@ -26,7 +26,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -34,12 +33,23 @@ import com.example.lokanala.R
 import com.example.lokanala.model.dummyProducts
 import com.example.lokanala.ui.components.MenuItemCard
 import com.example.lokanala.ui.navigation.Screen
-import com.example.lokanala.ui.theme.*
+import com.example.lokanala.ui.theme.FilterChipBg
+import com.example.lokanala.ui.theme.FilterChipBorder
+import com.example.lokanala.ui.theme.PromoGreenBg
+import com.example.lokanala.ui.theme.PromoGreenText
+import com.example.lokanala.ui.theme.PromoPinkBg
+import com.example.lokanala.ui.theme.PromoPinkText
+import com.example.lokanala.ui.theme.SearchPinkBg
+import com.example.lokanala.ui.theme.StarYellow
+import com.example.lokanala.ui.theme.StrikeThroughGrey
+import com.example.lokanala.ui.theme.TextGrey
+import com.example.lokanala.ui.theme.TextGreyLight
 
 @Composable
 fun MerchantScreen(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    umkmId: Long
 ) {
     LazyColumn(
         modifier = modifier
@@ -48,7 +58,9 @@ fun MerchantScreen(
     ) {
         item {
             MerchantHeader(
-                onBack = { navController.popBackStack() }
+                onBack = { navController.popBackStack() },
+                navController = navController,
+                umkmId = umkmId
             )
         }
         item {
@@ -59,7 +71,6 @@ fun MerchantScreen(
         }
         item {
             Spacer(modifier = Modifier.height(16.dp))
-            // PERBAIKAN: Mengganti Divider menjadi HorizontalDivider
             HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 8.dp)
             Spacer(modifier = Modifier.height(16.dp))
         }
@@ -70,11 +81,8 @@ fun MerchantScreen(
             MenuItemCard(
                 product = product,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onClick = {
-                    navController.navigate(Screen.Detail.createRoute(product.id))
-                }
+                onClick = { /* Navigasi ke detail produk (jika diperlukan) */ }
             )
-            // PERBAIKAN: Mengganti Divider menjadi HorizontalDivider
             HorizontalDivider(
                 color = Color(0xFFF5F5F5),
                 thickness = 1.dp,
@@ -86,7 +94,9 @@ fun MerchantScreen(
 
 @Composable
 private fun MerchantHeader(
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    navController: NavController,
+    umkmId: Long
 ) {
     Box(
         modifier = Modifier
@@ -121,42 +131,43 @@ private fun MerchantHeader(
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo_seblak_sendik),
-                    contentDescription = "Logo Seblak Sendik",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape)
-                )
-                Spacer(Modifier.width(16.dp))
-                Column(Modifier.weight(1f)) {
-                    Text("Seblak Sendik", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
-                    Spacer(Modifier.height(4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("4,5", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextGrey)
-                        Spacer(Modifier.width(4.dp))
-                        Icon(Icons.Filled.Star, "Rating", tint = StarYellow, modifier = Modifier.size(16.dp))
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_seblak_sendik),
+                        contentDescription = "Logo Seblak Sendik",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                    )
+                    Spacer(Modifier.width(16.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text("Seblak Sendik", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
+                        Spacer(Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("4,5", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextGrey)
+                            Spacer(Modifier.width(4.dp))
+                            Icon(Icons.Filled.Star, "Rating", tint = StarYellow, modifier = Modifier.size(16.dp))
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text("Jl. Timor Manis No. 23, Padang...", fontSize = 13.sp, color = TextGreyLight, maxLines = 1)
                     }
-                    Spacer(Modifier.height(4.dp))
-                    Text("Jl. Timor Manis No. 23, Padang...", fontSize = 13.sp, color = TextGreyLight, maxLines = 1)
                 }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Lihat detail UMKM >",
+                    fontSize = 12.sp,
+                    color = PromoPinkText,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable { navController.navigate("detailscreen/$umkmId") }
+                )
             }
         }
-
-        Text(
-            text = "Lihat detail UMKM >",
-            fontSize = 12.sp,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .offset(y = (-72).dp, x = (-16).dp)
-                .clickable { /* UI Saja */ }
-        )
     }
 }
 
@@ -312,13 +323,5 @@ private fun FilterChip(text: String, showArrow: Boolean = false) {
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MerchantScreenPreview() {
-    LokanalaTheme {
-        // Preview tidak bisa menampilkan screen yang butuh NavController
     }
 }

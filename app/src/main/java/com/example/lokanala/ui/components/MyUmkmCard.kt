@@ -1,6 +1,7 @@
 package com.example.lokanala.ui.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,10 +29,13 @@ fun MyUmkmCard(
     umkm: MyUmkm,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
+    onMerchantClick: () -> Unit, // ✅ tetap dipertahankan sebagai callback
     modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .clip(RoundedCornerShape(16.dp))
+            .clickable { onMerchantClick() }, // ✅ Klik seluruh card
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -43,9 +47,10 @@ fun MyUmkmCard(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(130.dp) // Sesuaikan tinggi gambar
+                    .height(130.dp)
                     .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             )
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -58,6 +63,7 @@ fun MyUmkmCard(
                     fontSize = 16.sp,
                     color = Color.Black
                 )
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Filled.Star,
@@ -72,12 +78,12 @@ fun MyUmkmCard(
                         color = Color.Black
                     )
                 }
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Tag Katalog
                     Surface(
                         color = KatalogChipBg,
                         shape = RoundedCornerShape(8.dp)
@@ -91,9 +97,14 @@ fun MyUmkmCard(
                         )
                     }
 
-                    // Tombol Edit & Hapus
                     Row {
-                        IconButton(onClick = onEditClick, modifier = Modifier.size(36.dp)) {
+                        IconButton(
+                            onClick = {
+                                // Hentikan klik ini agar tidak trigger klik Card
+                                onEditClick()
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit",
@@ -101,7 +112,13 @@ fun MyUmkmCard(
                                 modifier = Modifier.size(20.dp)
                             )
                         }
-                        IconButton(onClick = onDeleteClick, modifier = Modifier.size(36.dp)) {
+
+                        IconButton(
+                            onClick = {
+                                onDeleteClick()
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteOutline,
                                 contentDescription = "Hapus",
@@ -124,11 +141,12 @@ fun MyUmkmCardPreview() {
             umkm = MyUmkm(
                 id = 1,
                 name = "Sanjay Mama",
-                rating = 3.8,
-                imageRes = R.drawable.ic_launcher_background // Placeholder
+                rating = 4.2,
+                imageRes = R.drawable.ic_launcher_background
             ),
             onEditClick = {},
             onDeleteClick = {},
+            onMerchantClick = {},
             modifier = Modifier.width(200.dp)
         )
     }

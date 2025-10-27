@@ -22,7 +22,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.lokanala.ui.components.MyUmkmCard
-import com.example.lokanala.ui.navigation.Screen // PERBAIKAN
+import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.LokanalaTheme
 import com.example.lokanala.ui.theme.PromoPinkBg
 import com.example.lokanala.ui.theme.PromoPinkText
@@ -56,7 +56,7 @@ fun MyUmkmScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PromoPinkBg, // Latar pink
+                    containerColor = PromoPinkBg,
                     titleContentColor = Color.Black,
                     navigationIconContentColor = Color.Black
                 )
@@ -72,14 +72,14 @@ fun MyUmkmScreen(
                 Icon(Icons.Filled.Add, "Tambah UMKM")
             }
         },
-        containerColor = PromoPinkBg // Latar belakang pink
+        containerColor = PromoPinkBg
     ) { padding ->
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp), // Padding sekeliling grid
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -87,7 +87,10 @@ fun MyUmkmScreen(
                 MyUmkmCard(
                     umkm = umkm,
                     onEditClick = { /* TODO: Navigasi ke edit */ },
-                    onDeleteClick = { /* TODO: Tampilkan dialog hapus */ }
+                    onDeleteClick = { /* TODO: Tampilkan dialog hapus */ },
+                    onMerchantClick = {
+                        navController.navigate(Screen.MyMerchant.createRoute(umkm.id))
+                    }
                 )
             }
         }

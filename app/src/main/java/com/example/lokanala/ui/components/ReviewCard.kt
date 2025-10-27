@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -29,7 +31,6 @@ fun ReviewCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        // ✅ Kurangi elevation
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         shape = RoundedCornerShape(16.dp)
@@ -65,20 +66,35 @@ fun ReviewCard(
                             }
                             DropdownMenu(
                                 expanded = expanded,
-                                onDismissRequest = { expanded = false }
+                                onDismissRequest = { expanded = false },
+                                modifier = Modifier.background(colorScheme.surface)
                             ) {
                                 DropdownMenuItem(
                                     text = { Text("Edit") },
                                     onClick = {
                                         expanded = false
                                         onEdit()
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = null,
+                                            tint = colorScheme.primary
+                                        )
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Delete") },
+                                    text = { Text("Delete", color = colorScheme.error) },
                                     onClick = {
                                         expanded = false
                                         onDelete()
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = null,
+                                            tint = colorScheme.error
+                                        )
                                     }
                                 )
                             }
@@ -121,3 +137,4 @@ fun ReviewCard(
         }
     }
 }
+

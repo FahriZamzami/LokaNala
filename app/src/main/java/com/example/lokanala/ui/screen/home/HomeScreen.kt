@@ -84,7 +84,7 @@ fun HomeScreen(
                     UmkmCard(
                         umkm = umkm,
                         onClick = {
-                            navController.navigate(umkm.navigationRoute)
+                            navController.navigate(Screen.Merchant.createRoute(umkm.id.toLong()))
                         }
                     )
                 }
