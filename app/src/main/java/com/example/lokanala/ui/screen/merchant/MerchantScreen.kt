@@ -81,7 +81,9 @@ fun MerchantScreen(
             MenuItemCard(
                 product = product,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onClick = { /* Navigasi ke detail produk (jika diperlukan) */ }
+                onClick = {
+                    navController.navigate(Screen.Detail.createRoute(product.id))
+                }
             )
             HorizontalDivider(
                 color = Color(0xFFF5F5F5),
