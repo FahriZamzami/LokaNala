@@ -64,13 +64,9 @@ fun HomeScreen(
                 columns = GridCells.Fixed(2),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    end = 16.dp,
-                    bottom = 100.dp
-                )
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp)
             ) {
-                items(uiState.umkmList, key = { it.id }) { umkm ->
+                items(uiState.umkmList ?: emptyList(), key = { it.id }) { umkm ->
                     UmkmCard(
                         umkm = umkm,
                         onClick = {

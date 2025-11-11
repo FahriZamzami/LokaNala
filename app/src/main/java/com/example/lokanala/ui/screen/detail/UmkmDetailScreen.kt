@@ -56,13 +56,13 @@ fun UmkmDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali",
-                            tint = colorScheme.onPrimary
+                            tint = colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PrimaryPink,
-                    titleContentColor = colorScheme.onPrimary
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onSurface
                 )
             )
         },

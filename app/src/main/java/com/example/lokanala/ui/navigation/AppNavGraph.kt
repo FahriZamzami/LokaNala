@@ -35,7 +35,6 @@ import androidx.compose.animation.core.tween
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    val navController = rememberAnimatedNavController()
     val promotionViewModel: PromotionViewModel = viewModel()
     val ratingViewModel: RatingViewModel = viewModel()
 

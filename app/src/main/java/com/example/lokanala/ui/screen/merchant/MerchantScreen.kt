@@ -168,6 +168,30 @@ private fun MerchantHeader(
                         )
                     }
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { navController.navigate("detailscreen/$umkmId") },
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Lihat Detail UMKM",
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.primary,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                        contentDescription = "Lihat detail UMKM",
+                        tint = colorScheme.primary,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
             }
         }
     }

@@ -38,147 +38,171 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
+    val snackbarHostState = remember { SnackbarHostState() }
+    var passwordVisible by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(colorScheme.background)
-            .verticalScroll(rememberScrollState())
-    ) {
-        Column(
-            modifier = Modifier
+    // 🔔 Tampilkan snackbar dan navigasi dalam satu LaunchedEffect
+    LaunchedEffect(uiState.message) {
+        uiState.message?.let { message ->
+            snackbarHostState.showSnackbar(message)
+
+            // ✅ Jika login berhasil, navigasi ke Home
+            if (uiState.success) {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { padding ->
+        Box(
+            modifier = modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(padding)
+                .background(colorScheme.background)
+                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(80.dp))
-
-            Image(
-                painter = painterResource(id = R.drawable.logo_lokanala),
-                contentDescription = "Logo Lokanala",
-                modifier = Modifier.size(200.dp)
-            )
-
-            Text(
-                text = "Login here",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = colorScheme.primary
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = "Welcome back you've\nbeen missed!",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = colorScheme.onBackground.copy(alpha = 0.7f),
-                textAlign = TextAlign.Center
-            )
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            OutlinedTextField(
-                value = uiState.email,
-                onValueChange = { viewModel.onEmailChange(it) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Username", color = colorScheme.onSurfaceVariant) },
-                shape = RoundedCornerShape(12.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = colorScheme.surfaceVariant,
-                    unfocusedContainerColor = colorScheme.surfaceVariant,
-                    disabledContainerColor = colorScheme.surfaceVariant,
-                    focusedIndicatorColor = colorScheme.primary,
-                    unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
-                    cursorColor = colorScheme.primary,
-                    focusedTextColor = colorScheme.onSurface,
-                    unfocusedTextColor = colorScheme.onSurfaceVariant
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            var passwordVisible by remember { mutableStateOf(false) }
-
-            OutlinedTextField(
-                value = uiState.password,
-                onValueChange = { viewModel.onPasswordChange(it) },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text("Password", color = colorScheme.onSurfaceVariant) },
-                shape = RoundedCornerShape(12.dp),
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = colorScheme.surfaceVariant,
-                    unfocusedContainerColor = colorScheme.surfaceVariant,
-                    disabledContainerColor = colorScheme.surfaceVariant,
-                    focusedIndicatorColor = colorScheme.primary,
-                    unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
-                    cursorColor = colorScheme.primary,
-                    focusedTextColor = colorScheme.onSurface,
-                    unfocusedTextColor = colorScheme.onSurfaceVariant
-                ),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                trailingIcon = {
-                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(
-                            imageVector = image,
-                            contentDescription = if (passwordVisible) "Hide password" else "Show password"
-                        )
-                    }
-                },
-                singleLine = true
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Forgot your password?",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .clickable { /* TODO */ }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    viewModel.handleLogin()
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(navController.graph.startDestinationId) { inclusive = true }
-                        launchSingleTop = true
-                    }
-                },
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorScheme.primary,
-                    contentColor = colorScheme.onPrimary
-                )
+                    .padding(horizontal = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Sign in",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
+                Spacer(modifier = Modifier.height(80.dp))
+
+                Image(
+                    painter = painterResource(id = R.drawable.logo_lokanala),
+                    contentDescription = "Logo Lokanala",
+                    modifier = Modifier.size(200.dp)
                 )
+
+                Text(
+                    text = "Login here",
+                    fontSize = 32.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = colorScheme.primary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Welcome back you've\nbeen missed!",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorScheme.onBackground.copy(alpha = 0.7f),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(48.dp))
+
+                // 🧑 Email
+                OutlinedTextField(
+                    value = uiState.email,
+                    onValueChange = { viewModel.onEmailChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Email", color = colorScheme.onSurfaceVariant) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = colorScheme.surfaceVariant,
+                        unfocusedContainerColor = colorScheme.surfaceVariant,
+                        disabledContainerColor = colorScheme.surfaceVariant,
+                        focusedIndicatorColor = colorScheme.primary,
+                        unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
+                        cursorColor = colorScheme.primary,
+                        focusedTextColor = colorScheme.onSurface,
+                        unfocusedTextColor = colorScheme.onSurfaceVariant
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // 🔒 Password
+                OutlinedTextField(
+                    value = uiState.password,
+                    onValueChange = { viewModel.onPasswordChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Password", color = colorScheme.onSurfaceVariant) },
+                    shape = RoundedCornerShape(12.dp),
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = colorScheme.surfaceVariant,
+                        unfocusedContainerColor = colorScheme.surfaceVariant,
+                        disabledContainerColor = colorScheme.surfaceVariant,
+                        focusedIndicatorColor = colorScheme.primary,
+                        unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
+                        cursorColor = colorScheme.primary,
+                        focusedTextColor = colorScheme.onSurface,
+                        unfocusedTextColor = colorScheme.onSurfaceVariant
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(imageVector = icon, contentDescription = "Toggle password visibility")
+                        }
+                    },
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "Forgot your password?",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .clickable { /* TODO */ }
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // 🚀 Tombol Login
+                Button(
+                    onClick = { viewModel.handleLogin() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
+                    ),
+                    enabled = !uiState.isLoading
+                ) {
+                    if (uiState.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text(
+                            text = "Sign in",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Create new account",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PrimaryPink,
+                    modifier = Modifier.clickable { /* TODO */ }
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Create new account",
-                fontSize = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = PrimaryPink,
-                modifier = Modifier.clickable { /* TODO */ }
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
         }
     }
 }
