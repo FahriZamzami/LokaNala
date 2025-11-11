@@ -7,7 +7,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 data class Review(
-    val id: String = UUID.randomUUID().toString(), // 🔹 id unik untuk tiap review
+    val id: String = UUID.randomUUID().toString(),
     val name: String,
     val date: String,
     val rating: Int,
@@ -17,7 +17,6 @@ data class Review(
 
 class RatingViewModel : ViewModel() {
 
-    // daftar semua ulasan (mutable agar bisa diubah langsung)
     var reviews = mutableStateListOf(
         Review("1", "Ratna Solihin", "10 Oktober 2025", 5, "Porsi besar dan pelayanan cepat. Lorem ipsum dolor sit amet.", true),
         Review("2", "Ahmad Amaik", "9 Oktober 2025", 4, "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
@@ -29,16 +28,14 @@ class RatingViewModel : ViewModel() {
     )
         private set
 
-    // review milik user (jika sudah pernah mengisi)
     var userReview = mutableStateOf<Review?>(null)
         private set
 
-    // tambah review baru
     fun addReview(rating: Int, comment: String, hasPhoto: Boolean) {
         if (rating <= 0 || comment.isBlank()) return
 
         val newReview = Review(
-            id = UUID.randomUUID().toString(), // 🔹 id baru untuk review user
+            id = UUID.randomUUID().toString(),
             name = "Anda",
             date = currentDate(),
             rating = rating,
@@ -46,14 +43,12 @@ class RatingViewModel : ViewModel() {
             hasPhoto = hasPhoto
         )
 
-        // hapus review lama user jika ada
         userReview.value?.let { reviews.remove(it) }
 
         reviews.add(0, newReview)
         userReview.value = newReview
     }
 
-    // edit review user
     fun editUserReview(newRating: Int, newComment: String, hasPhoto: Boolean) {
         val current = userReview.value ?: return
         val index = reviews.indexOfFirst { it.id == current.id }
@@ -70,7 +65,6 @@ class RatingViewModel : ViewModel() {
         userReview.value = updated
     }
 
-    // hapus review user
     fun deleteUserReview() {
         userReview.value?.let {
             reviews.removeAll { r -> r.id == it.id }
@@ -78,7 +72,6 @@ class RatingViewModel : ViewModel() {
         }
     }
 
-    // ambil tanggal hari ini (format Indonesia)
     private fun currentDate(): String =
         SimpleDateFormat("dd MMMM yyyy", Locale("id", "ID")).format(Date())
 }

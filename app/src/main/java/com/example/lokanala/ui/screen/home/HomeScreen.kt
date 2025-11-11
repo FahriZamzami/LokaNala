@@ -1,15 +1,8 @@
 package com.example.lokanala.ui.screen.home
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -18,11 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Place
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,11 +29,7 @@ import com.example.lokanala.ui.components.HomeSearchBar
 import com.example.lokanala.ui.components.LokanalaBottomBar
 import com.example.lokanala.ui.components.UmkmCard
 import com.example.lokanala.ui.navigation.Screen
-import com.example.lokanala.ui.theme.ChipGrayBg
-import com.example.lokanala.ui.theme.ChipPinkBgSelected
-import com.example.lokanala.ui.theme.ChipPinkBorder
-import com.example.lokanala.ui.theme.LokanalaTheme
-import com.example.lokanala.ui.theme.PromoPinkText
+import com.example.lokanala.ui.theme.*
 
 @Composable
 fun HomeScreen(
@@ -53,32 +38,37 @@ fun HomeScreen(
     navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
 
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        topBar = { HomeTopBar(navController = navController) }, // PERBAIKAN
-        bottomBar = {
-            LokanalaBottomBar(
-                navController = navController,
-                currentRoute = Screen.Home.route
-            )
-        }
-    ) { padding ->
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(colorScheme.background)
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
+                .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            HomeSearchBar(modifier = Modifier.padding(top = 16.dp))
-            FilterChips()
+            HomeTopBar(navController = navController)
+
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                HomeSearchBar()
+                FilterChips()
+            }
 
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    bottom = 100.dp
+                )
             ) {
                 items(uiState.umkmList, key = { it.id }) { umkm ->
                     UmkmCard(
@@ -90,46 +80,66 @@ fun HomeScreen(
                 }
             }
         }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 2.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            LokanalaBottomBar(
+                navController = navController,
+                currentRoute = Screen.Home.route
+            )
+        }
     }
 }
 
 @Composable
 private fun HomeTopBar(
     modifier: Modifier = Modifier,
-    navController: NavController // PERBAIKAN
+    navController: NavController
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+    val colorScheme = MaterialTheme.colorScheme
+
+    Surface(
+        color = Color.Transparent,
+        tonalElevation = 0.dp,
+        shadowElevation = 0.dp
     ) {
-        Icon(
-            imageVector = Icons.Outlined.Place,
-            contentDescription = "Lokasi",
-            tint = PromoPinkText
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = "Limau Manis, Unand",
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            color = Color.Black,
-            modifier = Modifier.weight(1f)
-        )
-        IconButton(onClick = {
-            navController.navigate(Screen.Notification.route)
-        }) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Icon(
-                imageVector = Icons.Outlined.Notifications,
-                contentDescription = "Notifikasi",
-                tint = Color.Black
+                imageVector = Icons.Outlined.Place,
+                contentDescription = "Lokasi",
+                tint = colorScheme.primary
             )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "Limau Manis, Unand",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 16.sp,
+                color = colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(onClick = {
+                navController.navigate(Screen.Notification.route)
+            }) {
+                Icon(
+                    imageVector = Icons.Outlined.Notifications,
+                    contentDescription = "Notifikasi",
+                    tint = colorScheme.onSurface
+                )
+            }
         }
     }
 }
-
-// ... (Sisa kode tidak berubah)
 
 @Composable
 private fun FilterChips(modifier: Modifier = Modifier) {
@@ -137,38 +147,42 @@ private fun FilterChips(modifier: Modifier = Modifier) {
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        item {
-            FilterChip("Tipe UMKM", isSelected = false)
-        }
-        item {
-            FilterChip("Terlaris", isSelected = false)
-        }
-        item {
-            FilterChip("Trending", isSelected = true)
-        }
+        item { FilterChipItem("Tipe UMKM", isSelected = false) }
+        item { FilterChipItem("Terlaris", isSelected = false) }
+        item { FilterChipItem("Trending", isSelected = true) }
     }
 }
 
 @Composable
-private fun FilterChip(text: String, isSelected: Boolean) {
+private fun FilterChipItem(text: String, isSelected: Boolean) {
+    val colorScheme = MaterialTheme.colorScheme
+
     val (bgColor, textColor, border) = if (isSelected) {
-        Triple(ChipPinkBgSelected, PromoPinkText, BorderStroke(1.dp, ChipPinkBorder))
+        Triple(
+            colorScheme.primary.copy(alpha = 0.15f),
+            colorScheme.primary,
+            BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.3f))
+        )
     } else {
-        Triple(ChipGrayBg, Color.Black, BorderStroke(0.dp, Color.Transparent))
+        Triple(
+            colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            colorScheme.onSurfaceVariant,
+            BorderStroke(0.dp, Color.Transparent)
+        )
     }
 
     Surface(
         color = bgColor,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(20.dp),
         border = border,
-        onClick = { /* TODO */ }
+        onClick = { /* TODO: Filter action */ }
     ) {
         Text(
             text = text,
             color = textColor,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             fontSize = 14.sp,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
     }
 }

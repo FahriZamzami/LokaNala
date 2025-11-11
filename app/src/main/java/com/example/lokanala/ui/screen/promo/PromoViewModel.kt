@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-// PERBAIKAN: Menggunakan UI State untuk menampung data Promo
 class PromoViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(PromoUiState())

@@ -8,6 +8,5 @@ data class Umkm(
     val rating: Double,
     val tag: String,
     @DrawableRes val imageRes: Int,
-    // Kita tambahkan rute tujuan agar setiap card bisa dikonfigurasi
     val navigationRoute: String
 )

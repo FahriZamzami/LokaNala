@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,8 +23,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.lokanala.ui.components.MyUmkmCard
 import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.LokanalaTheme
-import com.example.lokanala.ui.theme.PromoPinkBg
-import com.example.lokanala.ui.theme.PromoPinkText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +33,7 @@ fun MyUmkmScreen(
     navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
@@ -44,35 +42,37 @@ fun MyUmkmScreen(
                     Text(
                         text = "MY UMKM",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = "Kembali",
+                            tint = colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PromoPinkBg,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onPrimary,
+                    navigationIconContentColor = colorScheme.onPrimary
                 )
             )
         },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddUmkm.route) },
-                containerColor = PromoPinkText,
-                contentColor = Color.White,
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Icon(Icons.Filled.Add, "Tambah UMKM")
             }
         },
-        containerColor = PromoPinkBg
+        containerColor = colorScheme.background
     ) { padding ->
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -100,7 +100,15 @@ fun MyUmkmScreen(
 @Preview(showBackground = true)
 @Composable
 fun MyUmkmScreenPreview() {
-    LokanalaTheme {
+    LokanalaTheme(darkTheme = false) {
+        MyUmkmScreen(onBack = {}, navController = rememberNavController())
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MyUmkmScreenDarkPreview() {
+    LokanalaTheme(darkTheme = true) {
         MyUmkmScreen(onBack = {}, navController = rememberNavController())
     }
 }

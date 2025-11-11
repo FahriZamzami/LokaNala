@@ -2,25 +2,18 @@ package com.example.lokanala.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -31,8 +24,6 @@ import com.example.lokanala.R
 import com.example.lokanala.model.Product
 import com.example.lokanala.ui.theme.LokanalaTheme
 import com.example.lokanala.ui.theme.StarYellow
-import com.example.lokanala.ui.theme.TextGrey
-import com.example.lokanala.ui.theme.TextGreyLight
 
 @Composable
 fun MenuItemCard(
@@ -40,46 +31,53 @@ fun MenuItemCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(vertical = 16.dp),
+            .padding(vertical = 12.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // 🔹 Gambar Produk
         Image(
             painter = painterResource(id = product.imageRes),
             contentDescription = product.name,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(80.dp)
+                .size(72.dp)
                 .clip(CircleShape)
         )
 
         Spacer(modifier = Modifier.width(16.dp))
 
+        // 🔹 Informasi Produk
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
                 text = product.name,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
-                color = Color.Black
+                color = colorScheme.onSurface
             )
+
             Text(
                 text = product.description,
                 fontSize = 13.sp,
-                color = TextGrey,
+                color = colorScheme.onSurfaceVariant,
                 maxLines = 2
             )
+
             Text(
                 text = product.price,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
-                color = Color.Black
+                color = colorScheme.primary
             )
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Filled.Star,
@@ -91,17 +89,18 @@ fun MenuItemCard(
                 Text(
                     text = "${product.rating} (${product.reviewCount})",
                     fontSize = 13.sp,
-                    color = TextGreyLight
+                    color = colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
 
+        // 🔹 Ikon Navigasi ke Detail
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = "Detail",
-            tint = Color.Black,
+            tint = colorScheme.onSurfaceVariant,
             modifier = Modifier.size(16.dp)
         )
     }
@@ -115,7 +114,7 @@ fun MenuItemCardPreview() {
             product = Product(
                 id = 1,
                 name = "Seblak Level 5",
-                description = "Seblak Khas Bandung isi kerupuk, sosis, dan seafood.",
+                description = "Seblak khas Bandung isi kerupuk, sosis, dan seafood pedas nikmat.",
                 price = "Rp 15.000",
                 rating = 4.7,
                 reviewCount = 60,

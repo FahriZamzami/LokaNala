@@ -1,22 +1,11 @@
 package com.example.lokanala.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -26,8 +15,6 @@ import androidx.compose.ui.unit.sp
 import com.example.lokanala.R
 import com.example.lokanala.model.Promo
 import com.example.lokanala.ui.theme.LokanalaTheme
-import com.example.lokanala.ui.theme.NotSelected
-import com.example.lokanala.ui.theme.TextGrey
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,13 +23,16 @@ fun PromoItemCard(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = colorScheme.surface,
+            contentColor = colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        onClick = onClick // PERBAIKAN: Menambahkan onClick ke Card
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+        onClick = onClick
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -53,6 +43,7 @@ fun PromoItemCard(
                 contentDescription = promo.title,
                 modifier = Modifier.size(56.dp)
             )
+
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -62,15 +53,18 @@ fun PromoItemCard(
                     text = promo.title,
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Color.Black,
+                    color = colorScheme.onSurface,
                     maxLines = 2
                 )
+
                 Spacer(modifier = Modifier.height(4.dp))
+
                 Text(
                     text = promo.dateRange,
                     fontSize = 13.sp,
-                    color = TextGrey
+                    color = colorScheme.onSurfaceVariant
                 )
+
                 promo.newPrice?.let {
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -78,13 +72,13 @@ fun PromoItemCard(
                             text = it,
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 14.sp,
-                            color = Color.Black
+                            color = colorScheme.primary
                         )
-                        promo.oldPrice?.let {
+                        promo.oldPrice?.let { old ->
                             Text(
-                                text = it,
+                                text = old,
                                 fontSize = 14.sp,
-                                color = NotSelected,
+                                color = colorScheme.onSurfaceVariant,
                                 textDecoration = TextDecoration.LineThrough
                             )
                         }
@@ -103,15 +97,15 @@ fun PromoItemCardPreview() {
             promo = Promo(
                 id = 1,
                 title = "PAKET SEBLAK KOMPLIT + ES TEH",
-                dateRange = "8 October 2025 - 15 October 2025",
+                dateRange = "8 Oktober 2025 - 15 Oktober 2025",
                 newPrice = "Rp 18.000",
                 oldPrice = "Rp 22.000",
-                imageResDetail = R.drawable.img_promo_seblak_detail, // PERBAIKAN: Menambahkan data untuk preview
+                imageResDetail = R.drawable.img_promo_seblak_detail,
                 termsAndConditions = emptyList(),
                 howToUse = emptyList()
             ),
             modifier = Modifier.padding(16.dp),
-            onClick = {} // PERBAIKAN: Menambahkan aksi klik untuk preview
+            onClick = {}
         )
     }
 }

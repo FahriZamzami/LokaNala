@@ -14,7 +14,7 @@ import com.example.lokanala.ui.theme.LokanalaTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // ✅ Modern edge-to-edge layout
+        enableEdgeToEdge()
         setContent {
             LokaNalaApp()
         }

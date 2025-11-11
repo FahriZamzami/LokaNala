@@ -21,7 +21,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -30,7 +29,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.lokanala.R
-import com.example.lokanala.ui.components.MyMenuItemCard // Menggunakan komponen baru
+import com.example.lokanala.ui.components.MyMenuItemCard
 import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.*
 
@@ -38,59 +37,49 @@ import com.example.lokanala.ui.theme.*
 fun MyMerchantScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    umkmId: Int, // ID UMKM dari MyUmkmScreen
+    umkmId: Int,
     viewModel: MyMerchantViewModel = viewModel()
 ) {
     val products by viewModel.products.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    navController.navigate(Screen.AddProduct.createRoute(umkmId))
-                },
-                containerColor = PromoPinkText,
-                contentColor = Color.White,
+                onClick = { navController.navigate(Screen.AddProduct.createRoute(umkmId)) },
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary,
                 shape = CircleShape
             ) {
                 Icon(Icons.Filled.Add, "Tambah Produk")
             }
         },
-        containerColor = Color.White
+        containerColor = colorScheme.background
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(colorScheme.background)
                 .padding(padding)
         ) {
             item {
-                MerchantHeader(
-                    onBack = { navController.popBackStack() }
-                )
+                MerchantHeader(onBack = { navController.popBackStack() }, colorScheme = colorScheme)
             }
             item {
-                SearchAndFilterSection(modifier = Modifier.padding(horizontal = 16.dp))
+                SearchAndFilterSection(modifier = Modifier.padding(horizontal = 16.dp), colorScheme = colorScheme)
             }
             item { Spacer(modifier = Modifier.height(16.dp)) }
 
             items(products, key = { it.id }) { product ->
-                MyMenuItemCard( // Menggunakan MyMenuItemCard
+                MyMenuItemCard(
                     product = product,
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    onEditClick = {
-                        // TODO: Navigasi ke halaman EditProduct, buat rute baru di Screen.kt
-                        // Contoh: navController.navigate(Screen.EditProduct.createRoute(it.id))
-                        // Untuk demo, hapus dulu produknya
-                        viewModel.deleteProduct(it.id)
-                    },
-                    onDeleteClick = {
-                        viewModel.deleteProduct(it.id)
-                    }
+                    onEditClick = { viewModel.deleteProduct(it.id) },
+                    onDeleteClick = { viewModel.deleteProduct(it.id) }
                 )
                 HorizontalDivider(
-                    color = Color(0xFFF5F5F5),
+                    color = colorScheme.outlineVariant.copy(alpha = 0.3f),
                     thickness = 1.dp,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -99,9 +88,8 @@ fun MyMerchantScreen(
     }
 }
 
-// Reused component from MerchantScreen.kt
 @Composable
-private fun MerchantHeader(onBack: () -> Unit) { /* ... isi kode MerchantHeader dari MerchantScreen.kt ... */
+private fun MerchantHeader(onBack: () -> Unit, colorScheme: ColorScheme) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -121,9 +109,9 @@ private fun MerchantHeader(onBack: () -> Unit) { /* ... isi kode MerchantHeader 
             modifier = Modifier
                 .padding(8.dp)
                 .clip(CircleShape)
-                .background(Color(0x80000000))
+                .background(colorScheme.background.copy(alpha = 0.5f))
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = Color.White)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = colorScheme.primary)
         }
 
         Card(
@@ -132,7 +120,7 @@ private fun MerchantHeader(onBack: () -> Unit) { /* ... isi kode MerchantHeader 
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Row(
@@ -149,15 +137,30 @@ private fun MerchantHeader(onBack: () -> Unit) { /* ... isi kode MerchantHeader 
                 )
                 Spacer(Modifier.width(16.dp))
                 Column(Modifier.weight(1f)) {
-                    Text("Seblak Sendik", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
+                    Text(
+                        "Seblak Sendik",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = colorScheme.onSurface
+                    )
                     Spacer(Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("4,5", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextGrey)
+                        Text(
+                            "4,5",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = colorScheme.secondary
+                        )
                         Spacer(Modifier.width(4.dp))
-                        Icon(Icons.Filled.Star, "Rating", tint = StarYellow, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Filled.Star, "Rating", tint = colorScheme.secondary, modifier = Modifier.size(16.dp))
                     }
                     Spacer(Modifier.height(4.dp))
-                    Text("Jl. Timor Manis No. 23, Padang...", fontSize = 13.sp, color = TextGreyLight, maxLines = 1)
+                    Text(
+                        "Jl. Timor Manis No. 23, Padang...",
+                        fontSize = 13.sp,
+                        color = colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
                 }
             }
         }
@@ -165,24 +168,22 @@ private fun MerchantHeader(onBack: () -> Unit) { /* ... isi kode MerchantHeader 
         Text(
             text = "Lihat detail UMKM >",
             fontSize = 12.sp,
-            color = Color.White,
+            color = colorScheme.onSurface,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .offset(y = (-72).dp, x = (-16).dp)
-                .clickable { /* UI Saja */ }
+                .clickable { }
         )
     }
 }
 
-
-// Reused component from MerchantScreen.kt
 @Composable
-private fun SearchAndFilterSection(modifier: Modifier = Modifier) {
+private fun SearchAndFilterSection(modifier: Modifier = Modifier, colorScheme: ColorScheme) {
     Column(modifier = modifier.fillMaxWidth()) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = SearchPinkBg
+            color = colorScheme.surfaceVariant
         ) {
             Row(
                 modifier = Modifier
@@ -193,13 +194,13 @@ private fun SearchAndFilterSection(modifier: Modifier = Modifier) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Cari Produk",
-                    tint = PromoPinkText
+                    tint = colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Cari Produk",
                     fontSize = 15.sp,
-                    color = PromoPinkText
+                    color = colorScheme.primary
                 )
             }
         }
@@ -207,21 +208,20 @@ private fun SearchAndFilterSection(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(12.dp))
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip("Tipe produk") }
-            item { FilterChip("Terlaris") }
-            item { FilterChip(text = "Harga", showArrow = true) }
+            item { FilterChip("Tipe produk", colorScheme = colorScheme) }
+            item { FilterChip("Terlaris", colorScheme = colorScheme) }
+            item { FilterChip("Harga", showArrow = true, colorScheme = colorScheme) }
         }
     }
 }
 
-// Reused component from MerchantScreen.kt
 @Composable
-private fun FilterChip(text: String, showArrow: Boolean = false) {
+private fun FilterChip(text: String, showArrow: Boolean = false, colorScheme: ColorScheme) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = FilterChipBg,
-        border = BorderStroke(1.dp, FilterChipBorder),
-        onClick = { /* UI Saja */ }
+        color = colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, colorScheme.outlineVariant),
+        onClick = { }
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -230,7 +230,7 @@ private fun FilterChip(text: String, showArrow: Boolean = false) {
             Text(
                 text = text,
                 fontSize = 14.sp,
-                color = TextGrey,
+                color = colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
             if (showArrow) {
@@ -238,7 +238,7 @@ private fun FilterChip(text: String, showArrow: Boolean = false) {
                 Icon(
                     imageVector = Icons.Default.UnfoldMore,
                     contentDescription = "Filter Harga",
-                    tint = TextGrey,
+                    tint = colorScheme.onSurface,
                     modifier = Modifier.size(16.dp)
                 )
             }

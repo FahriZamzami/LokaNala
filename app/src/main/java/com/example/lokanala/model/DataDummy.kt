@@ -22,7 +22,7 @@ val dummyProducts = listOf(
         rating = 4.6,
         reviewCount = 75,
         imageRes = R.drawable.img_spesial_komplit,
-        imageResDetail = R.drawable.img_spesial_komplit // Placeholder
+        imageResDetail = R.drawable.img_spesial_komplit
     ),
     Product(
         id = 3,
@@ -32,7 +32,7 @@ val dummyProducts = listOf(
         rating = 4.5,
         reviewCount = 70,
         imageRes = R.drawable.img_seblak_ceker,
-        imageResDetail = R.drawable.img_seblak_ceker // Placeholder
+        imageResDetail = R.drawable.img_seblak_ceker
     )
 )
 
@@ -51,11 +51,10 @@ val dummyReviews = listOf(
         rating = 4,
         date = "9 Oktober 2025",
         comment = "Enak dan murah, tapi sayang tempatnya agak kecil. Tapi untuk rasa, juara!",
-        profilePicRes = R.drawable.ic_launcher_background // Placeholder
+        profilePicRes = R.drawable.ic_launcher_background
     )
 )
 
-// PERBAIKAN: Menyesuaikan data dummy dengan model Promo yang lengkap
 val dummyPromos = listOf(
     Promo(
         id = 1,
@@ -80,7 +79,7 @@ val dummyPromos = listOf(
         id = 2,
         title = "Discount 15% for All Item",
         dateRange = "8 September 2025 - 15 September 2025",
-        imageResDetail = R.drawable.img_promo_seblak_detail, // Placeholder
+        imageResDetail = R.drawable.img_promo_seblak_detail,
         termsAndConditions = listOf("Syarat 1", "Syarat 2"),
         howToUse = listOf("Cara 1", "Cara 2")
     ),
@@ -88,7 +87,7 @@ val dummyPromos = listOf(
         id = 3,
         title = "Discount 10% for All Item",
         dateRange = "1 September 2025 - 3 September 2025",
-        imageResDetail = R.drawable.img_promo_seblak_detail, // Placeholder
+        imageResDetail = R.drawable.img_promo_seblak_detail,
         termsAndConditions = listOf("Syarat 1", "Syarat 2"),
         howToUse = listOf("Cara 1", "Cara 2")
     ),
@@ -97,7 +96,7 @@ val dummyPromos = listOf(
         title = "Discount 50% for All Item",
         dateRange = "15 August 2025 - 19 August 2025",
         hasMoreOptions = true,
-        imageResDetail = R.drawable.img_promo_seblak_detail, // Placeholder
+        imageResDetail = R.drawable.img_promo_seblak_detail,
         termsAndConditions = listOf("Syarat 1", "Syarat 2"),
         howToUse = listOf("Cara 1", "Cara 2")
     ),
@@ -105,7 +104,7 @@ val dummyPromos = listOf(
         id = 5,
         title = "Discount 5% for All Item",
         dateRange = "1 August 2025 - 7 August 2025",
-        imageResDetail = R.drawable.img_promo_seblak_detail, // Placeholder
+        imageResDetail = R.drawable.img_promo_seblak_detail,
         termsAndConditions = listOf("Syarat 1", "Syarat 2"),
         howToUse = listOf("Cara 1", "Cara 2")
     ),
@@ -113,7 +112,7 @@ val dummyPromos = listOf(
         id = 6,
         title = "Discount 10% for All Item",
         dateRange = "8 June 2025 - 15 June 2025",
-        imageResDetail = R.drawable.img_promo_seblak_detail, // Placeholder
+        imageResDetail = R.drawable.img_promo_seblak_detail,
         termsAndConditions = listOf("Syarat 1", "Syarat 2"),
         howToUse = listOf("Cara 1", "Cara 2")
     ),
@@ -121,7 +120,7 @@ val dummyPromos = listOf(
         id = 7,
         title = "Discount 10% for All Item",
         dateRange = "1 June 2025 - 7 June 2025",
-        imageResDetail = R.drawable.img_promo_seblak_detail, // Placeholder
+        imageResDetail = R.drawable.img_promo_seblak_detail,
         termsAndConditions = listOf("Syarat 1", "Syarat 2"),
         howToUse = listOf("Cara 1", "Cara 2")
     )
@@ -130,19 +129,19 @@ val dummyPromos = listOf(
 val dummyUmkmList = listOf(
     Umkm(
         id = 1,
+        name = "Seblak sendik",
+        rating = 4.5,
+        tag = "Katalog",
+        imageRes = R.drawable.img_seblak_sendik_card,
+        navigationRoute = Screen.Merchant.route
+    ),
+    Umkm(
+        id = 2,
         name = "Embun Coffee Space",
         rating = 3.8,
         tag = "Katalog",
         imageRes = R.drawable.img_embun_coffee,
         navigationRoute = Screen.Merchant.route
-    ),
-    Umkm(
-        id = 2,
-        name = "Seblak sendik",
-        rating = 4.5,
-        tag = "Katalog",
-        imageRes = R.drawable.img_seblak_sendik_card,
-        navigationRoute = Screen.Merchant.route // Ini rute yang benar
     ),
     Umkm(
         id = 3,
@@ -162,7 +161,7 @@ val dummyUmkmList = listOf(
     ),
     Umkm(
         id = 5,
-        name = "sanjay nitta", // Ganti sesuai nama
+        name = "sanjay nitta",
         rating = 4.2,
         tag = "Katalog",
         imageRes = R.drawable.img_sanjay_nitta,
@@ -170,7 +169,7 @@ val dummyUmkmList = listOf(
     ),
     Umkm(
         id = 6,
-        name = "minang wear", // Ganti sesuai nama
+        name = "minang wear",
         rating = 4.5,
         tag = "Katalog",
         imageRes = R.drawable.img_minang_wear,
@@ -187,7 +186,7 @@ val dummyMyUmkmList = listOf(
     MyUmkm(
         id = 2,
         name = "Seblak sendik",
-        rating = 3.8, // Rating di gambar berbeda dari sebelumnya, gunakan ini
+        rating = 3.8,
         imageRes = R.drawable.img_seblak_sendik_card
     )
 )

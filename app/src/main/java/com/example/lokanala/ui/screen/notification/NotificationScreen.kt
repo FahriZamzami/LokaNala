@@ -28,7 +28,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.lokanala.ui.components.NotificationCard
 import com.example.lokanala.ui.theme.LokanalaTheme
-import com.example.lokanala.ui.theme.PromoPinkBg
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,21 +35,16 @@ fun NotificationScreen(
     modifier: Modifier = Modifier,
     viewModel: NotificationViewModel = viewModel(),
     onBack: () -> Unit,
-    navController: NavController // Nanti bisa dipakai untuk navigasi dari notif
+    navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val contentColor = MaterialTheme.colorScheme.onBackground
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Notifications,
-                            contentDescription = null,
-                            tint = Color.Black
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = "Notifikasi",
                             fontWeight = FontWeight.Bold,
@@ -67,21 +61,23 @@ fun NotificationScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PromoPinkBg, // Latar pink
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = Color.Transparent,
+                    titleContentColor = contentColor,
+                    navigationIconContentColor = contentColor
                 )
             )
         },
-        containerColor = PromoPinkBg // Latar belakang pink
+        containerColor = MaterialTheme.colorScheme.background,
+        modifier = modifier
     ) { padding ->
         LazyColumn(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp), // Padding kiri-kanan
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 16.dp) // Padding atas-bawah
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             items(uiState.notifications, key = { it.id }) { notification ->
                 NotificationCard(

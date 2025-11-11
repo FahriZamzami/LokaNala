@@ -20,7 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -42,29 +41,49 @@ import com.example.lokanala.ui.theme.TextGreyLight
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     viewModel: ProfileViewModel = viewModel(),
-    navController: NavController // PERBAIKAN: Menambahkan NavController sebagai parameter
+    navController: NavController
 ) {
-    Scaffold(
-        topBar = { ProfileTopBar() },
-        bottomBar = {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colorScheme.background)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colorScheme.background)
+        ) {
+            ProfileTopBar()
+
+            LazyColumn(
+                modifier = modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp,
+                    bottom = 120.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                item { UserInfoCard() }
+                item { AccountSection(navController = navController) }
+                item { InfoSection() }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 2.dp),
+            contentAlignment = Alignment.Center
+        ) {
             LokanalaBottomBar(
                 navController = navController,
-                currentRoute = Screen.Profile.route // Tandai Profile aktif
+                currentRoute = Screen.Profile.route
             )
-        },
-        containerColor = PromoPinkBg // Latar belakang pink
-    ) { padding ->
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            item { UserInfoCard() }
-            // PERBAIKAN: Meneruskan NavController ke AccountSection
-            item { AccountSection(navController = navController) }
-            item { InfoSection() }
         }
     }
 }
@@ -72,27 +91,32 @@ fun ProfileScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ProfileTopBar() {
+    val colorScheme = MaterialTheme.colorScheme
+
     TopAppBar(
         title = {
             Text(
                 text = "Profile",
                 fontWeight = FontWeight.Bold,
-                fontSize = 20.sp
+                fontSize = 20.sp,
+                color = colorScheme.onBackground
             )
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = PromoPinkBg, // Latar pink
-            titleContentColor = Color.Black
+            containerColor = colorScheme.background,
+            titleContentColor = colorScheme.onBackground
         )
     )
 }
 
 @Composable
 private fun UserInfoCard() {
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
@@ -113,7 +137,7 @@ private fun UserInfoCard() {
                     text = "Gracia Liora",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-                    color = Color.Black
+                    color = colorScheme.onSurface
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
@@ -131,7 +155,7 @@ private fun UserInfoCard() {
                 Icon(
                     imageVector = Icons.Filled.Edit,
                     contentDescription = "Edit Profile",
-                    tint = Color.Black
+                    tint = colorScheme.primary
                 )
             }
         }
@@ -140,41 +164,40 @@ private fun UserInfoCard() {
 
 @Composable
 private fun AccountSection(
-    navController: NavController // PERBAIKAN: Menambahkan NavController
+    navController: NavController
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Column {
         Text(
             text = "Account",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
-            color = Color.Black,
+            color = colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Column {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 ProfileMenuItem(
                     icon = Icons.AutoMirrored.Filled.ListAlt,
                     text = "My UMKM",
-                    onClick = { navController.navigate(Screen.MyUmkm.route) } // <-- Aksi navigasi
+                    onClick = { navController.navigate(Screen.MyUmkm.route) }
                 )
-                HorizontalDivider(color = PromoPinkBg)
                 ProfileMenuItem(
                     icon = Icons.Filled.Discount,
                     text = "My UMKM Promotion",
-                    onClick = { navController.navigate("promotion") } // 🔥 Navigasi ke halaman promo UMKM
+                    onClick = { navController.navigate("promotion") }
                 )
-                HorizontalDivider(color = PromoPinkBg)
                 ProfileMenuItem(icon = Icons.Filled.StarOutline, text = "Ulasan")
-                HorizontalDivider(color = PromoPinkBg)
                 ProfileMenuItem(icon = Icons.AutoMirrored.Filled.HelpOutline, text = "Pusat bantuan")
-                HorizontalDivider(color = PromoPinkBg)
                 ProfileMenuItem(icon = Icons.Filled.LockOpen, text = "Keamanan akun")
-                HorizontalDivider(color = PromoPinkBg)
                 ProfileMenuItem(icon = Icons.AutoMirrored.Filled.Logout, text = "Log out")
             }
         }
@@ -183,24 +206,35 @@ private fun AccountSection(
 
 @Composable
 private fun InfoSection() {
+    val colorScheme = MaterialTheme.colorScheme
+
     Column {
         Text(
-            text = "Info Lainya",
+            text = "Info Lainnya",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
-            color = Color.Black,
+            color = colorScheme.onBackground,
             modifier = Modifier.padding(bottom = 8.dp)
         )
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Column {
-                ProfileMenuItem(icon = Icons.Filled.Info, text = "Ketentuan & privasi", trailingText = "Setujui")
-                HorizontalDivider(color = PromoPinkBg)
-                ProfileMenuItem(icon = Icons.Filled.StarOutline, text = "Beri rating", trailingText = "v 1.0.1")
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                ProfileMenuItem(
+                    icon = Icons.Filled.Info,
+                    text = "Ketentuan & privasi",
+                    trailingText = "Setujui"
+                )
+                ProfileMenuItem(
+                    icon = Icons.Filled.StarOutline,
+                    text = "Beri rating",
+                    trailingText = "v 1.0.1"
+                )
             }
         }
     }

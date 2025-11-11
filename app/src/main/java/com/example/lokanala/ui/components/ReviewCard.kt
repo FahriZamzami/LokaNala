@@ -30,10 +30,12 @@ fun ReviewCard(
     var expanded by remember { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-        shape = RoundedCornerShape(16.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
             modifier = Modifier
@@ -44,8 +46,8 @@ fun ReviewCard(
             Icon(
                 imageVector = Icons.Default.AccountCircle,
                 contentDescription = "Avatar",
-                tint = colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(50.dp)
+                tint = colorScheme.primary,
+                modifier = Modifier.size(48.dp)
             )
 
             Column(modifier = Modifier.weight(1f)) {
@@ -55,22 +57,44 @@ fun ReviewCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(review.name, fontWeight = FontWeight.Bold, color = colorScheme.onSurface)
-                        Text(review.date, color = colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                        Text(
+                            text = review.name,
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = colorScheme.onSurface,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                        Text(
+                            text = review.date,
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = colorScheme.onSurfaceVariant,
+                                fontSize = 12.sp
+                            )
+                        )
                     }
 
                     if (isUserReview) {
                         Box {
                             IconButton(onClick = { expanded = true }) {
-                                Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = "Options",
+                                    tint = colorScheme.onSurfaceVariant
+                                )
                             }
                             DropdownMenu(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
-                                modifier = Modifier.background(colorScheme.surface)
+                                modifier = Modifier
+                                    .background(colorScheme.surfaceVariant)
                             ) {
                                 DropdownMenuItem(
-                                    text = { Text("Edit") },
+                                    text = {
+                                        Text(
+                                            "Edit",
+                                            color = colorScheme.onSurface
+                                        )
+                                    },
                                     onClick = {
                                         expanded = false
                                         onEdit()
@@ -84,7 +108,12 @@ fun ReviewCard(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text("Delete", color = colorScheme.error) },
+                                    text = {
+                                        Text(
+                                            "Delete",
+                                            color = colorScheme.error
+                                        )
+                                    },
                                     onClick = {
                                         expanded = false
                                         onDelete()
@@ -102,15 +131,16 @@ fun ReviewCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(4.dp))
-                Row {
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     repeat(5) { i ->
                         val tint = if (i < review.rating)
                             colorScheme.secondary
                         else
-                            colorScheme.surfaceVariant
+                            colorScheme.outlineVariant
                         Icon(
-                            Icons.Default.Star,
+                            imageVector = Icons.Default.Star,
                             contentDescription = null,
                             tint = tint,
                             modifier = Modifier.size(16.dp)
@@ -118,23 +148,34 @@ fun ReviewCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(review.comment, fontSize = 14.sp, color = colorScheme.onSurface)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = review.comment,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = colorScheme.onSurface,
+                        lineHeight = 20.sp
+                    )
+                )
 
                 if (review.hasPhoto) {
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Box(
                         modifier = Modifier
-                            .size(50.dp)
+                            .size(60.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .background(colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Foto", fontSize = 10.sp, color = colorScheme.onSurfaceVariant)
+                        Text(
+                            "Foto",
+                            style = MaterialTheme.typography.bodySmall.copy(
+                                color = colorScheme.onSurfaceVariant
+                            )
+                        )
                     }
                 }
             }
         }
     }
 }
-

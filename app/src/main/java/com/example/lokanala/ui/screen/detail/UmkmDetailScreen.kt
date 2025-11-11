@@ -31,22 +31,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.lokanala.model.UMKMDetail
+import com.example.lokanala.ui.theme.*
 
-// NAMA COMPOSABLE BARU
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UmkmDetailScreen(
     umkmId: Long,
     navController: NavController,
-    viewModel: UmkmDetailViewModel = viewModel() // Panggil ViewModel BARU
+    viewModel: UmkmDetailViewModel = viewModel()
 ) {
     LaunchedEffect(umkmId) {
         viewModel.getUmkmDetailById(umkmId)
     }
 
     val uiState by viewModel.uiState.collectAsState()
-
-    val pinkColor = Color(0xFFD81B60)
+    val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
@@ -57,13 +56,13 @@ fun UmkmDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Kembali",
-                            tint = Color.White
+                            tint = colorScheme.onPrimary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = pinkColor,
-                    titleContentColor = Color.White
+                    containerColor = PrimaryPink,
+                    titleContentColor = colorScheme.onPrimary
                 )
             )
         },
@@ -71,21 +70,19 @@ fun UmkmDetailScreen(
             FloatingActionButton(
                 onClick = { /* TODO: Buka Maps */ },
                 shape = CircleShape,
-                containerColor = Color.Black,
+                containerColor = PrimaryPink,
                 contentColor = Color.White
             ) {
                 Icon(Icons.Default.LocationOn, contentDescription = "Lihat Lokasi")
             }
         }
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFFCE4EC))
+                .background(colorScheme.background)
         ) {
-            // Gunakan state BARU
             when (val state = uiState) {
                 is UmkmDetailUiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -98,8 +95,7 @@ fun UmkmDetailScreen(
                     )
                 }
                 is UmkmDetailUiState.Success -> {
-                    // Panggil helper Composable
-                    UmkmDetailContent(detail = state.umkmDetail, pinkColor = pinkColor)
+                    UmkmDetailContent(detail = state.umkmDetail)
                 }
             }
         }
@@ -107,7 +103,9 @@ fun UmkmDetailScreen(
 }
 
 @Composable
-private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
+private fun UmkmDetailContent(detail: UMKMDetail) {
+    val colorScheme = MaterialTheme.colorScheme
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -126,7 +124,7 @@ private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .background(Color.White)
+                        .background(colorScheme.surface)
                         .padding(8.dp)
                 )
             }
@@ -138,16 +136,17 @@ private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = pinkColor)
+                colors = CardDefaults.cardColors(containerColor = PrimaryPink)
             ) {
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                    colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -157,16 +156,17 @@ private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
                                 text = "Nama UMKM:",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 16.sp,
-                                color = Color.Gray
+                                color = TextGrey
                             )
                             Text(
                                 text = detail.name,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
+                                fontSize = 16.sp,
+                                color = colorScheme.onSurface
                             )
                         }
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                        Divider(modifier = Modifier.padding(vertical = 12.dp), color = FilterChipBg)
 
                         InfoSection(
                             icon = Icons.Default.Description,
@@ -175,7 +175,7 @@ private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
                         )
                         InfoSection(
                             icon = Icons.Default.LocationOn,
-                            title = "Alamat (otomatis dari GPS):",
+                            title = "Alamat:",
                             content = detail.address
                         )
                         InfoSection(
@@ -199,11 +199,11 @@ private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
                                 Icon(
                                     imageVector = if (index == 0) Icons.Default.Campaign else Icons.Default.Redeem,
                                     contentDescription = null,
-                                    tint = pinkColor,
+                                    tint = PrimaryPink,
                                     modifier = Modifier.size(18.dp).padding(top = 2.dp)
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = promo, fontSize = 14.sp)
+                                Text(text = promo, fontSize = 14.sp, color = colorScheme.onSurface)
                             }
                         }
                     }
@@ -211,9 +211,7 @@ private fun UmkmDetailContent(detail: UMKMDetail, pinkColor: Color) {
             }
         }
 
-        item { // PERBAIKAN
-            Spacer(modifier = Modifier.height(80.dp))
-        }
+        item { Spacer(modifier = Modifier.height(80.dp)) }
     }
 }
 
@@ -223,16 +221,23 @@ private fun InfoSection(
     title: String,
     content: String?
 ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+    val colorScheme = MaterialTheme.colorScheme
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp)
+    ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = icon, contentDescription = title, tint = Color(0xFFD81B60))
+            Icon(imageVector = icon, contentDescription = title, tint = PrimaryPink)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = colorScheme.onSurface)
         }
         if (content != null) {
             Text(
                 text = content,
                 fontSize = 14.sp,
+                color = TextGrey,
                 modifier = Modifier.padding(top = 4.dp, start = 4.dp)
             )
         }

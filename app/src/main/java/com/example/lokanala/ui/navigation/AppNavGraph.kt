@@ -26,32 +26,36 @@ import com.example.lokanala.ui.screen.promotion_umkm.MyUMKMPromotionScreen
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
 import com.example.lokanala.ui.screen.rating.RatingScreen
 import com.example.lokanala.ui.screen.rating.RatingViewModel
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    // ViewModel global agar tidak reinit setiap navigasi
+    val navController = rememberAnimatedNavController()
     val promotionViewModel: PromotionViewModel = viewModel()
     val ratingViewModel: RatingViewModel = viewModel()
 
-    NavHost(
+    AnimatedNavHost(
         navController = navController,
-        startDestination = Screen.Login.route
-    ) {
-        /* ================================
-           🔐 LOGIN
-        ================================ */
+        startDestination = Screen.Login.route,
+        enterTransition = { fadeIn(animationSpec = tween(500)) },
+        exitTransition = { fadeOut(animationSpec = tween(500)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(500)) },
+        popExitTransition = { fadeOut(animationSpec = tween(500)) }
+    )  {
+
         composable(Screen.Login.route) {
             LoginScreen(navController = navController)
         }
 
-        /* ================================
-           🏠 HOME & MENU UTAMA
-        ================================ */
         composable(Screen.Home.route) {
             HomeScreen(navController = navController)
         }
 
-        // Merchant dengan umkmId
         composable(
             route = Screen.Merchant.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.LongType })
@@ -74,9 +78,6 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        /* ================================
-           🏬 MY UMKM + ADD UMKM
-        ================================ */
         composable(Screen.MyUmkm.route) {
             MyUmkmScreen(
                 onBack = { navController.popBackStack() },
@@ -91,9 +92,6 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        /* ================================
-           🏪 MY MERCHANT + ADD PRODUCT
-        ================================ */
         composable(
             route = Screen.MyMerchant.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
@@ -116,9 +114,6 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        /* ================================
-           🎯 PROMOTION & RATING
-        ================================ */
         composable(Screen.Promotion.route) {
             MyUMKMPromotionScreen(
                 navController = navController,
@@ -152,9 +147,6 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        /* ================================
-           🛍️ PROMO & DETAIL PRODUK
-        ================================ */
         composable(Screen.Promo.route) {
             PromoScreen(
                 onBack = { navController.popBackStack() },
@@ -181,9 +173,6 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        /* ================================
-           🏪 DETAIL UMKM
-        ================================ */
         composable(
             route = "detailscreen/{umkmId}",
             arguments = listOf(navArgument("umkmId") { type = NavType.LongType })

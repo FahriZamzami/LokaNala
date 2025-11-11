@@ -14,9 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -36,10 +33,8 @@ fun MyUMKMPromotionScreen(
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
-    // 🔹 Gunakan `collectAsState()` hanya jika promotions adalah Flow/LiveData
     val promotions by remember { derivedStateOf { viewModel.promotions } }
 
-    // 🔹 Hindari sorting di setiap recomposition
     val sortedPromotions by remember(promotions) {
         derivedStateOf {
             val dateFormat = java.text.SimpleDateFormat("d MMMM yyyy", Locale.ENGLISH)
@@ -58,25 +53,33 @@ fun MyUMKMPromotionScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("My UMKM Promotion", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Promosi UMKM Saya",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.onSurface
+                        )
+                    )
+                },
                 navigationIcon = {
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .clip(CircleShape)
-                            .background(colorScheme.primary.copy(alpha = 0.15f))
                             .clickable { navController.popBackStack() },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = "Kembali",
                             tint = colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onSurface,
+                    navigationIconContentColor = colorScheme.onSurfaceVariant
                 )
             )
         },
@@ -84,42 +87,53 @@ fun MyUMKMPromotionScreen(
             ExtendedFloatingActionButton(
                 onClick = { navController.navigate("add_promotion") },
                 containerColor = colorScheme.primary,
-                contentColor = colorScheme.onPrimary
+                contentColor = colorScheme.onPrimary,
+                shape = CircleShape
             ) {
-                Icon(Icons.Filled.Add, contentDescription = null)
+                Icon(
+                    Icons.Filled.Add,
+                    contentDescription = "Tambah Promosi"
+                )
                 Spacer(Modifier.width(8.dp))
-                Text("Add Promotion", fontWeight = FontWeight.Bold)
+                Text(
+                    text = "Tambah Promosi",
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorScheme.onPrimary
+                )
             }
         },
         containerColor = colorScheme.background
     ) { paddingValues ->
-        // 🔹 Hindari heavy drawing di setiap frame: gunakan remember
-        val backgroundModifier = remember {
-            Modifier
-                .fillMaxSize()
-                .drawBehind {
-                    drawCircle(
-                        color = colorScheme.primary.copy(alpha = 0.08f),
-                        radius = 450f,
-                        center = Offset(size.width * 0.9f, size.height * 0.1f)
-                    )
-                    drawCircle(
-                        color = colorScheme.primary.copy(alpha = 0.05f),
-                        radius = 350f,
-                        center = Offset(size.width * 0.1f, size.height * 0.9f)
-                    )
-                }
-        }
 
-        Box(modifier = backgroundModifier) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(sortedPromotions, key = { it.id }) { promotion ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colorScheme.background)
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 100.dp)
+        ) {
+            if (sortedPromotions.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 120.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Belum ada promosi UMKM.",
+                            color = colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            } else {
+                items(
+                    items = sortedPromotions,
+                    key = { it.id }
+                ) { promotion ->
                     MyUMKMPromotionCard(
                         promotion = promotion,
                         onEdit = { navController.navigate("edit_promotion/${promotion.id}") },
@@ -127,9 +141,6 @@ fun MyUMKMPromotionScreen(
                         onItemClick = { selectedPromotion = it }
                     )
                 }
-
-                // Spacer agar FAB tidak menutupi item terakhir
-                item { Spacer(Modifier.height(100.dp)) }
             }
         }
     }

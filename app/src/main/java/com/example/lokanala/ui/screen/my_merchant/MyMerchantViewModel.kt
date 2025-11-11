@@ -15,13 +15,10 @@ data class MyMerchantUiState(
 
 class MyMerchantViewModel : ViewModel() {
 
-    // Gunakan mutableStateListOf atau MutableStateFlow jika ingin lebih sesuai dengan Flow,
-    // Di sini saya gunakan MutableStateFlow<List<Product>> untuk state management yang lebih baik.
     private val _products = MutableStateFlow(dummyProducts.toMutableList())
     val products: StateFlow<List<Product>> = _products.asStateFlow()
 
     init {
-        // Logika inisialisasi, bisa juga menerima ID UMKM untuk memfilter
     }
 
     fun deleteProduct(productId: Int) {
@@ -40,10 +37,7 @@ class MyMerchantViewModel : ViewModel() {
         }
     }
 
-    // Fungsi placeholder untuk Edit
     fun onEditProduct(product: Product, navigateToEdit: (Int) -> Unit) {
-        // Di sini Anda akan menjalankan navigasi ke halaman edit produk
-        // Untuk demo, kita langsung navigasi.
         navigateToEdit(product.id)
     }
 }

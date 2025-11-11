@@ -1,12 +1,9 @@
 package com.example.lokanala.ui.screen.rating
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -15,9 +12,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,61 +36,56 @@ fun RatingScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val reviews = viewModel.reviews
     val userReview by viewModel.userReview
-
     val colorScheme = MaterialTheme.colorScheme
-
-    // Gunakan remember agar background tidak redraw setiap scroll
-    val backgroundModifier = remember(colorScheme) {
-        Modifier.drawBehind {
-            drawCircle(
-                color = colorScheme.primaryContainer.copy(alpha = 0.15f),
-                radius = 450f,
-                center = Offset(size.width * 0.9f, size.height * 0.1f)
-            )
-            drawCircle(
-                color = colorScheme.primaryContainer.copy(alpha = 0.1f),
-                radius = 350f,
-                center = Offset(size.width * 0.1f, size.height * 0.9f)
-            )
-        }
-    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Rating & Reviews", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Rating & Ulasan",
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onSurface
+                    )
+                },
                 navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(CircleShape)
-                            .background(colorScheme.primaryContainer.copy(alpha = 0.3f))
-                            .clickable { navController.popBackStack() },
-                        contentAlignment = Alignment.Center
-                    ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Back",
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Kembali",
                             tint = colorScheme.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colorScheme.background
+                    containerColor = colorScheme.background,
+                    navigationIconContentColor = colorScheme.onSurface,
+                    titleContentColor = colorScheme.onSurface
                 )
             )
         },
         floatingActionButton = {
             if (userReview == null) {
                 ExtendedFloatingActionButton(
-                    text = { Text("Write a Review", fontWeight = FontWeight.Bold) },
+                    text = {
+                        Text(
+                            "Tulis Ulasan",
+                            fontWeight = FontWeight.SemiBold,
+                            color = colorScheme.onPrimary
+                        )
+                    },
                     onClick = {
                         isEditing = false
                         showBottomSheet = true
                     },
-                    icon = { Icon(Icons.Default.Star, contentDescription = "Add Review") },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = "Tambah Ulasan",
+                            tint = colorScheme.onPrimary
+                        )
+                    },
                     containerColor = colorScheme.primary,
-                    contentColor = colorScheme.onPrimary,
                     shape = RoundedCornerShape(50)
                 )
             }
@@ -104,46 +93,43 @@ fun RatingScreen(
         containerColor = colorScheme.background
     ) { paddingValues ->
 
-        Box(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .then(backgroundModifier)
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
+            state = listState,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp)
-                    .fillMaxSize(),
-                state = listState,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                // 🔹 Gunakan komponen baru
-                item { RatingOverview(reviews) }
+            item {
+                RatingOverview(reviews)
+            }
 
-                item {
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        text = "${reviews.size} reviews",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp,
-                        color = colorScheme.onBackground,
-                        modifier = Modifier.padding(bottom = 4.dp)
-                    )
-                }
+            item {
+                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "${reviews.size} ulasan",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 18.sp,
+                    color = colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 6.dp)
+                )
+            }
 
-                itemsIndexed(reviews, key = { index, review -> index }) { _, review ->
-                    ReviewCard(
-                        review = review,
-                        isUserReview = (review == userReview),
-                        onEdit = {
-                            isEditing = true
-                            showBottomSheet = true
-                        },
-                        onDelete = { viewModel.deleteUserReview() }
-                    )
-                }
-
-                item { Spacer(modifier = Modifier.height(100.dp)) }
+            items(
+                items = reviews,
+                key = { review -> review.id }
+            ) { review ->
+                ReviewCard(
+                    review = review,
+                    isUserReview = (review == userReview),
+                    onEdit = {
+                        isEditing = true
+                        showBottomSheet = true
+                    },
+                    onDelete = { viewModel.deleteUserReview() }
+                )
             }
         }
     }
@@ -153,6 +139,7 @@ fun RatingScreen(
             onDismissRequest = { showBottomSheet = false },
             sheetState = sheetState,
             containerColor = colorScheme.surface,
+            tonalElevation = 6.dp,
             shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             dragHandle = null
         ) {

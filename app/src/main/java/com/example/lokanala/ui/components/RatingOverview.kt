@@ -18,6 +18,7 @@ import kotlin.math.roundToInt
 @Composable
 fun RatingOverview(reviews: List<Review>) {
     val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
     val ratings = reviews.map { it.rating }
     val average = if (ratings.isNotEmpty()) ratings.average() else 0.0
@@ -27,53 +28,62 @@ fun RatingOverview(reviews: List<Review>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 8.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surface)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.weight(0.45f)
+                ) {
                     Text(
-                        text = String.format("%.2f", average),
-                        fontWeight = FontWeight.Black,
-                        fontSize = 40.sp,
-                        color = colorScheme.onBackground
+                        text = String.format("%.1f", average),
+                        style = typography.headlineLarge.copy(
+                            fontWeight = FontWeight.Black,
+                            color = colorScheme.onSurface
+                        )
                     )
+
                     Row(horizontalArrangement = Arrangement.Center) {
                         repeat(5) { i ->
                             val tint = if (i < average.roundToInt())
                                 colorScheme.secondary
                             else
-                                colorScheme.surfaceVariant
+                                colorScheme.outlineVariant
                             Icon(
                                 Icons.Default.Star,
                                 contentDescription = null,
                                 tint = tint,
-                                modifier = Modifier.size(16.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
+
                     Text(
-                        text = "${ratings.size} ratings",
-                        color = colorScheme.onSurfaceVariant,
-                        fontSize = 12.sp,
-                        modifier = Modifier.padding(top = 4.dp)
+                        text = "${ratings.size} ulasan",
+                        style = typography.bodySmall.copy(
+                            color = colorScheme.onSurfaceVariant
+                        ),
+                        modifier = Modifier.padding(top = 6.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier
+                        .weight(0.55f)
+                        .padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     (5 downTo 1).forEach { star ->
                         val count = counts[star] ?: 0
@@ -83,20 +93,33 @@ fun RatingOverview(reviews: List<Review>) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text("$star", fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                            Text(
+                                "$star",
+                                style = typography.bodyMedium.copy(
+                                    fontWeight = FontWeight.Medium,
+                                    color = colorScheme.onSurface
+                                )
+                            )
+
                             LinearProgressIndicator(
                                 progress = progress,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(12.dp)
-                                    .clip(RoundedCornerShape(6.dp)),
-                                color = if (star >= 4) colorScheme.primary else colorScheme.primaryContainer,
+                                    .height(10.dp)
+                                    .clip(RoundedCornerShape(5.dp)),
+                                color = when {
+                                    star >= 4 -> colorScheme.primary
+                                    star == 3 -> colorScheme.tertiary
+                                    else -> colorScheme.secondaryContainer
+                                },
                                 trackColor = colorScheme.surfaceVariant
                             )
+
                             Text(
                                 "$count",
-                                fontSize = 14.sp,
-                                color = colorScheme.onBackground
+                                style = typography.bodySmall.copy(
+                                    color = colorScheme.onSurfaceVariant
+                                )
                             )
                         }
                     }

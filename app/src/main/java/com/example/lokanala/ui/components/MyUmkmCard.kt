@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -29,16 +28,18 @@ fun MyUmkmCard(
     umkm: MyUmkm,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    onMerchantClick: () -> Unit, // ✅ tetap dipertahankan sebagai callback
+    onMerchantClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Card(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
-            .clickable { onMerchantClick() }, // ✅ Klik seluruh card
+            .clickable { onMerchantClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             Image(
@@ -59,9 +60,9 @@ fun MyUmkmCard(
             ) {
                 Text(
                     text = umkm.name,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = colorScheme.onSurface
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -75,7 +76,7 @@ fun MyUmkmCard(
                     Text(
                         text = umkm.rating.toString(),
                         fontSize = 14.sp,
-                        color = Color.Black
+                        color = colorScheme.onSurfaceVariant
                     )
                 }
 
@@ -99,30 +100,25 @@ fun MyUmkmCard(
 
                     Row {
                         IconButton(
-                            onClick = {
-                                // Hentikan klik ini agar tidak trigger klik Card
-                                onEditClick()
-                            },
+                            onClick = { onEditClick() },
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = "Edit",
-                                tint = PromoPinkText,
+                                tint = colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
 
                         IconButton(
-                            onClick = {
-                                onDeleteClick()
-                            },
+                            onClick = { onDeleteClick() },
                             modifier = Modifier.size(36.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.DeleteOutline,
                                 contentDescription = "Hapus",
-                                tint = Color.Black,
+                                tint = colorScheme.error,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -133,21 +129,25 @@ fun MyUmkmCard(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun MyUmkmCardPreview() {
     LokanalaTheme {
-        MyUmkmCard(
-            umkm = MyUmkm(
-                id = 1,
-                name = "Sanjay Mama",
-                rating = 4.2,
-                imageRes = R.drawable.ic_launcher_background
-            ),
-            onEditClick = {},
-            onDeleteClick = {},
-            onMerchantClick = {},
-            modifier = Modifier.width(200.dp)
-        )
+        Surface(color = MaterialTheme.colorScheme.background) {
+            MyUmkmCard(
+                umkm = MyUmkm(
+                    id = 1,
+                    name = "Sanjay Mama",
+                    rating = 4.2,
+                    imageRes = R.drawable.ic_launcher_background
+                ),
+                onEditClick = {},
+                onDeleteClick = {},
+                onMerchantClick = {},
+                modifier = Modifier
+                    .width(200.dp)
+                    .padding(16.dp)
+            )
+        }
     }
 }

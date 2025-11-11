@@ -38,9 +38,12 @@ fun UMKMPromotionDetailPopup(
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .padding(vertical = 32.dp)
-                .clip(RoundedCornerShape(32.dp)),
-            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-            elevation = CardDefaults.cardElevation(8.dp)
+                .clip(RoundedCornerShape(28.dp)),
+            colors = CardDefaults.cardColors(
+                containerColor = colorScheme.surfaceVariant,
+                contentColor = colorScheme.onSurface
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -49,60 +52,59 @@ fun UMKMPromotionDetailPopup(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Icon circle
                 Box(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(90.dp)
                         .clip(CircleShape)
-                        .background(colorScheme.primaryContainer),
+                        .background(colorScheme.primary.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "%",
+                        text = "%",
                         color = colorScheme.primary,
                         fontSize = 48.sp,
-                        fontWeight = FontWeight.Black
+                        fontWeight = FontWeight.ExtraBold
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(20.dp))
 
-                // Title promotion
                 Text(
-                    promotion.title,
+                    text = promotion.title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.ExtraBold,
                     textAlign = TextAlign.Center,
                     color = colorScheme.onSurface
                 )
 
-                // Period promotion
                 Text(
-                    "${promotion.startDate} - ${promotion.endDate}",
-                    fontSize = 12.sp,
-                    color = colorScheme.onSurfaceVariant
+                    text = "${promotion.startDate} - ${promotion.endDate}",
+                    fontSize = 13.sp,
+                    color = colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center
                 )
 
                 Spacer(Modifier.height(24.dp))
 
-                // Detail / Terms
                 Text(
-                    "Syarat dan Ketentuan:",
+                    text = "Syarat dan Ketentuan:",
                     fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
                     color = colorScheme.onSurface
                 )
+
                 Spacer(Modifier.height(8.dp))
+
                 Text(
-                    promotion.detail,
+                    text = promotion.detail,
                     fontSize = 14.sp,
                     lineHeight = 20.sp,
                     textAlign = TextAlign.Start,
-                    color = colorScheme.onSurface
+                    color = colorScheme.onSurfaceVariant
                 )
 
                 Spacer(Modifier.height(32.dp))
 
-                // Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -116,7 +118,7 @@ fun UMKMPromotionDetailPopup(
                         colors = ButtonDefaults.outlinedButtonColors(
                             contentColor = colorScheme.error
                         ),
-                        border = BorderStroke(1.dp, colorScheme.error) // border merah
+                        border = BorderStroke(1.dp, colorScheme.error)
                     ) {
                         Text("Delete", fontWeight = FontWeight.SemiBold)
                     }

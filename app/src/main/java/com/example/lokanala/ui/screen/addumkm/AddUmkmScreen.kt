@@ -1,6 +1,7 @@
 package com.example.lokanala.ui.screen.addumkm
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,7 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector // PERBAIKAN
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,11 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.lokanala.ui.theme.InputFieldBg
 import com.example.lokanala.ui.theme.LokanalaTheme
-import com.example.lokanala.ui.theme.PromoPinkBg
-import com.example.lokanala.ui.theme.PromoPinkText
-import com.example.lokanala.ui.theme.TextGreyLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,12 +34,13 @@ fun AddUmkmScreen(
     onBack: () -> Unit,
     navController: NavController
 ) {
-    // State sementara untuk input (nanti pindahkan ke ViewModel)
     var umkmName by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var contact by remember { mutableStateOf("") }
+
+    val colors = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {
@@ -51,51 +49,49 @@ fun AddUmkmScreen(
                     Text(
                         text = "Tambah UMKM",
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            contentDescription = "Kembali",
+                            tint = colors.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PromoPinkBg, // Latar pink
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
-        containerColor = PromoPinkBg // Latar belakang pink
+        containerColor = colors.background
     ) { padding ->
         Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
-                .verticalScroll(rememberScrollState()) // Agar bisa discroll jika konten panjang
+                .verticalScroll(rememberScrollState())
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = colors.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Nama UMKM
                     SimpleTextField(
                         value = umkmName,
                         onValueChange = { umkmName = it },
                         label = "Nama UMKM:"
                     )
 
-                    // Kategori (Dropdown Placeholder)
                     SimpleDropdownField(
                         label = "Kategori:",
                         options = listOf("Kuliner", "Fashion", "Jasa", "Lainnya"),
@@ -103,16 +99,14 @@ fun AddUmkmScreen(
                         onOptionSelected = { category = it }
                     )
 
-                    // Deskripsi Singkat
                     SimpleTextField(
                         value = description,
                         onValueChange = { description = it },
                         label = "Deskripsi Singkat:",
-                        singleLine = false, // Multi-line
-                        minLines = 3 // Minimal 3 baris
+                        singleLine = false,
+                        minLines = 3
                     )
 
-                    // Alamat
                     SimpleTextFieldWithIcon(
                         value = address,
                         onValueChange = { address = it },
@@ -120,16 +114,14 @@ fun AddUmkmScreen(
                         icon = Icons.Default.LocationOn
                     )
 
-                    // Upload Foto
                     SimpleTextFieldWithIcon(
-                        value = "", // Ini hanya tampilan
+                        value = "",
                         onValueChange = {},
                         label = "Upload Foto / Logo UMKM:",
                         icon = Icons.Default.FolderOpen,
-                        readOnly = true // Agar tidak bisa diketik
+                        readOnly = true
                     )
 
-                    // Nomor Kontak
                     SimpleTextField(
                         value = contact,
                         onValueChange = { contact = it },
@@ -138,13 +130,13 @@ fun AddUmkmScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Tombol Simpan
                     Button(
                         onClick = { /* TODO: Aksi Simpan */ },
-                        modifier = Modifier.align(Alignment.End), // Ke kanan
+                        modifier = Modifier.align(Alignment.End),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = PromoPinkText // Warna pink
+                            containerColor = colors.primary,
+                            contentColor = colors.onPrimary
                         )
                     ) {
                         Text(
@@ -159,7 +151,6 @@ fun AddUmkmScreen(
     }
 }
 
-// Composable helper untuk TextField standar
 @Composable
 private fun SimpleTextField(
     value: String,
@@ -169,21 +160,22 @@ private fun SimpleTextField(
     minLines: Int = 1,
     readOnly: Boolean = false
 ) {
+    val colors = MaterialTheme.colorScheme
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = label, color = TextGreyLight, fontSize = 14.sp) },
+        label = { Text(label, color = colors.onSurfaceVariant, fontSize = 14.sp) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = InputFieldBg,
-            unfocusedContainerColor = InputFieldBg,
-            disabledContainerColor = InputFieldBg,
-            focusedIndicatorColor = Color.Transparent, // Hilangkan border bawah
+            focusedContainerColor = colors.surfaceVariant,
+            unfocusedContainerColor = colors.surfaceVariant,
+            disabledContainerColor = colors.surfaceVariant,
+            focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black
+            focusedTextColor = colors.onSurface,
+            unfocusedTextColor = colors.onSurface
         ),
         singleLine = singleLine,
         minLines = minLines,
@@ -191,7 +183,6 @@ private fun SimpleTextField(
     )
 }
 
-// Composable helper untuk TextField dengan ikon di kanan
 @Composable
 private fun SimpleTextFieldWithIcon(
     value: String,
@@ -200,28 +191,28 @@ private fun SimpleTextFieldWithIcon(
     icon: ImageVector,
     readOnly: Boolean = false
 ) {
+    val colors = MaterialTheme.colorScheme
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(text = label, color = TextGreyLight, fontSize = 14.sp) },
+        label = { Text(label, color = colors.onSurfaceVariant, fontSize = 14.sp) },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = TextFieldDefaults.colors(
-            focusedContainerColor = InputFieldBg,
-            unfocusedContainerColor = InputFieldBg,
-            disabledContainerColor = InputFieldBg,
+            focusedContainerColor = colors.surfaceVariant,
+            unfocusedContainerColor = colors.surfaceVariant,
+            disabledContainerColor = colors.surfaceVariant,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black
+            focusedTextColor = colors.onSurface,
+            unfocusedTextColor = colors.onSurface
         ),
-        trailingIcon = { Icon(icon, contentDescription = null, tint = TextGreyLight) },
+        trailingIcon = { Icon(icon, contentDescription = null, tint = colors.onSurfaceVariant) },
         readOnly = readOnly
     )
 }
 
-// Placeholder untuk Dropdown Kategori (implementasi dropdown butuh state lebih kompleks)
 @Composable
 private fun SimpleDropdownField(
     label: String,
@@ -229,34 +220,49 @@ private fun SimpleDropdownField(
     selectedOption: String,
     onOptionSelected: (String) -> Unit
 ) {
-    // Implementasi Dropdown sesungguhnya bisa ditambahkan di sini
-    // Untuk UI saja, kita buat tampilan mirip TextField
+    var expanded by remember { mutableStateOf(false) }
+    val colors = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(InputFieldBg, RoundedCornerShape(12.dp))
-            .padding(16.dp)
+            .background(colors.surfaceVariant, RoundedCornerShape(12.dp))
+            .clickable { expanded = !expanded }
+            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = if (selectedOption.isEmpty()) label else selectedOption,
-                color = if (selectedOption.isEmpty()) TextGreyLight else Color.Black,
-                fontSize = if (selectedOption.isEmpty()) 14.sp else 16.sp,
+                color = if (selectedOption.isEmpty()) colors.onSurfaceVariant else colors.onSurface,
+                fontSize = 14.sp,
                 modifier = Modifier.weight(1f)
             )
-            Icon(Icons.Default.ArrowDropDown, contentDescription = "Pilih Kategori", tint = TextGreyLight)
+            Icon(
+                Icons.Default.ArrowDropDown,
+                contentDescription = "Dropdown",
+                tint = colors.onSurfaceVariant
+            )
         }
-        // Tampilkan daftar opsi (sementara saja untuk visual)
-        if (selectedOption.isEmpty()) { // Hanya tampilkan jika belum dipilih
-            Column(modifier = Modifier.padding(top = 40.dp)) { // Beri jarak dari label
-                options.forEach { option ->
-                    Text(option, fontSize=14.sp, color = TextGreyLight, modifier=Modifier.padding(vertical=2.dp))
-                }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(colors.surface)
+        ) {
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(option, fontSize = 14.sp, color = colors.onSurface) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    }
+                )
             }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

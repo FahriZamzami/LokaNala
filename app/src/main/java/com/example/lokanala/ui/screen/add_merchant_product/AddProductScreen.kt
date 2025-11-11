@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.lokanala.ui.theme.*
+import com.example.lokanala.ui.theme.LokanalaTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,31 +31,21 @@ fun AddProductScreen(
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
 
+    val colors = MaterialTheme.colorScheme
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "Add Product",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
-                },
+                title = { Text("Add Product", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.primary)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = BackgroundHeaderPink
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = colors.background
     ) { innerPadding ->
         Column(
             modifier = modifier
@@ -64,7 +54,7 @@ fun AddProductScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 📝 Title Field
+
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -74,19 +64,15 @@ fun AddProductScreen(
                 shape = RoundedCornerShape(10.dp)
             )
 
-            // 📋 Description Field
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Description") },
                 placeholder = { Text("Add description..") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp),
+                modifier = Modifier.fillMaxWidth().height(150.dp),
                 shape = RoundedCornerShape(10.dp)
             )
 
-            // 💰 Price Field
             OutlinedTextField(
                 value = price,
                 onValueChange = { price = it },
@@ -96,42 +82,27 @@ fun AddProductScreen(
                 shape = RoundedCornerShape(10.dp)
             )
 
-            // 📸 Add Photo Section
             Column(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "Add your photo",
-                    fontSize = 14.sp,
-                    color = RegularText,
-                    fontWeight = FontWeight.Medium
-                )
-
+                Text("Add your photo", fontSize = 14.sp, color = colors.onSurface, fontWeight = FontWeight.Medium)
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    // Tombol Kamera
+
                     Surface(
-                        modifier = Modifier
-                            .size(60.dp)
-                            .clip(CircleShape),
-                        color = PromoPinkText
+                        modifier = Modifier.size(60.dp).clip(CircleShape),
+                        color = colors.primary
                     ) {
                         IconButton(onClick = { /* TODO: open camera/gallery */ }) {
-                            Icon(
-                                imageVector = Icons.Default.CameraAlt,
-                                contentDescription = "Add Photo",
-                                tint = WhiteText
-                            )
+                            Icon(Icons.Default.CameraAlt, contentDescription = "Add Photo", tint = colors.onPrimary)
                         }
                     }
-
-                    // Placeholder kotak foto
                     repeat(2) {
                         Box(
                             modifier = Modifier
                                 .size(60.dp)
                                 .clip(RoundedCornerShape(8.dp))
-                                .background(FilterChipBg)
+                                .background(colors.surfaceVariant)
                         )
                     }
                 }
@@ -139,41 +110,24 @@ fun AddProductScreen(
 
             Spacer(modifier = Modifier.weight(1f))
 
-            // 🔘 Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(
                     onClick = { navController.popBackStack() },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = PromoPinkText
-                    ),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.dp,
-                        brush = androidx.compose.ui.graphics.SolidColor(PromoPinkText)
-                    )
-                ) {
-                    Text("Cancel")
-                }
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.primary)
+                ) { Text("Cancel") }
 
                 Button(
                     onClick = {
-                        // TODO: Simpan produk ke database di sini
+                        // TODO: Save product
                         println("✅ Add product for UMKM ID: $umkmId")
                         navController.popBackStack()
                     },
                     modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = PromoPinkText,
-                        contentColor = WhiteText
-                    )
-                ) {
-                    Text("Add")
-                }
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary)
+                ) { Text("Add") }
             }
         }
     }
@@ -183,10 +137,6 @@ fun AddProductScreen(
 @Composable
 fun AddProductScreenPreview() {
     LokanalaTheme {
-        val navController = rememberNavController()
-        AddProductScreen(
-            navController = navController,
-            umkmId = 1
-        )
+        AddProductScreen(navController = rememberNavController(), umkmId = 1)
     }
 }

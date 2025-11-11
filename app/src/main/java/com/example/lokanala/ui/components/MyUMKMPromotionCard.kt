@@ -33,19 +33,20 @@ fun MyUMKMPromotionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onItemClick(promotion) },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // 🔹 Ikon bundar % promosi
             Box(
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
                     .background(colorScheme.primary),
                 contentAlignment = Alignment.Center
@@ -53,63 +54,70 @@ fun MyUMKMPromotionCard(
                 Text(
                     "%",
                     color = colorScheme.onPrimary,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            // 🔹 Info promosi
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(horizontal = 16.dp)
             ) {
                 Text(
-                    promotion.title,
+                    text = promotion.title,
                     fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
                     color = colorScheme.onSurface
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    "${promotion.startDate} - ${promotion.endDate}",
-                    fontSize = 10.sp,
+                    text = "${promotion.startDate} - ${promotion.endDate}",
+                    fontSize = 12.sp,
                     color = colorScheme.onSurfaceVariant
                 )
             }
 
-            // 🔹 Menu (Edit/Delete)
             Box {
                 IconButton(onClick = { expanded = true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Options")
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Options",
+                        tint = colorScheme.onSurfaceVariant
+                    )
                 }
+
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(colorScheme.surface)
+                    modifier = Modifier
+                        .background(colorScheme.surface)
+                        .width(IntrinsicSize.Min)
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Edit") },
+                        text = { Text("Edit", color = colorScheme.onSurface) },
                         onClick = {
                             expanded = false
                             onEdit(promotion)
                         },
                         leadingIcon = {
                             Icon(
-                                Icons.Default.Edit,
-                                contentDescription = null,
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit",
                                 tint = colorScheme.primary
                             )
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete", color = colorScheme.error) },
+                        text = { Text("Hapus", color = colorScheme.error) },
                         onClick = {
                             expanded = false
                             onDelete(promotion)
                         },
                         leadingIcon = {
                             Icon(
-                                Icons.Default.Delete,
-                                contentDescription = null,
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
                                 tint = colorScheme.error
                             )
                         }

@@ -16,9 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -26,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.lokanala.ui.screen.promotion_umkm.MonthConverter
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
+import com.example.lokanala.ui.screen.promotion_umkm.Promotion
 
 import java.util.*
 
@@ -90,8 +88,6 @@ fun EditPromotionScreen(
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .clip(CircleShape)
-                            .background(colorScheme.primary.copy(alpha = 0.3f))
                             .clickable { navController.popBackStack() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -103,135 +99,114 @@ fun EditPromotionScreen(
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onBackground
                 )
             )
         },
         containerColor = colorScheme.background
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .drawBehind {
-                    drawCircle(
-                        color = colorScheme.primary.copy(alpha = 0.08f),
-                        radius = 450f,
-                        center = Offset(size.width * 0.9f, size.height * 0.1f)
-                    )
-                    drawCircle(
-                        color = colorScheme.primary.copy(alpha = 0.05f),
-                        radius = 350f,
-                        center = Offset(size.width * 0.1f, size.height * 0.9f)
-                    )
-                }
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
+            OutlinedTextField(
+                value = titleText,
+                onValueChange = { titleText = it },
+                label = { Text("Title") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    focusedLabelColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
+                    cursorColor = colorScheme.primary
+                )
+            )
+
+            OutlinedTextField(
+                value = detailText,
+                onValueChange = { detailText = it },
+                label = { Text("Detail") },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxWidth()
+                    .heightIn(min = 150.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    focusedLabelColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
+                    cursorColor = colorScheme.primary
+                )
+            )
+
+            DateField(label = "Start Date", dateText = startText) {
+                showDatePicker(startText) { selected -> startText = selected }
+            }
+            DateField(label = "End Date", dateText = endText) {
+                showDatePicker(endText) { selected -> endText = selected }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Title
-                OutlinedTextField(
-                    value = titleText,
-                    onValueChange = { titleText = it },
-                    label = { Text("Title") },
-                    modifier = Modifier.fillMaxWidth(),
+                OutlinedButton(
+                    onClick = {
+                        promotionViewModel.deletePromotion(promotion.id)
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorScheme.primary,
-                        focusedLabelColor = colorScheme.primary,
-                        unfocusedBorderColor = colorScheme.onSurfaceVariant
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        width = 1.dp,
+                        brush = SolidColor(colorScheme.error)
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = colorScheme.error
                     )
-                )
-
-                // Detail
-                OutlinedTextField(
-                    value = detailText,
-                    onValueChange = { detailText = it },
-                    label = { Text("Detail") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 150.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorScheme.primary,
-                        focusedLabelColor = colorScheme.primary,
-                        unfocusedBorderColor = colorScheme.onSurfaceVariant
-                    )
-                )
-
-                // Start & End Dates
-                DateField(label = "Start Date", dateText = startText) {
-                    showDatePicker(startText) { selected -> startText = selected }
-                }
-                DateField(label = "End Date", dateText = endText) {
-                    showDatePicker(endText) { selected -> endText = selected }
-                }
-
-                // Action Buttons: Delete | Cancel | Save
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Delete
-                    OutlinedButton(
-                        onClick = {
-                            promotionViewModel.deletePromotion(promotion.id)
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 1.dp,
-                            brush = SolidColor(colorScheme.error)
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = colorScheme.error
-                        )
-                    ) {
-                        Text("Delete", fontWeight = FontWeight.Bold)
-                    }
+                    Text("Delete", fontWeight = FontWeight.Bold)
+                }
 
-                    // Cancel
-                    OutlinedButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 1.dp,
-                            brush = SolidColor(colorScheme.primary)
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = colorScheme.primary
-                        )
-                    ) {
-                        Text("Cancel", fontWeight = FontWeight.Bold)
-                    }
+                OutlinedButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        width = 1.dp,
+                        brush = SolidColor(colorScheme.primary)
+                    ),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = colorScheme.primary
+                    )
+                ) {
+                    Text("Cancel", fontWeight = FontWeight.Bold)
+                }
 
-                    // Save
-                    Button(
-                        onClick = {
-                            val updated = promotion.copy(
-                                title = titleText,
-                                detail = detailText,
-                                startDate = startText,
-                                endDate = endText
-                            )
-                            promotionViewModel.updatePromotion(updated)
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary
+                Button(
+                    onClick = {
+                        val updated = promotion.copy(
+                            title = titleText,
+                            detail = detailText,
+                            startDate = startText,
+                            endDate = endText
                         )
-                    ) {
-                        Text("Save", fontWeight = FontWeight.Bold)
-                    }
+                        promotionViewModel.updatePromotion(updated)
+                        navController.popBackStack()
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
+                    )
+                ) {
+                    Text("Save", fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -264,4 +239,3 @@ fun DateField(label: String, dateText: String, onClick: () -> Unit) {
         }
     }
 }
-

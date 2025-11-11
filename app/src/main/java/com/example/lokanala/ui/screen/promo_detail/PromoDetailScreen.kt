@@ -2,42 +2,28 @@ package com.example.lokanala.ui.screen.promo_detail
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lokanala.ui.theme.PromoPinkText
-import com.example.lokanala.ui.theme.TextGrey
+import com.example.lokanala.ui.theme.LokanalaTheme
 
 @Composable
 fun PromoDetailScreen(
@@ -46,12 +32,19 @@ fun PromoDetailScreen(
     onBack: () -> Unit
 ) {
     val promo by viewModel.promo.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(colorScheme.background)
+    ) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White)
+                .background(colorScheme.surface),
+            contentPadding = PaddingValues(bottom = 80.dp)
         ) {
             item {
                 Image(
@@ -68,21 +61,37 @@ fun PromoDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                        .background(Color.White)
+                        .background(colorScheme.surface)
                         .padding(16.dp)
                 ) {
-                    Text(promo.title, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                    Text(
+                        promo.title,
+                        style = typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.onSurface
+                        )
+                    )
+
                     Spacer(Modifier.height(8.dp))
-                    Text("Berlaku hingga ${promo.dateRange}", fontSize = 14.sp, color = TextGrey)
+                    Text(
+                        text = "Berlaku hingga ${promo.dateRange}",
+                        style = typography.bodyMedium.copy(color = colorScheme.onSurfaceVariant)
+                    )
 
                     Spacer(Modifier.height(16.dp))
-                    HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 8.dp)
+                    HorizontalDivider(
+                        color = colorScheme.surfaceVariant,
+                        thickness = 8.dp
+                    )
                     Spacer(Modifier.height(16.dp))
 
                     InfoSection(title = "Syarat & Ketentuan", items = promo.termsAndConditions)
 
                     Spacer(Modifier.height(16.dp))
-                    HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 8.dp)
+                    HorizontalDivider(
+                        color = colorScheme.surfaceVariant,
+                        thickness = 8.dp
+                    )
                     Spacer(Modifier.height(16.dp))
 
                     InfoSection(title = "Cara Penggunaan", items = promo.howToUse)
@@ -90,23 +99,38 @@ fun PromoDetailScreen(
             }
         }
 
-        DetailTopBar(onBack = onBack, modifier = Modifier.align(Alignment.TopCenter))
+        DetailTopBar(
+            onBack = onBack,
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+        )
 
         Button(
-            onClick = { /* UI Saja */ },
+            onClick = { /* UI saja */ },
             modifier = Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter)
+                .navigationBarsPadding()
                 .padding(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = PromoPinkText)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colorScheme.primary,
+                contentColor = colorScheme.onPrimary
+            ),
+            shape = RoundedCornerShape(50)
         ) {
-            Text("Pakai Kupon")
+            Text(
+                "Pakai Kupon",
+                style = typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+            )
         }
     }
 }
 
 @Composable
 private fun DetailTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -114,28 +138,68 @@ private fun DetailTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val iconModifier = Modifier.clip(CircleShape).background(Color(0x80000000))
+        val iconBackground = colorScheme.surface.copy(alpha = 0.8f)
+        val iconTint = colorScheme.primary
+
+        val iconModifier = Modifier
+            .clip(CircleShape)
+            .background(iconBackground)
+
         IconButton(onClick = onBack, modifier = iconModifier) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = Color.White)
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Kembali",
+                tint = iconTint
+            )
         }
         IconButton(onClick = { /* UI Saja */ }, modifier = iconModifier) {
-            Icon(Icons.Default.Share, "Bagikan", tint = Color.White)
+            Icon(
+                imageVector = Icons.Default.Share,
+                contentDescription = "Bagikan",
+                tint = iconTint
+            )
         }
     }
 }
 
 @Composable
 private fun InfoSection(title: String, items: List<String>) {
+    val colorScheme = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     Column {
-        Text(title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+        Text(
+            text = title,
+            style = typography.titleMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = colorScheme.onSurface
+            )
+        )
         Spacer(Modifier.height(12.dp))
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items.forEachIndexed { index, item ->
                 Row {
-                    Text("${index + 1}. ", fontSize = 14.sp, color = TextGrey)
-                    Text(item, fontSize = 14.sp, color = TextGrey, lineHeight = 20.sp)
+                    Text(
+                        "${index + 1}. ",
+                        style = typography.bodyMedium.copy(color = colorScheme.onSurfaceVariant)
+                    )
+                    Text(
+                        item,
+                        style = typography.bodyMedium.copy(
+                            lineHeight = 20.sp,
+                            color = colorScheme.onSurfaceVariant
+                        )
+                    )
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PromoDetailScreenPreview() {
+    LokanalaTheme {
+        PromoDetailScreen(onBack = {})
     }
 }

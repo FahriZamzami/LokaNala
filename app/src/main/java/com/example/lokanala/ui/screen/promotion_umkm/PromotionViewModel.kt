@@ -12,7 +12,6 @@ data class Promotion(
 )
 
 class PromotionViewModel : ViewModel() {
-    // daftar promo (mutable agar bisa diubah langsung)
     var promotions = mutableStateListOf(
         Promotion(1, "Discount 30% for All Item", "1. Berlaku untuk semua produk di toko offline.\n2. Tidak dapat digabung dengan promo lain.", "8 October 2025", "15 October 2025"),
         Promotion(2, "Discount 15% for Member", "1. Hanya untuk member aktif.\n2. Wajib menunjukkan kartu member.", "10 November 2025", "15 November 2025"),
@@ -27,18 +26,15 @@ class PromotionViewModel : ViewModel() {
     )
         private set
 
-    // update promo
     fun updatePromotion(updated: Promotion) {
         val index = promotions.indexOfFirst { it.id == updated.id }
         if (index != -1) promotions[index] = updated
     }
 
-    // hapus promo
     fun deletePromotion(id: Int) {
         promotions.removeAll { it.id == id }
     }
 
-    // ambil promo berdasarkan id
     fun getPromotionById(id: Int): Promotion? = promotions.find { it.id == id }
 }
 

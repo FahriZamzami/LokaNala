@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -33,17 +32,7 @@ import com.example.lokanala.R
 import com.example.lokanala.model.dummyProducts
 import com.example.lokanala.ui.components.MenuItemCard
 import com.example.lokanala.ui.navigation.Screen
-import com.example.lokanala.ui.theme.FilterChipBg
-import com.example.lokanala.ui.theme.FilterChipBorder
-import com.example.lokanala.ui.theme.PromoGreenBg
-import com.example.lokanala.ui.theme.PromoGreenText
-import com.example.lokanala.ui.theme.PromoPinkBg
-import com.example.lokanala.ui.theme.PromoPinkText
-import com.example.lokanala.ui.theme.SearchPinkBg
-import com.example.lokanala.ui.theme.StarYellow
-import com.example.lokanala.ui.theme.StrikeThroughGrey
-import com.example.lokanala.ui.theme.TextGrey
-import com.example.lokanala.ui.theme.TextGreyLight
+import com.example.lokanala.ui.theme.*
 
 @Composable
 fun MerchantScreen(
@@ -51,42 +40,44 @@ fun MerchantScreen(
     navController: NavController,
     umkmId: Long
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(colorScheme.background)
     ) {
         item {
             MerchantHeader(
                 onBack = { navController.popBackStack() },
                 navController = navController,
-                umkmId = umkmId
+                umkmId = umkmId,
+                colorScheme = colorScheme
             )
         }
         item {
             PromoSection(
                 modifier = Modifier.padding(horizontal = 16.dp),
-                navController = navController
+                navController = navController,
+                colorScheme = colorScheme
             )
         }
         item {
             Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 8.dp)
+            HorizontalDivider(color = colorScheme.surfaceVariant, thickness = 8.dp)
             Spacer(modifier = Modifier.height(16.dp))
         }
-        item { SearchAndFilterSection(modifier = Modifier.padding(horizontal = 16.dp)) }
+        item { SearchAndFilterSection(modifier = Modifier.padding(horizontal = 16.dp), colorScheme = colorScheme) }
         item { Spacer(modifier = Modifier.height(16.dp)) }
 
         items(dummyProducts, key = { it.id }) { product ->
             MenuItemCard(
                 product = product,
                 modifier = Modifier.padding(horizontal = 16.dp),
-                onClick = {
-                    navController.navigate(Screen.Detail.createRoute(product.id))
-                }
+                onClick = { navController.navigate(Screen.Detail.createRoute(product.id)) }
             )
             HorizontalDivider(
-                color = Color(0xFFF5F5F5),
+                color = colorScheme.outlineVariant.copy(alpha = 0.3f),
                 thickness = 1.dp,
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
@@ -98,7 +89,8 @@ fun MerchantScreen(
 private fun MerchantHeader(
     onBack: () -> Unit,
     navController: NavController,
-    umkmId: Long
+    umkmId: Long,
+    colorScheme: ColorScheme
 ) {
     Box(
         modifier = Modifier
@@ -117,11 +109,11 @@ private fun MerchantHeader(
         IconButton(
             onClick = onBack,
             modifier = Modifier
-                .padding(8.dp)
+                .padding(top = 30.dp, start = 8.dp)
                 .clip(CircleShape)
-                .background(Color(0x80000000))
+                .background(colorScheme.background.copy(alpha = 0.5f))
         ) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = Color.White)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = colorScheme.primary)
         }
 
         Card(
@@ -130,13 +122,11 @@ private fun MerchantHeader(
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painter = painterResource(id = R.drawable.logo_seblak_sendik),
                         contentDescription = "Logo Seblak Sendik",
@@ -147,27 +137,37 @@ private fun MerchantHeader(
                     )
                     Spacer(Modifier.width(16.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("Seblak Sendik", fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
+                        Text(
+                            "Seblak Sendik",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = colorScheme.onSurface
+                        )
                         Spacer(Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text("4,5", fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = TextGrey)
+                            Text(
+                                "4,5",
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                color = colorScheme.secondary
+                            )
                             Spacer(Modifier.width(4.dp))
-                            Icon(Icons.Filled.Star, "Rating", tint = StarYellow, modifier = Modifier.size(16.dp))
+                            Icon(
+                                Icons.Filled.Star,
+                                "Rating",
+                                tint = colorScheme.secondary,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                         Spacer(Modifier.height(4.dp))
-                        Text("Jl. Timor Manis No. 23, Padang...", fontSize = 13.sp, color = TextGreyLight, maxLines = 1)
+                        Text(
+                            "Jl. Timor Manis No. 23, Padang...",
+                            fontSize = 13.sp,
+                            color = colorScheme.onSurfaceVariant,
+                            maxLines = 1
+                        )
                     }
                 }
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    text = "Lihat detail UMKM >",
-                    fontSize = 12.sp,
-                    color = PromoPinkText,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable { navController.navigate("detailscreen/$umkmId") }
-                )
             }
         }
     }
@@ -176,7 +176,8 @@ private fun MerchantHeader(
 @Composable
 private fun PromoSection(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    colorScheme: ColorScheme
 ) {
     Column(
         modifier = modifier
@@ -187,7 +188,7 @@ private fun PromoSection(
             text = "PROMO MENARIK",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
-            color = Color.Black
+            color = colorScheme.onBackground
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(
@@ -197,62 +198,58 @@ private fun PromoSection(
             Card(
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = PromoGreenBg),
+                colors = CardDefaults.cardColors(containerColor = PromoGreenText.copy(alpha = 0.5f)),
                 onClick = { /* UI Saja */ }
             ) {
-                Column(Modifier.padding(12.dp)) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Text(
                         text = "PAKET SEBLAK KOMPLIT + ES TEH",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
-                        color = PromoGreenText,
+                        color = colorScheme.onBackground,
                         maxLines = 2,
-                        minLines = 2
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Rp 19.000",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp,
-                        color = Color.Black
+                        color = colorScheme.onBackground
                     )
                     Text(
                         text = "Rp 22.000",
                         fontSize = 12.sp,
-                        color = StrikeThroughGrey,
+                        color = colorScheme.onSurfaceVariant,
                         textDecoration = TextDecoration.LineThrough
                     )
-                }
-            }
 
-            Card(
-                modifier = Modifier.weight(0.7f),
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(containerColor = PromoPinkBg),
-                onClick = {
-                    navController.navigate(Screen.Promo.route)
-                }
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "Lihat\nlainnya",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        color = PromoPinkText,
-                        lineHeight = 18.sp
-                    )
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                        contentDescription = "Lihat Semua Promo",
-                        tint = PromoPinkText,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
+                            .clickable { navController.navigate(Screen.Promo.route) },
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "Lihat lainnya",
+                                fontWeight = FontWeight.Bold,
+                                color = colorScheme.primary,
+                                fontSize = 12.sp
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
+                                contentDescription = "Lihat semua promo",
+                                tint = colorScheme.primary,
+                                modifier = Modifier.size(14.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -260,12 +257,15 @@ private fun PromoSection(
 }
 
 @Composable
-private fun SearchAndFilterSection(modifier: Modifier = Modifier) {
+private fun SearchAndFilterSection(
+    modifier: Modifier = Modifier,
+    colorScheme: ColorScheme
+) {
     Column(modifier = modifier.fillMaxWidth()) {
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
-            color = SearchPinkBg
+            color = colorScheme.surfaceVariant
         ) {
             Row(
                 modifier = Modifier
@@ -276,13 +276,13 @@ private fun SearchAndFilterSection(modifier: Modifier = Modifier) {
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Cari Produk",
-                    tint = PromoPinkText
+                    tint = colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Cari Produk",
                     fontSize = 15.sp,
-                    color = PromoPinkText
+                    color = colorScheme.primary
                 )
             }
         }
@@ -290,19 +290,23 @@ private fun SearchAndFilterSection(modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(12.dp))
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            item { FilterChip("Tipe produk") }
-            item { FilterChip("Terlaris") }
-            item { FilterChip(text = "Harga", showArrow = true) }
+            item { FilterChip(text = "Tipe produk", colorScheme = colorScheme) }
+            item { FilterChip(text = "Terlaris", colorScheme = colorScheme) }
+            item { FilterChip(text = "Harga", showArrow = true, colorScheme = colorScheme) }
         }
     }
 }
 
 @Composable
-private fun FilterChip(text: String, showArrow: Boolean = false) {
+private fun FilterChip(
+    text: String,
+    showArrow: Boolean = false,
+    colorScheme: ColorScheme
+) {
     Surface(
         shape = RoundedCornerShape(8.dp),
-        color = FilterChipBg,
-        border = BorderStroke(1.dp, FilterChipBorder),
+        color = colorScheme.surfaceVariant,
+        border = BorderStroke(1.dp, colorScheme.outlineVariant),
         onClick = { /* UI Saja */ }
     ) {
         Row(
@@ -312,7 +316,7 @@ private fun FilterChip(text: String, showArrow: Boolean = false) {
             Text(
                 text = text,
                 fontSize = 14.sp,
-                color = TextGrey,
+                color = colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
             )
             if (showArrow) {
@@ -320,7 +324,7 @@ private fun FilterChip(text: String, showArrow: Boolean = false) {
                 Icon(
                     imageVector = Icons.Default.UnfoldMore,
                     contentDescription = "Filter Harga",
-                    tint = TextGrey,
+                    tint = colorScheme.onSurface,
                     modifier = Modifier.size(16.dp)
                 )
             }

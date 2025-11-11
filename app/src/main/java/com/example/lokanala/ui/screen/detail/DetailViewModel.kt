@@ -21,7 +21,6 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
         val productId: Int = savedStateHandle.get<Int>("productId") ?: -1
         if (productId != -1) {
             _product.value = dummyProducts.find { it.id == productId }
-            // Untuk saat ini, kita akan menampilkan semua review sebagai dummy
             _reviews.value = dummyReviews
         }
     }

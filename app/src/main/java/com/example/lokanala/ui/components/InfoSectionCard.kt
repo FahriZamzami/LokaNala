@@ -7,39 +7,52 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.lokanala.ui.theme.TextGrey
 
-// PERBAIKAN: Membuat komponen baru khusus untuk daftar info di detail promo
 @Composable
 fun InfoSectionCard(
     title: String,
     items: List<String>,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(horizontal = 20.dp, vertical = 12.dp)
     ) {
         Text(
             text = title,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
-            color = Color.Black
+            color = colorScheme.onSurface
         )
-        Spacer(modifier = Modifier.height(12.dp))
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             items.forEachIndexed { index, item ->
                 Row {
-                    Text("${index + 1}. ", fontSize = 14.sp, color = TextGrey)
-                    Text(item, fontSize = 14.sp, color = TextGrey, lineHeight = 20.sp)
+                    Text(
+                        text = "${index + 1}. ",
+                        fontSize = 14.sp,
+                        color = colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = item,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        color = colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }

@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// PERBAIKAN: Membuat ViewModel untuk mengambil detail promo berdasarkan ID
 class PromoDetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
     private val promoId: Int = checkNotNull(savedStateHandle["promoId"])
 

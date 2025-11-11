@@ -16,10 +16,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -74,8 +70,6 @@ fun AddPromotionScreen(
                     Box(
                         modifier = Modifier
                             .size(40.dp)
-                            .clip(CircleShape)
-                            .background(colorScheme.primary.copy(alpha = 0.3f))
                             .clickable { navController.popBackStack() },
                         contentAlignment = Alignment.Center
                     ) {
@@ -86,115 +80,93 @@ fun AddPromotionScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.Transparent)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = colorScheme.background,
+                    titleContentColor = colorScheme.onBackground
+                )
             )
         },
         containerColor = colorScheme.background
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .drawBehind {
-                    drawCircle(
-                        color = colorScheme.primary.copy(alpha = 0.08f),
-                        radius = 450f,
-                        center = Offset(size.width * 0.9f, size.height * 0.1f)
-                    )
-                    drawCircle(
-                        color = colorScheme.primary.copy(alpha = 0.05f),
-                        radius = 350f,
-                        center = Offset(size.width * 0.1f, size.height * 0.9f)
-                    )
-                }
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Column(
+            OutlinedTextField(
+                value = titleText,
+                onValueChange = { titleText = it },
+                label = { Text("Title") },
+                placeholder = { Text("Add your title...") },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    focusedLabelColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
+                    cursorColor = colorScheme.primary
+                )
+            )
+
+            OutlinedTextField(
+                value = detailText,
+                onValueChange = { detailText = it },
+                label = { Text("Detail") },
+                placeholder = { Text("Add detail...") },
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                    .fillMaxWidth()
+                    .heightIn(min = 150.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = colorScheme.primary,
+                    focusedLabelColor = colorScheme.primary,
+                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
+                    cursorColor = colorScheme.primary
+                )
+            )
+
+            PromotionDateField("Start", startText) { showDatePicker(startText) { startText = it } }
+            PromotionDateField("End", endText) { showDatePicker(endText) { endText = it } }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Title
-                OutlinedTextField(
-                    value = titleText,
-                    onValueChange = { titleText = it },
-                    label = { Text("Title") },
-                    placeholder = { Text("Add your title...") },
-                    modifier = Modifier.fillMaxWidth(),
+                OutlinedButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorScheme.primary,
-                        focusedLabelColor = colorScheme.primary,
-                        unfocusedBorderColor = colorScheme.onSurfaceVariant
-                    )
-                )
-
-                // Detail
-                OutlinedTextField(
-                    value = detailText,
-                    onValueChange = { detailText = it },
-                    label = { Text("Detail") },
-                    placeholder = { Text("Add detail...") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 150.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = colorScheme.primary,
-                        focusedLabelColor = colorScheme.primary,
-                        unfocusedBorderColor = colorScheme.onSurfaceVariant
-                    )
-                )
-
-                // Start & End Dates
-                PromotionDateField("Start", startText) { showDatePicker(startText) { startText = it } }
-                PromotionDateField("End", endText) { showDatePicker(endText) { endText = it } }
-
-                // Action Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.primary)
                 ) {
-                    // Cancel
-                    OutlinedButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder.copy(
-                            width = 1.dp,
-                            brush = SolidColor(colorScheme.primary)
-                        ),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.primary)
-                    ) {
-                        Text("Cancel", fontWeight = FontWeight.Bold)
-                    }
+                    Text("Cancel", fontWeight = FontWeight.Bold)
+                }
 
-                    // Add
-                    Button(
-                        onClick = {
-                            if (titleText.isNotBlank() && detailText.isNotBlank()) {
-                                val newId = (promotionViewModel.promotions.maxOfOrNull { it.id } ?: 0) + 1
-                                val newPromo = Promotion(
-                                    id = newId,
-                                    title = titleText,
-                                    detail = detailText,
-                                    startDate = startText,
-                                    endDate = endText
-                                )
-                                promotionViewModel.promotions.add(newPromo)
-                                navController.popBackStack()
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary
-                        )
-                    ) {
-                        Text("Add", fontWeight = FontWeight.Bold)
-                    }
+                Button(
+                    onClick = {
+                        if (titleText.isNotBlank() && detailText.isNotBlank()) {
+                            val newId = (promotionViewModel.promotions.maxOfOrNull { it.id } ?: 0) + 1
+                            val newPromo = Promotion(
+                                id = newId,
+                                title = titleText,
+                                detail = detailText,
+                                startDate = startText,
+                                endDate = endText
+                            )
+                            promotionViewModel.promotions.add(newPromo)
+                            navController.popBackStack()
+                        }
+                    },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
+                    )
+                ) {
+                    Text("Add", fontWeight = FontWeight.Bold)
                 }
             }
         }

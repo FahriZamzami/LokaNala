@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// State untuk input fields
 data class LoginUiState(
     val email: String = "",
     val password: String = ""
@@ -23,9 +22,8 @@ class LoginViewModel : ViewModel() {
         _uiState.value = _uiState.value.copy(password = newPassword)
     }
 
-    // Nanti bisa ditambahkan fungsi untuk handle login
     fun handleLogin() {
-        // TODO: Tambahkan logika autentikasi di sini
+        // TODO: logika autentikasi
         println("Login attempt: Email=${_uiState.value.email}, Pass=${_uiState.value.password}")
     }
 }

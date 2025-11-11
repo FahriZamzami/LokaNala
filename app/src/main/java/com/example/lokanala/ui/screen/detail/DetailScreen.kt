@@ -12,11 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -29,7 +25,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.lokanala.model.Review
@@ -40,7 +35,7 @@ import com.example.lokanala.ui.theme.*
 fun DetailScreen(
     modifier: Modifier = Modifier,
     viewModel: DetailViewModel = viewModel(),
-    navController: NavController, // ✅ Tambahkan ini
+    navController: NavController,
     onBack: () -> Unit
 ) {
     val product by viewModel.product.collectAsState()
@@ -51,7 +46,7 @@ fun DetailScreen(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.background)
             ) {
                 item {
                     Image(
@@ -69,7 +64,7 @@ fun DetailScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                            .background(Color.White)
+                            .background(MaterialTheme.colorScheme.surface)
                             .padding(16.dp)
                     ) {
                         Row(
@@ -77,24 +72,33 @@ fun DetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(p.name, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color.Black)
+                                Text(
+                                    p.name,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 20.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
                                 Spacer(Modifier.height(8.dp))
                                 RatingChip(p.rating, p.reviewCount)
                             }
-                            Text(p.price, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
+                            Text(
+                                p.price,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
 
                         Spacer(Modifier.height(16.dp))
-                        HorizontalDivider(color = FilterChipBg)
+                        Divider(color = MaterialTheme.colorScheme.primaryContainer, thickness = 1.dp)
                         Spacer(Modifier.height(16.dp))
 
                         ProductDescription(description = p.description)
 
                         Spacer(Modifier.height(16.dp))
-                        HorizontalDivider(color = Color(0xFFF0F0F0), thickness = 8.dp)
+                        Divider(color = MaterialTheme.colorScheme.primaryContainer, thickness = 4.dp)
                         Spacer(Modifier.height(16.dp))
 
-                        // ✅ Kirim navController ke RatingSection
                         RatingSection(reviews = reviews, navController = navController)
                     }
                 }
@@ -113,20 +117,22 @@ private fun DetailTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp, vertical = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        val iconModifier = Modifier.clip(CircleShape).background(Color(0x80000000))
+        val iconModifier = Modifier
+            .clip(CircleShape)
+            .background(Color(0x80000000))
         IconButton(onClick = onBack, modifier = iconModifier) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = Color.White)
         }
         Row {
-            IconButton(onClick = { /* UI Saja */ }, modifier = iconModifier) {
+            IconButton(onClick = { /* TODO */ }, modifier = iconModifier) {
                 Icon(Icons.Default.Search, "Cari", tint = Color.White)
             }
             Spacer(Modifier.width(8.dp))
-            IconButton(onClick = { /* UI Saja */ }, modifier = iconModifier) {
+            IconButton(onClick = { /* TODO */ }, modifier = iconModifier) {
                 Icon(Icons.Default.Share, "Bagikan", tint = Color.White)
             }
         }
@@ -142,7 +148,12 @@ private fun RatingChip(rating: Double, reviewCount: Int) {
         ) {
             Icon(Icons.Filled.Star, "Rating", tint = TextGrey, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(4.dp))
-            Text("$rating ($reviewCount)", fontSize = 13.sp, color = TextGrey, fontWeight = FontWeight.SemiBold)
+            Text(
+                "$rating ($reviewCount)",
+                fontSize = 13.sp,
+                color = TextGrey,
+                fontWeight = FontWeight.SemiBold
+            )
         }
     }
 }
@@ -150,24 +161,39 @@ private fun RatingChip(rating: Double, reviewCount: Int) {
 @Composable
 private fun ProductDescription(description: String) {
     Column {
-        Text(description, fontSize = 14.sp, color = TextGrey, lineHeight = 20.sp)
+        Text(
+            description,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            lineHeight = 20.sp
+        )
         Spacer(Modifier.height(12.dp))
-        Text("Isian Seblak Khas Bandung:", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextGrey)
+        Text(
+            "Isian Seblak Khas Bandung:",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface
+        )
         Spacer(Modifier.height(4.dp))
         Column(Modifier.padding(start = 8.dp)) {
-            Text("• Kerupuk", fontSize = 14.sp, color = TextGrey)
-            Text("• Sosis", fontSize = 14.sp, color = TextGrey)
-            Text("• Seafood", fontSize = 14.sp, color = TextGrey)
+            Text("• Kerupuk", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text("• Sosis", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text("• Seafood", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
         }
         Spacer(Modifier.height(16.dp))
-        Text("selengkapnya", fontSize = 13.sp, color = TextGreyLight, modifier = Modifier.align(Alignment.CenterHorizontally))
+        Text(
+            "selengkapnya",
+            fontSize = 13.sp,
+            color = TextGreyLight,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
     }
 }
 
 @Composable
 private fun RatingSection(
     reviews: List<Review>,
-    navController: NavController // ✅ Tambahkan ini
+    navController: NavController
 ) {
     Column {
         Row(
@@ -175,19 +201,24 @@ private fun RatingSection(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text("Rating", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.Black)
+            Text(
+                "Rating",
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Text(
                 text = "Lihat semua >",
                 fontSize = 13.sp,
-                color = PromoPinkText,
+                color = PrimaryPink,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
-                    navController.navigate("rating") // ✅ Navigasi ke halaman RatingScreen
+                    navController.navigate("rating")
                 }
             )
         }
         Spacer(Modifier.height(12.dp))
-        HorizontalDivider(color = FilterChipBg)
+        Divider(color = MaterialTheme.colorScheme.primaryContainer, thickness = 1.dp)
         Spacer(Modifier.height(16.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
