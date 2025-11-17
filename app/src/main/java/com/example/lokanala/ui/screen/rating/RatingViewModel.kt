@@ -1,37 +1,92 @@
 package com.example.lokanala.ui.screen.rating
 
+import android.net.Uri
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+// Model Review sekarang mendukung banyak foto
 data class Review(
     val id: String = UUID.randomUUID().toString(),
     val name: String,
     val date: String,
     val rating: Int,
     val comment: String,
-    val hasPhoto: Boolean = false
-)
+    val photoUris: List<Uri> = emptyList()
+) {
+    val hasPhoto: Boolean
+        get() = photoUris.isNotEmpty()
+}
 
 class RatingViewModel : ViewModel() {
 
+    // Data dummy seperti versi lama
     var reviews = mutableStateListOf(
-        Review("1", "Ratna Solihin", "10 Oktober 2025", 5, "Porsi besar dan pelayanan cepat. Lorem ipsum dolor sit amet.", true),
-        Review("2", "Ahmad Amaik", "9 Oktober 2025", 4, "Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
-        Review("3", "Budi Santoso", "7 Oktober 2025", 5, "Pelayanan ramah dan cepat.", true),
-        Review("4", "Siti Rahma", "6 Oktober 2025", 4, "Tempat nyaman, makanan enak."),
-        Review("5", "Fajar Hidayat", "5 Oktober 2025", 5, "Pelayanan ramah dan cepat."),
-        Review("6", "Anisa Putri", "4 Oktober 2025", 3, "Makanan enak tapi penyajiannya agak lama."),
-        Review("7", "Dwi Kurniawan", "3 Oktober 2025", 2, "Kurang sesuai ekspektasi.")
+        Review(
+            id = "1",
+            name = "Ratna Solihin",
+            date = "10 Oktober 2025",
+            rating = 5,
+            comment = "Porsi besar dan pelayanan cepat. Lorem ipsum dolor sit amet.",
+            photoUris = emptyList()
+        ),
+        Review(
+            id = "2",
+            name = "Ahmad Amaik",
+            date = "9 Oktober 2025",
+            rating = 4,
+            comment = "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+            photoUris = emptyList()
+        ),
+        Review(
+            id = "3",
+            name = "Budi Santoso",
+            date = "7 Oktober 2025",
+            rating = 5,
+            comment = "Pelayanan ramah dan cepat.",
+            photoUris = emptyList()
+        ),
+        Review(
+            id = "4",
+            name = "Siti Rahma",
+            date = "6 Oktober 2025",
+            rating = 4,
+            comment = "Tempat nyaman, makanan enak.",
+            photoUris = emptyList()
+        ),
+        Review(
+            id = "5",
+            name = "Fajar Hidayat",
+            date = "5 Oktober 2025",
+            rating = 5,
+            comment = "Pelayanan ramah dan cepat.",
+            photoUris = emptyList()
+        ),
+        Review(
+            id = "6",
+            name = "Anisa Putri",
+            date = "4 Oktober 2025",
+            rating = 3,
+            comment = "Makanan enak tapi penyajiannya agak lama.",
+            photoUris = emptyList()
+        ),
+        Review(
+            id = "7",
+            name = "Dwi Kurniawan",
+            date = "3 Oktober 2025",
+            rating = 2,
+            comment = "Kurang sesuai ekspektasi.",
+            photoUris = emptyList()
+        )
     )
         private set
 
     var userReview = mutableStateOf<Review?>(null)
         private set
 
-    fun addReview(rating: Int, comment: String, hasPhoto: Boolean) {
+    fun addReview(rating: Int, comment: String, photoUris: List<Uri>) {
         if (rating <= 0 || comment.isBlank()) return
 
         val newReview = Review(
@@ -40,7 +95,7 @@ class RatingViewModel : ViewModel() {
             date = currentDate(),
             rating = rating,
             comment = comment,
-            hasPhoto = hasPhoto
+            photoUris = photoUris
         )
 
         userReview.value?.let { reviews.remove(it) }
@@ -49,7 +104,7 @@ class RatingViewModel : ViewModel() {
         userReview.value = newReview
     }
 
-    fun editUserReview(newRating: Int, newComment: String, hasPhoto: Boolean) {
+    fun editUserReview(newRating: Int, newComment: String, photoUris: List<Uri>) {
         val current = userReview.value ?: return
         val index = reviews.indexOfFirst { it.id == current.id }
         if (index < 0) return
@@ -57,7 +112,7 @@ class RatingViewModel : ViewModel() {
         val updated = current.copy(
             rating = newRating,
             comment = newComment,
-            hasPhoto = hasPhoto,
+            photoUris = photoUris,
             date = currentDate()
         )
 

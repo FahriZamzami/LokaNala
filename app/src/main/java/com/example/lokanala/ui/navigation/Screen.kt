@@ -35,6 +35,9 @@ sealed class Screen(val route: String) {
 
     object Rating : Screen("rating")
 
+    // ⭐ TAMBAHKAN INI - Route untuk kamera review
+    object AddPictureReview : Screen("add_picture_review")
+
     object Promo : Screen("promo")
     object PromoDetail : Screen("promo_detail/{promoId}") {
         fun createRoute(promoId: Int) = "promo_detail/$promoId"

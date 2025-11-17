@@ -31,6 +31,7 @@ import com.google.accompanist.navigation.animation.composable
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+//import com.example.lokanala.ui.screen.rating.AddPictureReview
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -182,5 +183,17 @@ fun AppNavGraph(navController: NavHostController) {
                 navController = navController
             )
         }
+
+//        composable(Screen.AddPictureReview.route) {
+//            AddPictureReview(
+//                navController = navController,
+//                onPhotoTaken = { uri ->
+//                    navController.previousBackStackEntry
+//                        ?.savedStateHandle
+//                        ?.set("photoUri", uri.toString())
+//                    navController.popBackStack()
+//                }
+//            )
+//        }
     }
 }

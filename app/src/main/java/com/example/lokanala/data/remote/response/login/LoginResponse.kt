@@ -1,4 +1,4 @@
-package com.example.lokanala.data.remote.response
+package com.example.lokanala.data.remote.response.login
 
 data class LoginResponse(
     val message: String,
@@ -10,5 +10,7 @@ data class UserData(
     val id_user: Int,
     val nama: String,
     val email: String,
-    val role: String
+    val no_telepon: String,
+    val foto_profile: String?,
+    val tanggal_dibuat: String
 )

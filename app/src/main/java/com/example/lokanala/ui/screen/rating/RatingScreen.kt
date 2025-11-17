@@ -1,5 +1,6 @@
 package com.example.lokanala.ui.screen.rating
 
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,8 +11,8 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -20,6 +21,7 @@ import androidx.navigation.NavController
 import com.example.lokanala.ui.components.AddEditReviewSheetContent
 import com.example.lokanala.ui.components.RatingOverview
 import com.example.lokanala.ui.components.ReviewCard
+import com.example.lokanala.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,15 +30,31 @@ fun RatingScreen(
     viewModel: RatingViewModel = viewModel()
 ) {
     val listState = rememberLazyListState()
-    val showOverview by remember { derivedStateOf { listState.firstVisibleItemIndex == 0 } }
 
     var showBottomSheet by remember { mutableStateOf(false) }
     var isEditing by remember { mutableStateOf(false) }
+    var currentPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val reviews = viewModel.reviews
     val userReview by viewModel.userReview
     val colorScheme = MaterialTheme.colorScheme
+
+    // Handle photo URI dari SavedStateHandle
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val photoUriString by savedStateHandle
+        ?.getStateFlow<String?>("photoUri", null)
+        ?.collectAsState() ?: remember { mutableStateOf(null) }
+
+    // Ketika ada photo URI baru, buka bottom sheet
+    LaunchedEffect(photoUriString) {
+        photoUriString?.let { uriString ->
+            currentPhotoUri = Uri.parse(uriString)
+            showBottomSheet = true
+            // Clear savedStateHandle setelah digunakan
+            savedStateHandle?.set("photoUri", null)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -76,6 +94,7 @@ fun RatingScreen(
                     },
                     onClick = {
                         isEditing = false
+                        currentPhotoUri = null
                         showBottomSheet = true
                     },
                     icon = {
@@ -126,6 +145,7 @@ fun RatingScreen(
                     isUserReview = (review == userReview),
                     onEdit = {
                         isEditing = true
+                        currentPhotoUri = null
                         showBottomSheet = true
                     },
                     onDelete = { viewModel.deleteUserReview() }
@@ -136,7 +156,9 @@ fun RatingScreen(
 
     if (showBottomSheet) {
         ModalBottomSheet(
-            onDismissRequest = { showBottomSheet = false },
+            onDismissRequest = {
+                showBottomSheet = false
+            },
             sheetState = sheetState,
             containerColor = colorScheme.surface,
             tonalElevation = 6.dp,
@@ -144,16 +166,17 @@ fun RatingScreen(
             dragHandle = null
         ) {
             AddEditReviewSheetContent(
+                context = LocalContext.current, // wajib dikirim
+                existingReview = if (isEditing) userReview else null,
                 onDismiss = { showBottomSheet = false },
-                onSubmit = { rating, comment, hasPhoto ->
+                onSubmit = { rating, comment, photoUris ->
                     if (isEditing) {
-                        viewModel.editUserReview(rating, comment, hasPhoto)
+                        viewModel.editUserReview(rating, comment, photoUris)
                     } else {
-                        viewModel.addReview(rating, comment, hasPhoto)
+                        viewModel.addReview(rating, comment, photoUris)
                     }
                     showBottomSheet = false
-                },
-                existingReview = if (isEditing) userReview else null
+                }
             )
         }
     }
