@@ -1,9 +1,9 @@
 package com.example.lokanala.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Star
@@ -15,19 +15,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.model.Product
-import com.example.lokanala.ui.theme.LokanalaTheme
+import com.example.lokanala.data.remote.response.merchant.MerchantProduct
 import com.example.lokanala.ui.theme.StarYellow
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun MenuItemCard(
-    product: Product,
+    product: MerchantProduct, // <-- Ubah tipe data ke model API
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
@@ -40,10 +43,15 @@ fun MenuItemCard(
             .padding(vertical = 12.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 🔹 Gambar Produk
-        Image(
-            painter = painterResource(id = product.imageRes),
-            contentDescription = product.name,
+        // 🔹 Gambar Produk (Menggunakan Coil)
+        AsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(product.gambarUrl)
+                .crossfade(true)
+                .build(),
+            placeholder = painterResource(R.drawable.logo_lokanala), // Siapkan placeholder
+            error = painterResource(R.drawable.logo_lokanala),     // Siapkan error image
+            contentDescription = product.namaProduk,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .size(72.dp)
@@ -58,21 +66,21 @@ fun MenuItemCard(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = product.name,
+                text = product.namaProduk,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 color = colorScheme.onSurface
             )
 
             Text(
-                text = product.description,
+                text = product.deskripsi ?: "Tidak ada deskripsi",
                 fontSize = 13.sp,
                 color = colorScheme.onSurfaceVariant,
                 maxLines = 2
             )
 
             Text(
-                text = product.price,
+                text = formatRupiah(product.harga),
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp,
                 color = colorScheme.primary
@@ -86,8 +94,9 @@ fun MenuItemCard(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
+                // Tampilkan jumlah ulasan dari API
                 Text(
-                    text = "${product.rating} (${product.reviewCount})",
+                    text = "4.5 (${product.jumlahUlasan} ulasan)",
                     fontSize = 13.sp,
                     color = colorScheme.onSurfaceVariant
                 )
@@ -96,7 +105,6 @@ fun MenuItemCard(
 
         Spacer(modifier = Modifier.width(8.dp))
 
-        // 🔹 Ikon Navigasi ke Detail
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
             contentDescription = "Detail",
@@ -106,23 +114,9 @@ fun MenuItemCard(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun MenuItemCardPreview() {
-    LokanalaTheme {
-        MenuItemCard(
-            product = Product(
-                id = 1,
-                name = "Seblak Level 5",
-                description = "Seblak khas Bandung isi kerupuk, sosis, dan seafood pedas nikmat.",
-                price = "Rp 15.000",
-                rating = 4.7,
-                reviewCount = 60,
-                imageRes = R.drawable.img_seblak_level_5,
-                imageResDetail = R.drawable.img_seblak_detail
-            ),
-            modifier = Modifier.padding(16.dp),
-            onClick = {}
-        )
-    }
+// Helper formatting lokal
+private fun formatRupiah(number: Double): String {
+    val localeID = Locale("in", "ID")
+    val format = NumberFormat.getCurrencyInstance(localeID)
+    return format.format(number).replace(",00", "")
 }

@@ -1,57 +1,60 @@
 package com.example.lokanala.data.remote.response.home
 
+import com.google.gson.annotations.SerializedName
+
+// Wrapper utama response
 data class HomeResponse(
+    @SerializedName("success")
     val success: Boolean,
-    val data: List<HomeUMKMItem>
+
+    @SerializedName("message")
+    val message: String,
+
+    @SerializedName("data")
+    val data: List<UmkmItem>
 )
 
-data class HomeUMKMItem(
-    val id_umkm: Int,
-    val id_user: Int,
-    val id_kategori_umkm: Int?,
-    val nama_umkm: String,
+// Detail item UMKM
+data class UmkmItem(
+    @SerializedName("id_umkm")
+    val idUmkm: Int,
+
+    @SerializedName("id_user")
+    val idUser: Int,
+
+    @SerializedName("id_kategori_umkm")
+    val idKategoriUmkm: Int?,
+
+    @SerializedName("nama_umkm")
+    val namaUmkm: String,
+
+    @SerializedName("alamat")
     val alamat: String?,
-    val no_telepon: String?,
+
+    @SerializedName("no_telepon")
+    val noTelepon: String?,
+
+    @SerializedName("deskripsi")
     val deskripsi: String?,
-    val link_lokasi: String?,
-    val tanggal_terdaftar: String?,
-    val user: HomeUser?,
-    val kategori_umkm: HomeKategoriUMKM?,
-    val produk: List<HomeProdukItem>?,
-    val promo: List<HomePromoItem>?
+
+    @SerializedName("link_lokasi")
+    val linkLokasi: String?, // Ini yang akan jadi gambar
+
+    @SerializedName("tanggal_terdaftar")
+    val tanggalTerdaftar: String,
+
+    @SerializedName("kategori_umkm")
+    val kategori: KategoriUmkm?
 )
 
-data class HomeUser(
-    val id_user: Int,
-    val nama: String,
-    val email: String,
-    val no_telepon: String,
-    val foto_profile: String?
-)
+// Detail Kategori
+data class KategoriUmkm(
+    @SerializedName("id_kategori_umkm")
+    val idKategori: Int,
 
-data class HomeKategoriUMKM(
-    val id_kategori_umkm: Int,
-    val nama_kategori: String,
+    @SerializedName("nama_kategori")
+    val namaKategori: String,
+
+    @SerializedName("deskripsi")
     val deskripsi: String?
-)
-
-data class HomeProdukItem(
-    val id_produk: Int,
-    val id_umkm: Int,
-    val id_kategori_produk: Int?,
-    val nama_produk: String,
-    val deskripsi: String?,
-    val harga: Double,
-    val gambar: String?,
-    val tanggal_ditambahkan: String?
-)
-
-data class HomePromoItem(
-    val id_promo: Int,
-    val id_umkm: Int,
-    val nama_promo: String,
-    val deskripsi: String?,
-    val syarat_penggunaan: String?,
-    val tanggal_mulai: String?,
-    val tanggal_berakhir: String?
 )

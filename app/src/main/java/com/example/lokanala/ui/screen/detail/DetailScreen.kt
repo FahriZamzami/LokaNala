@@ -1,6 +1,6 @@
 package com.example.lokanala.ui.screen.detail
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -21,15 +21,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.lokanala.model.Review
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.lokanala.R
+import com.example.lokanala.data.remote.response.product.TopReviewData
 import com.example.lokanala.ui.components.RatingItem
+import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.*
+
+// Definisi Warna Khusus agar sesuai desain (Pink/Merah)
+val PrimaryPink = Color(0xFFD81B60) // Sesuaikan dengan warna di screenshot
+val TextGrey = Color(0xFF757575)
+val StarYellow = Color(0xFFFFC107)
 
 @Composable
 fun DetailScreen(
@@ -38,76 +49,105 @@ fun DetailScreen(
     navController: NavController,
     onBack: () -> Unit
 ) {
-    val product by viewModel.product.collectAsState()
-    val reviews by viewModel.reviews.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val product = uiState.product
 
-    product?.let { p ->
-        Box(modifier = modifier.fillMaxSize()) {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                item {
-                    Image(
-                        painter = painterResource(id = p.imageResDetail),
-                        contentDescription = p.name,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(300.dp)
-                    )
-                }
+    Box(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
 
-                item {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    p.name,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 20.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                RatingChip(p.rating, p.reviewCount)
-                            }
-                            Text(
-                                p.price,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp,
-                                color = MaterialTheme.colorScheme.primary
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (uiState.errorMessage != null) {
+            Text(
+                text = uiState.errorMessage ?: "Error",
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colorScheme.error
+            )
+        } else {
+            // DATA ADA
+            if (product != null) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    // 1. GAMBAR HEADER PRODUK
+                    item {
+                        Box {
+                            AsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(product.gambarUrl)
+                                    .crossfade(true)
+                                    .build(),
+                                placeholder = painterResource(R.drawable.logo_lokanala),
+                                error = painterResource(R.drawable.logo_lokanala),
+                                fallback = painterResource(R.drawable.logo_lokanala),
+                                contentDescription = product.namaProduk,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp) // Tinggi gambar sesuai desain
                             )
                         }
+                    }
 
-                        Spacer(Modifier.height(16.dp))
-                        Divider(color = MaterialTheme.colorScheme.primaryContainer, thickness = 1.dp)
-                        Spacer(Modifier.height(16.dp))
+                    // 2. KONTEN DETAIL (Overlap ke atas)
+                    item {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .offset(y = (-20).dp) // Efek overlap lengkungan
+                                .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(16.dp)
+                        ) {
+                            // Bagian Judul dan Harga
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = product.namaProduk,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    RatingChip(product.rating, product.jumlahUlasan)
+                                }
+                                Text(
+                                    text = viewModel.formatRupiah(product.harga),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 18.sp,
+                                    color = PrimaryPink // Warna Harga Pink
+                                )
+                            }
 
-                        ProductDescription(description = p.description)
+                            Spacer(Modifier.height(16.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 1.dp)
+                            Spacer(Modifier.height(16.dp))
 
-                        Spacer(Modifier.height(16.dp))
-                        Divider(color = MaterialTheme.colorScheme.primaryContainer, thickness = 4.dp)
-                        Spacer(Modifier.height(16.dp))
+                            // Deskripsi Produk
+                            ProductDescription(description = product.deskripsi ?: "Tidak ada deskripsi")
 
-                        RatingSection(reviews = reviews, navController = navController)
+                            Spacer(Modifier.height(16.dp))
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 6.dp) // Divider tebal
+                            Spacer(Modifier.height(16.dp))
+
+                            // Bagian Rating
+                            RatingSection(
+                                productId = product.id,
+                                topReview = product.ulasanTerbaik,
+                                navController = navController
+                            )
+                        }
                     }
                 }
-            }
 
-            DetailTopBar(
-                onBack = onBack,
-                modifier = Modifier.align(Alignment.TopCenter)
-            )
+                // TOP BAR FLOATING
+                DetailTopBar(
+                    onBack = onBack,
+                    modifier = Modifier.align(Alignment.TopCenter)
+                )
+            }
         }
     }
 }
@@ -117,13 +157,15 @@ private fun DetailTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 16.dp)
+            .statusBarsPadding(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         val iconModifier = Modifier
             .clip(CircleShape)
-            .background(Color(0x80000000))
+            .background(Color(0x66000000)) // Transparan Hitam
+
         IconButton(onClick = onBack, modifier = iconModifier) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = Color.White)
         }
@@ -141,15 +183,24 @@ private fun DetailTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
 
 @Composable
 private fun RatingChip(rating: Double, reviewCount: Int) {
-    Surface(shape = RoundedCornerShape(8.dp), color = FilterChipBg) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        border = BorderStroke(0.5.dp, Color.LightGray)
+    ) {
         Row(
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Filled.Star, "Rating", tint = TextGrey, modifier = Modifier.size(16.dp))
+            Icon(
+                Icons.Filled.Star,
+                "Rating",
+                tint = StarYellow, // Warna Bintang Kuning
+                modifier = Modifier.size(16.dp)
+            )
             Spacer(Modifier.width(4.dp))
             Text(
-                "$rating ($reviewCount)",
+                text = "$rating ($reviewCount)",
                 fontSize = 13.sp,
                 color = TextGrey,
                 fontWeight = FontWeight.SemiBold
@@ -162,37 +213,31 @@ private fun RatingChip(rating: Double, reviewCount: Int) {
 private fun ProductDescription(description: String) {
     Column {
         Text(
-            description,
+            text = description,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 20.sp
+            lineHeight = 22.sp
         )
+
         Spacer(Modifier.height(12.dp))
+
+        // Tombol "selengkapnya" di tengah bawah
         Text(
-            "Isian Seblak Khas Bandung:",
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-        Spacer(Modifier.height(4.dp))
-        Column(Modifier.padding(start = 8.dp)) {
-            Text("• Kerupuk", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text("• Sosis", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-            Text("• Seafood", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
-        }
-        Spacer(Modifier.height(16.dp))
-        Text(
-            "selengkapnya",
+            text = "selengkapnya",
             fontSize = 13.sp,
-            color = TextGreyLight,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
+            color = TextGrey,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { /* Expand logic */ },
+            textAlign = TextAlign.Center
         )
     }
 }
 
 @Composable
 private fun RatingSection(
-    reviews: List<Review>,
+    productId: Int,
+    topReview: TopReviewData?,
     navController: NavController
 ) {
     Column {
@@ -202,7 +247,7 @@ private fun RatingSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Rating",
+                text = "Rating", // Sesuai screenshot
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurface
@@ -210,21 +255,27 @@ private fun RatingSection(
             Text(
                 text = "Lihat semua >",
                 fontSize = 13.sp,
-                color = PrimaryPink,
+                color = PrimaryPink, // Warna Pink
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
-                    navController.navigate("rating")
+                    navController.navigate(Screen.Rating.createRoute(productId))
                 }
             )
         }
+
         Spacer(Modifier.height(12.dp))
-        Divider(color = MaterialTheme.colorScheme.primaryContainer, thickness = 1.dp)
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 1.dp)
         Spacer(Modifier.height(16.dp))
 
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            reviews.forEach { review ->
-                RatingItem(review = review)
-            }
+        if (topReview != null) {
+            RatingItem(review = topReview)
+        } else {
+            Text(
+                text = "Belum ada ulasan.",
+                fontSize = 13.sp,
+                color = TextGrey,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
     }
 }

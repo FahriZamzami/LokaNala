@@ -33,7 +33,9 @@ sealed class Screen(val route: String) {
         fun createRoute(id: Int) = "edit_promotion/$id"
     }
 
-    object Rating : Screen("rating")
+    object Rating : Screen("rating/{productId}") {
+        fun createRoute(productId: Int) = "rating/$productId"
+    }
 
     // ⭐ TAMBAHKAN INI - Route untuk kamera review
     object AddPictureReview : Screen("add_picture_review")

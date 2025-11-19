@@ -12,7 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.lokanala.ui.screen.rating.Review
+import com.example.lokanala.data.remote.response.rating.Review
 import kotlin.math.roundToInt
 
 @Composable

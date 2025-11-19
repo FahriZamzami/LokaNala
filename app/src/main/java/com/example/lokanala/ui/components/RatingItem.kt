@@ -1,6 +1,5 @@
 package com.example.lokanala.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -13,18 +12,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.model.Review
+import com.example.lokanala.data.remote.response.product.TopReviewData
 import com.example.lokanala.ui.theme.LokanalaTheme
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
 fun RatingItem(
-    review: Review,
+    review: TopReviewData, // Gunakan model dari API
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -39,9 +43,16 @@ fun RatingItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = review.profilePicRes),
-                contentDescription = review.name,
+            // FOTO PROFIL USER (COIL)
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(review.fotoUserUrl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.logo_lokanala), // Ganti placeholder user
+                error = painterResource(R.drawable.logo_lokanala),
+                fallback = painterResource(R.drawable.logo_lokanala),
+                contentDescription = review.namaUser,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(42.dp)
@@ -52,7 +63,7 @@ fun RatingItem(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = review.name,
+                    text = review.namaUser,
                     style = typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold,
                         color = colorScheme.onSurface
@@ -71,8 +82,9 @@ fun RatingItem(
                 }
             }
 
+            // Format Tanggal (ISO String -> Readable)
             Text(
-                text = review.date,
+                text = formatDate(review.tanggal),
                 style = typography.bodySmall.copy(
                     color = colorScheme.onSurfaceVariant
                 )
@@ -82,7 +94,7 @@ fun RatingItem(
         Spacer(modifier = Modifier.height(6.dp))
 
         Text(
-            text = review.comment,
+            text = review.komentar ?: "",
             style = typography.bodySmall.copy(
                 fontSize = 13.sp,
                 lineHeight = 18.sp,
@@ -93,38 +105,14 @@ fun RatingItem(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun RatingItemPreview() {
-    LokanalaTheme(darkTheme = false) {
-        RatingItem(
-            review = Review(
-                id = 1,
-                name = "Ratna Solihin",
-                rating = 5,
-                date = "10 Oktober 2025",
-                comment = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla sem lectus, mattis eu justo sed, maximus faucibus lectus.",
-                profilePicRes = R.drawable.img_ratna_solihin
-            ),
-            modifier = Modifier.padding(16.dp)
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun RatingItemPreviewDark() {
-    LokanalaTheme(darkTheme = true) {
-        RatingItem(
-            review = Review(
-                id = 1,
-                name = "Ratna Solihin",
-                rating = 4,
-                date = "10 Oktober 2025",
-                comment = "Bagus banget produknya! Tapi pengiriman agak lama.",
-                profilePicRes = R.drawable.img_ratna_solihin
-            ),
-            modifier = Modifier.padding(16.dp)
-        )
+// Helper format tanggal sederhana
+fun formatDate(isoDate: String): String {
+    return try {
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
+        val date = inputFormat.parse(isoDate)
+        outputFormat.format(date ?: "")
+    } catch (e: Exception) {
+        isoDate.take(10) // Fallback ambil 10 karakter pertama saja
     }
 }

@@ -1,11 +1,11 @@
 package com.example.lokanala.ui.navigation
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.lokanala.ui.screen.add_merchant_product.AddProductScreen
 import com.example.lokanala.ui.screen.addumkm.AddUmkmScreen
@@ -25,19 +25,18 @@ import com.example.lokanala.ui.screen.promo_detail.PromoDetailScreen
 import com.example.lokanala.ui.screen.promotion_umkm.MyUMKMPromotionScreen
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
 import com.example.lokanala.ui.screen.rating.RatingScreen
-import com.example.lokanala.ui.screen.rating.RatingViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-//import com.example.lokanala.ui.screen.rating.AddPictureReview
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    // PromotionViewModel dibiarkan di sini jika ingin dishare antar screen promosi
     val promotionViewModel: PromotionViewModel = viewModel()
-    val ratingViewModel: RatingViewModel = viewModel()
+
+    // HAPUS: val ratingViewModel: RatingViewModel = viewModel()
+    // Kita hapus agar RatingViewModel dibuat ulang setiap kali masuk halaman Rating
+    // supaya bisa menangkap productId terbaru.
 
     AnimatedNavHost(
         navController = navController,
@@ -140,12 +139,19 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(Screen.Rating.route) {
+        // --- PERBAIKAN DI SINI ---
+        composable(
+            route = Screen.Rating.route, // "rating/{productId}"
+            arguments = listOf(navArgument("productId") { type = NavType.IntType })
+        ) {
+            // Jangan oper viewModel dari luar.
+            // Biarkan RatingScreen membuat ViewModel-nya sendiri agar mendapat SavedStateHandle yang benar.
             RatingScreen(
-                navController = navController,
-                viewModel = ratingViewModel
+                navController = navController
+                // viewModel akan diinisialisasi otomatis oleh RatingScreen
             )
         }
+        // -------------------------
 
         composable(Screen.Promo.route) {
             PromoScreen(
@@ -183,17 +189,5 @@ fun AppNavGraph(navController: NavHostController) {
                 navController = navController
             )
         }
-
-//        composable(Screen.AddPictureReview.route) {
-//            AddPictureReview(
-//                navController = navController,
-//                onPhotoTaken = { uri ->
-//                    navController.previousBackStackEntry
-//                        ?.savedStateHandle
-//                        ?.set("photoUri", uri.toString())
-//                    navController.popBackStack()
-//                }
-//            )
-//        }
     }
 }

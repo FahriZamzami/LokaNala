@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,6 +38,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     navController: NavController
 ) {
+    // Mengambil state dari ViewModel (termasuk list data, loading, dan error)
     val uiState by viewModel.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
 
@@ -46,10 +48,10 @@ fun HomeScreen(
             .background(colorScheme.background)
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // 1. Bagian Atas (TopBar, Search, Filter) selalu tampil
             HomeTopBar(navController = navController)
 
             Column(
@@ -60,23 +62,69 @@ fun HomeScreen(
                 FilterChips()
             }
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp)
+            // 2. Bagian Konten (Grid / Loading / Error)
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.TopCenter
             ) {
-                items(uiState.umkmList ?: emptyList(), key = { it.id }) { umkm ->
-                    UmkmCard(
-                        umkm = umkm,
-                        onClick = {
-                            navController.navigate(Screen.Merchant.createRoute(umkm.id.toLong()))
+                when {
+                    // KONDISI A: Sedang Loading
+                    uiState.isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier
+                                .padding(top = 50.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
+
+                    // KONDISI B: Ada Error (Misal koneksi gagal)
+                    uiState.errorMessage != null -> {
+                        Text(
+                            text = uiState.errorMessage ?: "Terjadi kesalahan",
+                            color = colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(top = 50.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
+
+                    // KONDISI C: Data Kosong tapi sukses
+                    uiState.umkmList.isEmpty() -> {
+                        Text(
+                            text = "Belum ada data UMKM",
+                            color = colorScheme.onSurfaceVariant,
+                            modifier = Modifier
+                                .padding(top = 50.dp)
+                                .align(Alignment.Center)
+                        )
+                    }
+
+                    // KONDISI D: Tampilkan Data
+                    else -> {
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(2),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            // Tambahkan padding bottom extra agar konten terbawah tidak tertutup BottomBar
+                            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp),
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(uiState.umkmList, key = { it.id }) { umkm ->
+                                UmkmCard(
+                                    umkm = umkm,
+                                    onClick = {
+                                        navController.navigate(Screen.Merchant.createRoute(umkm.id.toLong()))
+                                    }
+                                )
+                            }
                         }
-                    )
+                    }
                 }
             }
         }
 
+        // 3. Bottom Navigation Bar (Paling bawah, di atas konten lain)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -91,6 +139,8 @@ fun HomeScreen(
         }
     }
 }
+
+// --- Components lainnya tetap sama ---
 
 @Composable
 private fun HomeTopBar(

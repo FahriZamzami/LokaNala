@@ -2,49 +2,65 @@ package com.example.lokanala.data.remote.retrofit
 
 import com.example.lokanala.data.remote.response.login.LoginRequest
 import com.example.lokanala.data.remote.response.login.LoginResponse
-import com.example.lokanala.data.remote.response.RatingRequest
-import com.example.lokanala.data.remote.response.RatingResponse
 import com.example.lokanala.data.remote.response.home.HomeResponse
+import com.example.lokanala.data.remote.response.merchant.MerchantResponse
+import com.example.lokanala.data.remote.response.product.ProductDetailResponse
+import com.example.lokanala.data.remote.response.rating.AddReviewResponse
+import com.example.lokanala.data.remote.response.rating.ReviewListResponse
+// UpdateReviewRequest tidak lagi dibutuhkan di sini karena kita ganti jadi Multipart
+
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.*
 
 interface ApiService {
 
-    // -------------------- USER -------------------- //
+    // ... (Login User tetap sama) ...
     @POST("user/login")
-    suspend fun loginUser(
-        @Body request: LoginRequest
-    ): Response<LoginResponse>
+    suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
 
-    // -------------------- RATING -------------------- //
+    // -------------------- RATING / ULASAN -------------------- //
+
     @GET("rating/{id_produk}")
-    suspend fun getRatingByProduct(
+    fun getRatingByProduct(
         @Path("id_produk") idProduk: Int
-    ): Response<List<RatingResponse>>
+    ): Call<ReviewListResponse>
 
+    // 1. POST Tambah Ulasan (UBAH JADI LIST)
+    @Multipart
     @POST("rating")
-    suspend fun addRating(
-        @Body request: RatingRequest
-    ): Response<RatingResponse>
+    fun addRating(
+        @Part("id_produk") idProduk: RequestBody,
+        @Part("id_user") idUser: RequestBody,
+        @Part("nilai_rating") rating: RequestBody,
+        @Part("komentar") komentar: RequestBody,
+        @Part foto: List<MultipartBody.Part> // <--- PERBAIKAN: Ubah menjadi List
+    ): Call<AddReviewResponse>
 
+    // 2. PUT Update Ulasan (Sudah List, biarkan)
+    @Multipart
     @PUT("rating/{id_rating}")
-    suspend fun updateRating(
+    fun updateRating(
         @Path("id_rating") idRating: Int,
-        @Body request: RatingRequest
-    ): Response<RatingResponse>
-
+        @Part("nilai_rating") rating: RequestBody,
+        @Part("komentar") komentar: RequestBody,
+        @Part keep_photos: List<MultipartBody.Part>,
+        @Part foto: List<MultipartBody.Part> // List file baru
+    ): Call<AddReviewResponse>
     @DELETE("rating/{id_rating}")
-    suspend fun deleteRating(
+    fun deleteRating(
         @Path("id_rating") idRating: Int
-    ): Response<Unit>
+    ): Call<Unit>
 
-    // -------------------- UMKM -------------------- //
-    /**
-     * GET semua UMKM (wrapper success + data)
-     * Sesuai response controller:
-     * { success: true, data: [...] }
-     */
+    // ... (Endpoint UMKM, Merchant, Product tetap sama) ...
     @GET("umkm")
-    suspend fun getAllUMKM(
-    ): Response<HomeResponse>
+    fun getAllUmkm(): Call<HomeResponse>
+
+    @GET("merchant/{id}")
+    fun getMerchantDetail(@Path("id") id: Long): Call<MerchantResponse>
+
+    @GET("produk/{id}")
+    fun getProductDetail(@Path("id") id: Int): Call<ProductDetailResponse>
 }
