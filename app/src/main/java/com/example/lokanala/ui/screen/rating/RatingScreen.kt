@@ -1,6 +1,5 @@
 package com.example.lokanala.ui.screen.rating
 
-import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -23,30 +22,46 @@ import com.example.lokanala.data.remote.response.rating.Review
 import com.example.lokanala.ui.components.AddEditReviewSheetContent
 import com.example.lokanala.ui.components.RatingOverview
 import com.example.lokanala.ui.components.ReviewCard
+import com.example.lokanala.ui.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RatingScreen(
-    navController: NavController,
-    viewModel: RatingViewModel = viewModel()
+    navController: NavController
 ) {
-    val listState = rememberLazyListState()
     val context = LocalContext.current
+    val viewModel: RatingViewModel = viewModel(
+        factory = ViewModelFactory.getInstance(context)
+    )
+
+    val listState = rememberLazyListState()
+    val reviews = viewModel.reviews
+    val isLoading by viewModel.isLoading.collectAsState()
+    val currentUserId by viewModel.currentUserId.collectAsState()
+
+    // -----------------------------------------------------------------
+    // 1. LOGIKA SORTING: USER SENDIRI PALING ATAS
+    // -----------------------------------------------------------------
+    val sortedReviews by remember {
+        derivedStateOf {
+            // Mengurutkan: Jika userId == currentUserId (True), taruh di atas
+            reviews.sortedByDescending { it.userId == currentUserId }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // 2. LOGIKA TOMBOL TAMBAH (Menggunakan derivedStateOf agar reaktif)
+    // -----------------------------------------------------------------
+    val hasReviewed by remember {
+        derivedStateOf {
+            reviews.any { it.userId == currentUserId }
+        }
+    }
 
     var showBottomSheet by remember { mutableStateOf(false) }
-    // State untuk Edit Mode
     var isEditing by remember { mutableStateOf(false) }
     var reviewToEdit by remember { mutableStateOf<Review?>(null) }
-
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-
-    // Ambil data dari ViewModel
-    val reviews: List<Review> = viewModel.reviews
-    val isLoading by viewModel.isLoading.collectAsState()
-
-    // 1. Cek apakah user sudah review?
-    // Pastikan Review.kt punya property 'isUserReview' (Boolean)
-    val userReview = reviews.find { review -> review.isUserReview }
 
     Scaffold(
         topBar = {
@@ -60,8 +75,7 @@ fun RatingScreen(
             )
         },
         floatingActionButton = {
-            // 2. TOMBOL HANYA MUNCUL JIKA BELUM ADA REVIEW
-            if (userReview == null && !isLoading) {
+            if (!isLoading && !hasReviewed && currentUserId != -1) {
                 ExtendedFloatingActionButton(
                     text = { Text("Tulis Ulasan", fontWeight = FontWeight.SemiBold) },
                     onClick = {
@@ -104,19 +118,25 @@ fun RatingScreen(
                     )
                 }
 
-                items(items = reviews, key = { review -> review.id }) { review ->
+                // 3. GUNAKAN 'sortedReviews' DI SINI, BUKAN 'reviews'
+                items(items = sortedReviews, key = { it.id }) { review ->
+
+                    val isMyReview = (review.userId == currentUserId)
+
                     ReviewCard(
                         review = review,
-                        isUserReview = review.isUserReview,
+                        isUserReview = isMyReview,
                         onEdit = {
-                            // 3. Event Edit
-                            isEditing = true
-                            reviewToEdit = review
-                            showBottomSheet = true
+                            if (isMyReview) {
+                                isEditing = true
+                                reviewToEdit = review
+                                showBottomSheet = true
+                            }
                         },
                         onDelete = {
-                            // 4. Event Delete
-                            viewModel.deleteUserReview(review.id)
+                            if (isMyReview) {
+                                viewModel.deleteUserReview(review.id)
+                            }
                         }
                     )
                 }
@@ -128,29 +148,18 @@ fun RatingScreen(
         ModalBottomSheet(
             onDismissRequest = { showBottomSheet = false },
             sheetState = sheetState,
-            shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
             containerColor = MaterialTheme.colorScheme.surface
         ) {
             AddEditReviewSheetContent(
                 context = context,
                 existingReview = if (isEditing) reviewToEdit else null,
                 onDismiss = { showBottomSheet = false },
-                onSubmit = { rating, comment, photoUris -> // <-- photoUris didapat dari sini
-
+                onSubmit = { rating, comment, photoUris ->
                     if (isEditing && reviewToEdit != null) {
-                        // JIKA EDIT
-                        viewModel.updateReview(
-                            context = context,
-                            reviewId = reviewToEdit!!.id,
-                            rating = rating,
-                            comment = comment,
-                            photoUris = photoUris // <--- TAMBAHKAN BARIS INI
-                        )
+                        viewModel.updateReview(context, reviewToEdit!!.id, rating, comment, photoUris)
                     } else {
-                        // JIKA BARU
                         viewModel.addReview(context, rating, comment, photoUris)
                     }
-
                     showBottomSheet = false
                 }
             )

@@ -9,6 +9,9 @@ data class Product(
     val price: String,
     val rating: Double,
     val reviewCount: Int,
-    @DrawableRes val imageRes: Int,
-    @DrawableRes val imageResDetail: Int
+    val categoryName: String,
+    @DrawableRes val imageRes: Int? = null,
+    val imageUri: String? = null,
+    @DrawableRes val imageResDetail: Int? = null,
+    val imageDetailUri: String? = null
 )

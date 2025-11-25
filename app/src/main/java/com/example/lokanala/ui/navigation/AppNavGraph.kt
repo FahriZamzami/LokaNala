@@ -10,6 +10,8 @@ import androidx.navigation.navArgument
 import com.example.lokanala.ui.screen.add_merchant_product.AddProductScreen
 import com.example.lokanala.ui.screen.addumkm.AddUmkmScreen
 import com.example.lokanala.ui.screen.add_promotion_umkm.AddPromotionScreen
+import com.example.lokanala.ui.screen.category.CategoryScreen
+import com.example.lokanala.ui.screen.category.CategoryViewModel
 import com.example.lokanala.ui.screen.detail.DetailScreen
 import com.example.lokanala.ui.screen.detail.UmkmDetailScreen
 import com.example.lokanala.ui.screen.edit_promotion_umkm.EditPromotionScreen
@@ -17,6 +19,7 @@ import com.example.lokanala.ui.screen.home.HomeScreen
 import com.example.lokanala.ui.screen.login.LoginScreen
 import com.example.lokanala.ui.screen.merchant.MerchantScreen
 import com.example.lokanala.ui.screen.my_merchant.MyMerchantScreen
+import com.example.lokanala.ui.screen.my_merchant.MyMerchantViewModel
 import com.example.lokanala.ui.screen.myumkm.MyUmkmScreen
 import com.example.lokanala.ui.screen.notification.NotificationScreen
 import com.example.lokanala.ui.screen.profile.ProfileScreen
@@ -33,6 +36,8 @@ import com.google.accompanist.navigation.animation.composable
 fun AppNavGraph(navController: NavHostController) {
     // PromotionViewModel dibiarkan di sini jika ingin dishare antar screen promosi
     val promotionViewModel: PromotionViewModel = viewModel()
+    val categoryViewModel: CategoryViewModel = viewModel()
+    val myMerchantViewModel: MyMerchantViewModel = viewModel()
 
     // HAPUS: val ratingViewModel: RatingViewModel = viewModel()
     // Kita hapus agar RatingViewModel dibuat ulang setiap kali masuk halaman Rating
@@ -98,7 +103,9 @@ fun AppNavGraph(navController: NavHostController) {
             val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
             MyMerchantScreen(
                 navController = navController,
-                umkmId = umkmId
+                umkmId = umkmId,
+                viewModel = myMerchantViewModel, // <-- Berikan ViewModel
+                categoryViewModel = categoryViewModel
             )
         }
 
@@ -109,7 +116,9 @@ fun AppNavGraph(navController: NavHostController) {
             val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
             AddProductScreen(
                 navController = navController,
-                umkmId = umkmId
+                umkmId = umkmId,
+                categoryViewModel = categoryViewModel, // <-- Berikan CategoryViewModel
+                myMerchantViewModel = myMerchantViewModel // <-- Berikan MyMerchantViewModel
             )
         }
 
@@ -187,6 +196,18 @@ fun AppNavGraph(navController: NavHostController) {
             UmkmDetailScreen(
                 umkmId = umkmId,
                 navController = navController
+            )
+        }
+
+        composable(
+            route = Screen.Category.route,
+            arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
+            CategoryScreen(
+                navController = navController,
+                umkmId = umkmId,
+                viewModel = categoryViewModel
             )
         }
     }

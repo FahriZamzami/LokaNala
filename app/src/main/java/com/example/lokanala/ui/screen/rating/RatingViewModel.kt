@@ -8,13 +8,20 @@ import android.webkit.MimeTypeMap
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.lokanala.data.remote.response.rating.AddReviewResponse
 import com.example.lokanala.data.remote.response.rating.Review
 import com.example.lokanala.data.remote.response.rating.ReviewListResponse
-import com.example.lokanala.data.remote.response.rating.UpdateReviewRequest
 import com.example.lokanala.data.remote.retrofit.ApiClient
+
+// Pastikan import ini sesuai lokasi file Anda
+import com.example.lokanala.data.pref.UserPreference
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
@@ -28,11 +35,18 @@ import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class RatingViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
+// Constructor menerima UserPreference -> Butuh Factory
+class RatingViewModel(
+    savedStateHandle: SavedStateHandle,
+    private val userPreference: UserPreference
+) : ViewModel() {
 
     private val TAG = "RATING_DEBUG"
     private val productId: Int = savedStateHandle.get<Int>("productId") ?: -1
-    private val currentUserId = 1
+
+    // Default -1
+    private val _currentUserId = MutableStateFlow(-1)
+    val currentUserId: StateFlow<Int> = _currentUserId.asStateFlow()
 
     private val _reviews = mutableStateListOf<Review>()
     val reviews: List<Review> get() = _reviews
@@ -41,195 +55,141 @@ class RatingViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
-        Log.d(TAG, "INIT ViewModel. Product ID: $productId")
-        if (productId != -1) {
-            loadReviews()
-        } else {
-            Log.e(TAG, "ERROR: ID Produk Tidak Valid (-1). Cek Navigasi!")
+        // Otomatis ambil ID dan load data saat ViewModel dibuat
+        getRealUserAndLoadData()
+    }
+
+    private fun getRealUserAndLoadData() {
+        viewModelScope.launch {
+            try {
+                // 1. Ambil ID User dulu
+                val userModel = userPreference.getSession().first()
+                _currentUserId.value = userModel.idUser
+
+                Log.d(TAG, "User Login ID: ${_currentUserId.value}")
+
+                // 2. Baru load review setelah ID didapat
+                if (productId != -1) {
+                    loadReviews()
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal ambil sesi user: ${e.message}")
+            }
         }
     }
 
     fun loadReviews() {
         _isLoading.value = true
-        val client = ApiClient.instance.getRatingByProduct(productId)
-
-        client.enqueue(object : Callback<ReviewListResponse> {
+        ApiClient.instance.getRatingByProduct(productId).enqueue(object : Callback<ReviewListResponse> {
             override fun onResponse(call: Call<ReviewListResponse>, response: Response<ReviewListResponse>) {
                 _isLoading.value = false
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    val apiData = body?.data ?: emptyList()
+                    val apiData = response.body()?.data ?: emptyList()
+                    val myId = _currentUserId.value
 
                     val uiReviews = apiData.map { apiItem ->
                         val reviewUserId = apiItem.user?.idUser ?: -1
                         Review(
                             id = apiItem.idRating,
-                            name = apiItem.user?.nama ?: "User Tanpa Nama",
+                            userId = reviewUserId,
+                            name = apiItem.user?.nama ?: "User",
                             date = formatDateHelper(apiItem.tanggal ?: ""),
                             rating = apiItem.rating,
                             comment = apiItem.komentar ?: "",
                             photoUrl = apiItem.fotoUrl,
                             profilePicUrl = apiItem.user?.fotoProfile,
-                            isUserReview = (reviewUserId == currentUserId)
+                            // LOGIKA UTAMA: Cek apakah review ini milik user yang login
+                            isUserReview = (reviewUserId == myId)
                         )
                     }
                     _reviews.clear()
                     _reviews.addAll(uiReviews)
-                } else {
-                    Log.e(TAG, "Gagal Load: ${response.message()}")
                 }
             }
             override fun onFailure(call: Call<ReviewListResponse>, t: Throwable) {
                 _isLoading.value = false
-                Log.e(TAG, "Error Koneksi Load: ${t.message}")
             }
         })
     }
 
-    // --- 1. TAMBAH REVIEW (Fixed List Input) ---
+    // --- Add, Update, Delete Tetap Sama ---
     fun addReview(context: Context, rating: Int, comment: String, photoUris: List<Uri>) {
         _isLoading.value = true
-
+        val idUserBody = _currentUserId.value.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val idProdukBody = productId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
-        val idUserBody = currentUserId.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val ratingBody = rating.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val commentBody = comment.toRequestBody("text/plain".toMediaTypeOrNull())
+        val imagePartsList = photoUris.map { uri -> prepareFilePart(context, uri, "foto") }
 
-        // Mengubah list URI menjadi List<MultipartBody.Part>
-        val imagePartsList = photoUris.map { uri ->
-            val mimeType = getMimeType(context, uri)
-            val extension = getExtension(context, uri)
-            val file = uriToFile(uri, context, extension)
-            val reqFile = file.asRequestBody((mimeType ?: "image/*").toMediaTypeOrNull())
-            val filename = "upload_${System.currentTimeMillis()}.$extension"
-            // Penting: Key harus "foto"
-            MultipartBody.Part.createFormData("foto", filename, reqFile)
-        }
-
-        // PENTING: Jika ApiService.addRating expect List<MultipartBody.Part>, harus dikirim List
         ApiClient.instance.addRating(idProdukBody, idUserBody, ratingBody, commentBody, imagePartsList)
             .enqueue(object : Callback<AddReviewResponse> {
                 override fun onResponse(call: Call<AddReviewResponse>, response: Response<AddReviewResponse>) {
                     _isLoading.value = false
-                    if (response.isSuccessful && response.body()?.success == true) {
-                        Log.d(TAG, "Sukses Tambah!")
-                        loadReviews()
-                    } else {
-                        Log.e(TAG, "Gagal Tambah: ${response.code()} ${response.message()}")
-                    }
+                    if (response.isSuccessful && response.body()?.success == true) loadReviews()
                 }
-                override fun onFailure(call: Call<AddReviewResponse>, t: Throwable) {
-                    _isLoading.value = false
-                    Log.e(TAG, "Error Tambah: ${t.message}")
-                }
+                override fun onFailure(call: Call<AddReviewResponse>, t: Throwable) { _isLoading.value = false }
             })
     }
 
-    // --- 2. UPDATE REVIEW (Fixed Multipart List Logic) ---
     fun updateReview(context: Context, reviewId: Int, rating: Int, comment: String, photoUris: List<Uri>) {
         _isLoading.value = true
-        Log.d(TAG, "Updating Review ID: $reviewId")
-
+        val idUserBody = _currentUserId.value.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val ratingBody = rating.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val commentBody = comment.toRequestBody("text/plain".toMediaTypeOrNull())
-
         val keptPhotoParts = ArrayList<MultipartBody.Part>()
         val newImageParts = ArrayList<MultipartBody.Part>()
 
-        // 1. Pisahkan dan Proses URI
         photoUris.forEach { uri ->
-            if (uri.scheme == "http" || uri.scheme == "https") {
-                // FOTO LAMA (URL Server) -> Kirim sebagai text part 'keep_photos'
+            if (uri.toString().startsWith("http")) {
                 val filename = uri.toString().substringAfterLast("/")
-                keptPhotoParts.add(
-                    MultipartBody.Part.createFormData("keep_photos", filename)
-                )
+                keptPhotoParts.add(MultipartBody.Part.createFormData("keep_photos", filename))
             } else {
-                // FOTO BARU (URI Lokal) -> Kirim sebagai file part 'foto'
-                val mimeType = getMimeType(context, uri)
-                val extension = getExtension(context, uri)
-                val file = uriToFile(uri, context, extension)
-
-                val reqFile = file.asRequestBody((mimeType ?: "image/*").toMediaTypeOrNull())
-                val filename = "update_${System.currentTimeMillis()}.$extension"
-                newImageParts.add(MultipartBody.Part.createFormData("foto", filename, reqFile))
+                newImageParts.add(prepareFilePart(context, uri, "foto"))
             }
         }
 
-        // Panggil endpoint Multipart
-        // Note: ApiService harus diubah untuk menerima List<MultipartBody.Part> untuk 'foto' dan 'keep_photos'
-        ApiClient.instance.updateRating(reviewId, ratingBody, commentBody, keptPhotoParts, newImageParts)
+        ApiClient.instance.updateRating(reviewId, idUserBody, ratingBody, commentBody, keptPhotoParts, newImageParts)
             .enqueue(object : Callback<AddReviewResponse> {
                 override fun onResponse(call: Call<AddReviewResponse>, response: Response<AddReviewResponse>) {
                     _isLoading.value = false
-                    if (response.isSuccessful) {
-                        Log.d(TAG, "Sukses Update!")
-                        loadReviews()
-                    } else {
-                        Log.e(TAG, "Gagal Update: ${response.code()}")
-                    }
+                    if (response.isSuccessful) loadReviews()
                 }
-                override fun onFailure(call: Call<AddReviewResponse>, t: Throwable) {
-                    _isLoading.value = false
-                    Log.e(TAG, "Error Update: ${t.message}")
-                }
+                override fun onFailure(call: Call<AddReviewResponse>, t: Throwable) { _isLoading.value = false }
             })
     }
 
-    // --- 3. DELETE REVIEW ---
     fun deleteUserReview(reviewId: Int) {
         _isLoading.value = true
-        ApiClient.instance.deleteRating(reviewId).enqueue(object : Callback<Unit> {
+        ApiClient.instance.deleteRating(reviewId, _currentUserId.value).enqueue(object : Callback<Unit> {
             override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                 _isLoading.value = false
-                if (response.isSuccessful) {
-                    _reviews.removeAll { it.id == reviewId }
-                }
+                if (response.isSuccessful) _reviews.removeAll { it.id == reviewId }
             }
-            override fun onFailure(call: Call<Unit>, t: Throwable) {
-                _isLoading.value = false
-            }
+            override fun onFailure(call: Call<Unit>, t: Throwable) { _isLoading.value = false }
         })
     }
 
-    // --- HELPER FUNCTIONS ---
-
+    // Helpers
+    private fun prepareFilePart(context: Context, uri: Uri, name: String): MultipartBody.Part {
+        val extension = getExtension(context, uri)
+        val file = uriToFile(uri, context, extension)
+        val mime = getMimeType(context, uri) ?: "image/*"
+        val reqFile = file.asRequestBody(mime.toMediaTypeOrNull())
+        val filename = "img_${System.currentTimeMillis()}.$extension"
+        return MultipartBody.Part.createFormData(name, filename, reqFile)
+    }
     private fun getExtension(context: Context, uri: Uri): String {
-        return if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-            val mime = MimeTypeMap.getSingleton()
-            mime.getExtensionFromMimeType(context.contentResolver.getType(uri)) ?: "jpg"
-        } else {
-            MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(File(uri.path ?: "")).toString()) ?: "jpg"
-        }
+        return if (uri.scheme == ContentResolver.SCHEME_CONTENT) MimeTypeMap.getSingleton().getExtensionFromMimeType(context.contentResolver.getType(uri)) ?: "jpg" else MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(File(uri.path ?: "")).toString()) ?: "jpg"
     }
-
     private fun getMimeType(context: Context, uri: Uri): String? {
-        return if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-            context.contentResolver.getType(uri)
-        } else {
-            val extension = MimeTypeMap.getFileExtensionFromUrl(uri.toString())
-            MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension.lowercase())
-        }
+        return if (uri.scheme == ContentResolver.SCHEME_CONTENT) context.contentResolver.getType(uri) else MimeTypeMap.getSingleton().getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(uri.toString()))
     }
-
     private fun uriToFile(uri: Uri, context: Context, extension: String = "jpg"): File {
         val myFile = File.createTempFile("IMG_", ".$extension", context.cacheDir)
-        val inputStream = context.contentResolver.openInputStream(uri) as InputStream
-        val outputStream = FileOutputStream(myFile)
-        inputStream.copyTo(outputStream)
-        inputStream.close()
-        outputStream.close()
+        context.contentResolver.openInputStream(uri)?.use { input -> FileOutputStream(myFile).use { output -> input.copyTo(output) } }
         return myFile
     }
-
     private fun formatDateHelper(isoDate: String): String {
-        return try {
-            val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-            val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
-            val date = inputFormat.parse(isoDate)
-            outputFormat.format(date ?: "")
-        } catch (e: Exception) {
-            isoDate.take(10)
-        }
+        return try { SimpleDateFormat("dd MMM yyyy", Locale("id", "ID")).format(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).parse(isoDate)!!) } catch (e: Exception) { isoDate.take(10) }
     }
 }

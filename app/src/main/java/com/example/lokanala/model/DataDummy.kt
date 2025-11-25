@@ -11,6 +11,7 @@ val dummyProducts = listOf(
         price = "Rp 15.000",
         rating = 4.7,
         reviewCount = 60,
+        categoryName = "Makanan",
         imageRes = R.drawable.img_seblak_level_5,
         imageResDetail = R.drawable.img_seblak_detail
     ),
@@ -21,6 +22,7 @@ val dummyProducts = listOf(
         price = "Rp 17.000",
         rating = 4.6,
         reviewCount = 75,
+        categoryName = "Makanan",
         imageRes = R.drawable.img_spesial_komplit,
         imageResDetail = R.drawable.img_spesial_komplit
     ),
@@ -31,6 +33,7 @@ val dummyProducts = listOf(
         price = "Rp 20.000",
         rating = 4.5,
         reviewCount = 70,
+        categoryName = "Makanan",
         imageRes = R.drawable.img_seblak_ceker,
         imageResDetail = R.drawable.img_seblak_ceker
     )

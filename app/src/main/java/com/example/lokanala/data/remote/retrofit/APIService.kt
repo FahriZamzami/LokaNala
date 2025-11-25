@@ -28,7 +28,7 @@ interface ApiService {
         @Path("id_produk") idProduk: Int
     ): Call<ReviewListResponse>
 
-    // 1. POST Tambah Ulasan (UBAH JADI LIST)
+    // 1. POST Tambah Ulasan
     @Multipart
     @POST("rating")
     fun addRating(
@@ -36,22 +36,28 @@ interface ApiService {
         @Part("id_user") idUser: RequestBody,
         @Part("nilai_rating") rating: RequestBody,
         @Part("komentar") komentar: RequestBody,
-        @Part foto: List<MultipartBody.Part> // <--- PERBAIKAN: Ubah menjadi List
+        @Part foto: List<MultipartBody.Part>
     ): Call<AddReviewResponse>
 
-    // 2. PUT Update Ulasan (Sudah List, biarkan)
+    // 2. PUT Update Ulasan
     @Multipart
     @PUT("rating/{id_rating}")
     fun updateRating(
         @Path("id_rating") idRating: Int,
+        // TAMBAHKAN INI: Backend butuh id_user untuk validasi kepemilikan
+        @Part("id_user") idUser: RequestBody,
         @Part("nilai_rating") rating: RequestBody,
         @Part("komentar") komentar: RequestBody,
         @Part keep_photos: List<MultipartBody.Part>,
-        @Part foto: List<MultipartBody.Part> // List file baru
+        @Part foto: List<MultipartBody.Part>
     ): Call<AddReviewResponse>
+
+    // 3. DELETE Hapus Ulasan
+    // Gunakan @Query agar URL menjadi: /rating/123?id_user=5
     @DELETE("rating/{id_rating}")
     fun deleteRating(
-        @Path("id_rating") idRating: Int
+        @Path("id_rating") idRating: Int,
+        @Query("id_user") idUser: Int // <--- TAMBAHKAN INI
     ): Call<Unit>
 
     // ... (Endpoint UMKM, Merchant, Product tetap sama) ...

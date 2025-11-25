@@ -5,6 +5,7 @@ import android.net.Uri
 //RatingRequest
 data class Review(
     val id: Int = 0, // Default 0 agar aman saat inisialisasi data baru
+    val userId: Int = 0,
     val name: String = "",
     val date: String = "",
     val rating: Int = 0,

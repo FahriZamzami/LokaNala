@@ -1,6 +1,5 @@
 package com.example.lokanala.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -14,10 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.lokanala.R
 import com.example.lokanala.model.Product
 import com.example.lokanala.ui.theme.StarYellow
@@ -47,8 +46,8 @@ fun MyMenuItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = product.imageRes),
+            AsyncImage(
+                model = product.imageUri ?: product.imageRes, // Gunakan URI jika ada, jika tidak, gunakan Res
                 contentDescription = product.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
