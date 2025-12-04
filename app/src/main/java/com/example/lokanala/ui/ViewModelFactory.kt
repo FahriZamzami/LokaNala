@@ -8,25 +8,29 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.lokanala.data.pref.UserPreference
 import com.example.lokanala.data.pref.dataStore
 import com.example.lokanala.ui.screen.login.LoginViewModel
+import com.example.lokanala.ui.screen.myumkm.MyUmkmViewModel
 import com.example.lokanala.ui.screen.rating.RatingViewModel
 
-class ViewModelFactory(private val userPreference: UserPreference) : ViewModelProvider.NewInstanceFactory() {
+class ViewModelFactory(private val pref: UserPreference) : ViewModelProvider.NewInstanceFactory() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
 
-        // 1. UNTUK RATING VIEW MODEL (Butuh SavedStateHandle & UserPreference)
+        // 1. MyUmkmViewModel
+        if (modelClass.isAssignableFrom(MyUmkmViewModel::class.java)) {
+            return MyUmkmViewModel(pref) as T
+        }
+
+        // 2. LoginViewModel
+        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
+            return LoginViewModel(pref) as T
+        }
+
+        // 3. RatingViewModel (Butuh SavedStateHandle)
         if (modelClass.isAssignableFrom(RatingViewModel::class.java)) {
             val savedStateHandle = extras.createSavedStateHandle()
-            return RatingViewModel(savedStateHandle, userPreference) as T
+            return RatingViewModel(savedStateHandle, pref) as T
         }
-
-        // 2. UNTUK LOGIN VIEW MODEL (Butuh UserPreference untuk simpan sesi)
-        if (modelClass.isAssignableFrom(LoginViewModel::class.java)) {
-            return LoginViewModel(userPreference) as T
-        }
-
-        // Tambahkan blok 'if' lain di sini jika ada ViewModel lain (misal HomeViewModel)
 
         throw IllegalArgumentException("Unknown ViewModel class: " + modelClass.name)
     }
@@ -37,9 +41,8 @@ class ViewModelFactory(private val userPreference: UserPreference) : ViewModelPr
 
         fun getInstance(context: Context): ViewModelFactory {
             return INSTANCE ?: synchronized(this) {
-                // Mengambil instance UserPreference yang terhubung dengan DataStore
+                // Pastikan import UserPreference berasal dari com.example.lokanala.data.pref
                 val pref = UserPreference.getInstance(context.dataStore)
-
                 INSTANCE ?: ViewModelFactory(pref).also { INSTANCE = it }
             }
         }
