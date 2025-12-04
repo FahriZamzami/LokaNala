@@ -34,10 +34,14 @@ import com.google.accompanist.navigation.animation.composable
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    // ViewModel instances
+    // PromotionViewModel dibiarkan di sini jika ingin dishare antar screen promosi
     val promotionViewModel: PromotionViewModel = viewModel()
     val categoryViewModel: CategoryViewModel = viewModel()
     val myMerchantViewModel: MyMerchantViewModel = viewModel()
+
+    // HAPUS: val ratingViewModel: RatingViewModel = viewModel()
+    // Kita hapus agar RatingViewModel dibuat ulang setiap kali masuk halaman Rating
+    // supaya bisa menangkap productId terbaru.
 
     AnimatedNavHost(
         navController = navController,
@@ -100,7 +104,8 @@ fun AppNavGraph(navController: NavHostController) {
             MyMerchantScreen(
                 navController = navController,
                 umkmId = umkmId,
-                viewModel = myMerchantViewModel
+                viewModel = myMerchantViewModel, // <-- Berikan ViewModel
+                categoryViewModel = categoryViewModel
             )
         }
 
@@ -112,8 +117,8 @@ fun AppNavGraph(navController: NavHostController) {
             AddProductScreen(
                 navController = navController,
                 umkmId = umkmId,
-                categoryViewModel = categoryViewModel,
-                myMerchantViewModel = myMerchantViewModel
+                categoryViewModel = categoryViewModel, // <-- Berikan CategoryViewModel
+                myMerchantViewModel = myMerchantViewModel // <-- Berikan MyMerchantViewModel
             )
         }
 
@@ -143,14 +148,19 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
+        // --- PERBAIKAN DI SINI ---
         composable(
-            route = Screen.Rating.route,
+            route = Screen.Rating.route, // "rating/{productId}"
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
         ) {
+            // Jangan oper viewModel dari luar.
+            // Biarkan RatingScreen membuat ViewModel-nya sendiri agar mendapat SavedStateHandle yang benar.
             RatingScreen(
                 navController = navController
+                // viewModel akan diinisialisasi otomatis oleh RatingScreen
             )
         }
+        // -------------------------
 
         composable(Screen.Promo.route) {
             PromoScreen(

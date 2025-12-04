@@ -42,7 +42,6 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.UnfoldMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,13 +60,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.MerchantData
+import com.example.lokanala.model.Product
 import com.example.lokanala.ui.components.MyMenuItemCard
 import com.example.lokanala.ui.navigation.Screen
-
-val PromoGreenBg = Color(0xFFE8F5E9)
+import com.example.lokanala.ui.screen.category.Category
+import com.example.lokanala.ui.screen.category.CategoryViewModel
+import com.example.lokanala.ui.theme.PromoGreenBg
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -75,34 +74,14 @@ fun MyMerchantScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     umkmId: Int,
-    viewModel: MyMerchantViewModel = viewModel()
+    viewModel: MyMerchantViewModel = viewModel(),
+    categoryViewModel: CategoryViewModel
 ) {
-    // 1. Collect Data dari ViewModel
-    val products by viewModel.products.collectAsState()
-    val merchantInfo by viewModel.merchantInfo.collectAsState() // Header Info
-    val isLoading by viewModel.isLoading.collectAsState()
-    val errorMessage by viewModel.errorMessage.collectAsState()
-
+    val productGroups by viewModel.productGroups.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val sortOrder by viewModel.sortOrder.collectAsState()
-
-    // 2. Fetch Data saat Layar Dibuka
-    LaunchedEffect(umkmId) {
-        if (umkmId != 0) {
-            viewModel.fetchMerchantProducts(umkmId)
-        }
-    }
-
-    // Grouping Produk untuk Sticky Header
-    val productGroups = remember(products) {
-        products.groupBy { it.categoryName }
-    }
-
-    // Ambil Kategori Unik dari Data Produk
-    val availableCategories = remember(products) {
-        products.map { it.categoryName }.distinct()
-    }
+    val categories = categoryViewModel.categories
 
     val colorScheme = MaterialTheme.colorScheme
     var isFabExpanded by remember { mutableStateOf(false) }
@@ -124,10 +103,13 @@ fun MyMerchantScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         ExtendedFloatingActionButton(
-                            onClick = { isFabExpanded = false },
+                            onClick = {
+                                navController.navigate(Screen.Category.createRoute(umkmId))
+                                isFabExpanded = false
+                            },
                             containerColor = MaterialTheme.colorScheme.surface,
                             contentColor = MaterialTheme.colorScheme.primary,
-                            icon = { Icon(Icons.Filled.Category, contentDescription = "Kategori") },
+                            icon = { Icon(Icons.Filled.Category, contentDescription = "Tambah Kategori") },
                             text = { Text("Kategori") }
                         )
 
@@ -162,121 +144,79 @@ fun MyMerchantScreen(
         },
         containerColor = colorScheme.background
     ) { padding ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(colorScheme.background)
                 .padding(padding)
         ) {
-            LazyColumn(
-                modifier = Modifier.weight(1f)
-            ) {
-                // --- SECTION 1: HEADER (DINAMIS DARI DATABASE) ---
+            item {
+                MerchantHeader(onBack = { navController.popBackStack() }, navController = navController, umkmId = umkmId)
+            }
+            item {
+                PromoSection(modifier = Modifier.padding(horizontal = 16.dp))
+            }
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+                HorizontalDivider(color = colorScheme.surfaceVariant, thickness = 8.dp)
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            item {
+                SearchAndFilterSection(
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                    searchQuery = searchQuery,
+                    onSearchQueryChanged = viewModel::onSearchQueryChanged,
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = viewModel::onCategorySelected,
+                    sortOrder = sortOrder,
+                    onSortBestSelling = viewModel::onSortBestSelling,
+                    onSortPrice = { viewModel.onSortPrice(sortOrder != SortOrder.PRICE_ASC) }
+                )
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            if (productGroups.isEmpty() && searchQuery.isNotEmpty()) {
                 item {
-                    MerchantHeader(
-                        onBack = { navController.popBackStack() },
-                        navController = navController,
-                        umkmId = umkmId,
-                        merchantData = merchantInfo // Pass data dinamis ke sini
+                    Text(
+                        text = "Tidak ada produk yang ditemukan.",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        textAlign = TextAlign.Center,
+                        color = colorScheme.onSurfaceVariant
                     )
                 }
-
-                // --- SECTION 2: PROMO (STATIC / PLACEHOLDER) ---
-                item {
-                    PromoSection(modifier = Modifier.padding(horizontal = 16.dp))
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    HorizontalDivider(color = colorScheme.surfaceVariant, thickness = 8.dp)
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
-                // --- SECTION 3: SEARCH & FILTER ---
-                item {
-                    SearchAndFilterSection(
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        searchQuery = searchQuery,
-                        onSearchQueryChanged = viewModel::onSearchQueryChanged,
-                        categories = availableCategories,
-                        selectedCategory = selectedCategory,
-                        onCategorySelected = viewModel::onCategorySelected,
-                        sortOrder = sortOrder,
-                        onSortBestSelling = viewModel::onSortBestSelling,
-                        onSortPrice = { viewModel.onSortPrice(sortOrder != SortOrder.PRICE_ASC) }
-                    )
-                }
-
-                item { Spacer(modifier = Modifier.height(16.dp)) }
-
-                // --- SECTION 4: CONTENT LIST (LOADING / ERROR / DATA) ---
-                if (isLoading) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                } else if (errorMessage != null) {
-                    item {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
-                            contentAlignment = Alignment.Center
+            } else {
+                productGroups.forEach { (categoryName, productsInCategory) ->
+                    stickyHeader {
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = colorScheme.background
                         ) {
                             Text(
-                                text = errorMessage ?: "Terjadi kesalahan",
-                                color = colorScheme.error,
-                                textAlign = TextAlign.Center
+                                text = categoryName,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = colorScheme.onSurface,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
                         }
                     }
-                } else if (productGroups.isEmpty()) {
-                    item {
-                        Text(
-                            text = if (searchQuery.isNotEmpty()) "Produk tidak ditemukan" else "Belum ada produk",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 32.dp),
-                            textAlign = TextAlign.Center,
-                            color = colorScheme.onSurfaceVariant
-                        )
-                    }
-                } else {
-                    productGroups.forEach { (categoryName, productsInCategory) ->
-                        stickyHeader {
-                            Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                color = colorScheme.background
-                            ) {
-                                Text(
-                                    text = categoryName,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp,
-                                    color = colorScheme.onSurface,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                            }
-                        }
 
-                        items(productsInCategory, key = { it.id }) { product ->
-                            MyMenuItemCard(
-                                product = product,
-                                modifier = Modifier.padding(horizontal = 16.dp),
-                                onEditClick = { /* Handle Edit Navigasi */ },
-                                onDeleteClick = { viewModel.deleteProduct(product) }
-                            )
-                            HorizontalDivider(
-                                color = colorScheme.outlineVariant.copy(alpha = 0.3f),
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
+                    items(productsInCategory, key = { it.id }) { product ->
+                        MyMenuItemCard(
+                            product = product,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                            onEditClick = { /* TODO */ },
+                            onDeleteClick = { viewModel.deleteProduct(product) } // Pass the whole product
+                        )
+                        HorizontalDivider(
+                            color = colorScheme.outlineVariant.copy(alpha = 0.3f),
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(horizontal = 16.dp)
+                        )
                     }
                 }
             }
@@ -284,39 +224,25 @@ fun MyMerchantScreen(
     }
 }
 
-// ==========================================
-// COMPONENT: HEADER DINAMIS
-// ==========================================
 @Composable
 private fun MerchantHeader(
     onBack: () -> Unit,
     navController: NavController,
-    umkmId: Int,
-    merchantData: MerchantData?
+    umkmId: Int
 ) {
     val colorScheme = MaterialTheme.colorScheme
-
-    // Data Fallback jika masih loading/null
-    val nama = merchantData?.nama ?: "Memuat..."
-    val alamat = merchantData?.alamat ?: "Alamat tidak tersedia"
-    val rating = merchantData?.rating ?: 0.0
-    val headerImage = merchantData?.linkLokasi // Asumsi field ini dipakai untuk gambar header
-    val logoImage = merchantData?.linkLokasi // Atau field lain jika ada logo spesifik
-
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(260.dp)
     ) {
-        // GAMBAR HEADER (AsyncImage)
-        AsyncImage(
-            model = headerImage ?: R.drawable.img_seblak_header, // Fallback ke drawable dummy
-            contentDescription = "Header Image",
+        Image(
+            painter = painterResource(id = R.drawable.img_seblak_header),
+            contentDescription = "Header Seblak Sendik",
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
-                .background(Color.LightGray) // Placeholder warna
         )
 
         IconButton(
@@ -340,22 +266,18 @@ private fun MerchantHeader(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // LOGO TOKO (AsyncImage)
-                    AsyncImage(
-                        model = logoImage ?: R.drawable.logo_seblak_sendik,
-                        contentDescription = "Logo",
+                    Image(
+                        painter = painterResource(id = R.drawable.logo_seblak_sendik),
+                        contentDescription = "Logo Seblak Sendik",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .size(60.dp)
                             .clip(CircleShape)
-                            .background(Color.Gray)
                     )
-
                     Spacer(Modifier.width(16.dp))
-
                     Column(Modifier.weight(1f)) {
                         Text(
-                            text = nama, // <-- Data Nama Dinamis
+                            "Seblak Sendik",
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = colorScheme.onSurface
@@ -363,7 +285,7 @@ private fun MerchantHeader(
                         Spacer(Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = String.format("%.1f", rating), // <-- Data Rating Dinamis
+                                "4,5",
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 14.sp,
                                 color = colorScheme.secondary
@@ -378,7 +300,7 @@ private fun MerchantHeader(
                         }
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            text = alamat, // <-- Data Alamat Dinamis
+                            "Jl. Timor Manis No. 23, Padang...",
                             fontSize = 13.sp,
                             color = colorScheme.onSurfaceVariant,
                             maxLines = 1
@@ -396,7 +318,7 @@ private fun MerchantHeader(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Lihat Tampilan Publik",
+                        "Lihat Detail UMKM",
                         fontWeight = FontWeight.Bold,
                         color = colorScheme.primary,
                         fontSize = 12.sp
@@ -404,7 +326,7 @@ private fun MerchantHeader(
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-                        contentDescription = null,
+                        contentDescription = "Lihat detail UMKM",
                         tint = colorScheme.primary,
                         modifier = Modifier.size(14.dp)
                     )
@@ -414,9 +336,6 @@ private fun MerchantHeader(
     }
 }
 
-// ==========================================
-// COMPONENT: PROMO SECTION (Static)
-// ==========================================
 @Composable
 private fun PromoSection(modifier: Modifier = Modifier) {
     val colorScheme = MaterialTheme.colorScheme
@@ -426,7 +345,7 @@ private fun PromoSection(modifier: Modifier = Modifier) {
             .padding(top = 16.dp)
     ) {
         Text(
-            text = "PROMO AKTIF",
+            text = "PROMO MENARIK",
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp,
             color = colorScheme.onBackground
@@ -449,7 +368,7 @@ private fun PromoSection(modifier: Modifier = Modifier) {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
-                        text = "Paket Hemat Spesial",
+                        text = "PAKET SEBLAK KOMPLIT + ES TEH",
                         fontWeight = FontWeight.Bold,
                         fontSize = 13.sp,
                         color = colorScheme.onSurface,
@@ -457,10 +376,16 @@ private fun PromoSection(modifier: Modifier = Modifier) {
                         modifier = Modifier.fillMaxWidth()
                     )
                     Text(
-                        text = "Rp 15.000",
+                        text = "Rp 19.000",
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 14.sp,
                         color = colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Rp 22.000",
+                        fontSize = 12.sp,
+                        color = colorScheme.onSurfaceVariant,
+                        textDecoration = TextDecoration.LineThrough
                     )
                 }
             }
@@ -468,16 +393,13 @@ private fun PromoSection(modifier: Modifier = Modifier) {
     }
 }
 
-// ==========================================
-// COMPONENT: SEARCH & FILTER
-// ==========================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SearchAndFilterSection(
     modifier: Modifier = Modifier,
     searchQuery: String,
     onSearchQueryChanged: (String) -> Unit,
-    categories: List<String>,
+    categories: List<Category>,
     selectedCategory: String?,
     onCategorySelected: (String?) -> Unit,
     sortOrder: SortOrder,
@@ -494,7 +416,7 @@ private fun SearchAndFilterSection(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = null,
+                    contentDescription = "Cari Produk",
                     tint = colorScheme.primary
                 )
             },
@@ -522,9 +444,17 @@ private fun SearchAndFilterSection(
 
             items(categories) { category ->
                 FilterChip(
-                    text = category,
-                    isSelected = selectedCategory == category,
-                    onClick = { onCategorySelected(category) }
+                    text = category.name,
+                    isSelected = selectedCategory == category.name,
+                    onClick = { onCategorySelected(category.name) }
+                )
+            }
+
+            item {
+                FilterChip(
+                    text = "Terlaris",
+                    isSelected = sortOrder == SortOrder.BEST_SELLING,
+                    onClick = onSortBestSelling
                 )
             }
 
@@ -535,21 +465,9 @@ private fun SearchAndFilterSection(
                     onClick = onSortPrice,
                     trailingIcon = {
                         when (sortOrder) {
-                            SortOrder.PRICE_ASC -> Icon(
-                                Icons.Default.ArrowUpward,
-                                null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            SortOrder.PRICE_DESC -> Icon(
-                                Icons.Default.ArrowDownward,
-                                null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            else -> Icon(
-                                Icons.Default.UnfoldMore,
-                                null,
-                                modifier = Modifier.size(18.dp)
-                            )
+                            SortOrder.PRICE_ASC -> Icon(Icons.Default.ArrowUpward, "Harga Naik", modifier = Modifier.size(18.dp))
+                            SortOrder.PRICE_DESC -> Icon(Icons.Default.ArrowDownward, "Harga Turun", modifier = Modifier.size(18.dp))
+                            else -> Icon(Icons.Default.UnfoldMore, "Urutkan Harga", modifier = Modifier.size(18.dp))
                         }
                     }
                 )
@@ -577,10 +495,7 @@ private fun FilterChip(
             labelColor = MaterialTheme.colorScheme.onSurface,
             selectedLabelColor = MaterialTheme.colorScheme.primary
         ),
-        border = BorderStroke(
-            1.dp,
-            if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.outlineVariant
-        ),
+        border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.outlineVariant),
         trailingIcon = trailingIcon
     )
 }

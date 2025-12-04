@@ -8,16 +8,12 @@ import com.example.lokanala.data.remote.response.merchant.MerchantResponse
 import com.example.lokanala.data.remote.response.product.ProductDetailResponse
 import com.example.lokanala.data.remote.response.rating.AddReviewResponse
 import com.example.lokanala.data.remote.response.rating.ReviewListResponse
-import com.example.lokanala.data.remote.response.MerchantDetailResponse
-import com.example.lokanala.data.remote.response.MyUmkmMainResponse
 import com.example.lokanala.model.Umkm
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.*
-import retrofit2.http.GET
-import retrofit2.http.Path
 
 interface ApiService {
 
@@ -73,13 +69,4 @@ interface ApiService {
         @Query("id_user") userId: Int
     ): Response<List<UmkmResponse>>
 
-    @GET("merchant/{id}") // Sesuaikan path ini dengan router backend Anda
-    suspend fun getMerchantDetail(
-        @Path("id") id: Int
-    ): MerchantDetailResponse
-
-    @GET("user/my-umkm")
-    suspend fun getMyUmkm(
-        @Header("Authorization") token: String
-    ): MyUmkmMainResponse
 }
