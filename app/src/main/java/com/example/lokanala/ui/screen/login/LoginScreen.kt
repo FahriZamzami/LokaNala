@@ -28,25 +28,31 @@ import androidx.navigation.NavController
 import com.example.lokanala.R
 import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.*
+import com.example.lokanala.ui.screen.addumkm.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    viewModel: LoginViewModel = viewModel(),
+    // terima shared authViewModel (AppNavGraph harus meng-pass ini)
+    authViewModel: AuthViewModel = viewModel(),
     navController: NavController
 ) {
+    // Buat LoginViewModel *menggunakan* authViewModel yang diterima
+    val viewModel: LoginViewModel = viewModel(
+        factory = LoginViewModelFactory(authViewModel = authViewModel)
+    )
+
     val uiState by viewModel.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
     val snackbarHostState = remember { SnackbarHostState() }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // 🔔 Tampilkan snackbar dan navigasi dalam satu LaunchedEffect
+    // Snackbar & navigasi
     LaunchedEffect(uiState.message) {
         uiState.message?.let { message ->
             snackbarHostState.showSnackbar(message)
 
-            // ✅ Jika login berhasil, navigasi ke Home
             if (uiState.success) {
                 navController.navigate(Screen.Home.route) {
                     popUpTo(navController.graph.startDestinationId) { inclusive = true }
@@ -83,62 +89,27 @@ fun LoginScreen(
                 Text(
                     text = "Login here",
                     fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Welcome back you've\nbeen missed!",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorScheme.onBackground.copy(alpha = 0.7f),
-                    textAlign = TextAlign.Center
-                )
 
-                Spacer(modifier = Modifier.height(48.dp))
-
-                // 🧑 Email
                 OutlinedTextField(
                     value = uiState.email,
                     onValueChange = { viewModel.onEmailChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Email", color = colorScheme.onSurfaceVariant) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = colorScheme.surfaceVariant,
-                        unfocusedContainerColor = colorScheme.surfaceVariant,
-                        disabledContainerColor = colorScheme.surfaceVariant,
-                        focusedIndicatorColor = colorScheme.primary,
-                        unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
-                        cursorColor = colorScheme.primary,
-                        focusedTextColor = colorScheme.onSurface,
-                        unfocusedTextColor = colorScheme.onSurfaceVariant
-                    ),
+                    label = { Text("Email") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                     singleLine = true
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                // 🔒 Password
                 OutlinedTextField(
                     value = uiState.password,
                     onValueChange = { viewModel.onPasswordChange(it) },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Password", color = colorScheme.onSurfaceVariant) },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = colorScheme.surfaceVariant,
-                        unfocusedContainerColor = colorScheme.surfaceVariant,
-                        disabledContainerColor = colorScheme.surfaceVariant,
-                        focusedIndicatorColor = colorScheme.primary,
-                        unfocusedIndicatorColor = colorScheme.onSurfaceVariant,
-                        cursorColor = colorScheme.primary,
-                        focusedTextColor = colorScheme.onSurface,
-                        unfocusedTextColor = colorScheme.onSurfaceVariant
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    label = { Text("Password") },
                     visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
                         val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
@@ -146,62 +117,18 @@ fun LoginScreen(
                             Icon(imageVector = icon, contentDescription = "Toggle password visibility")
                         }
                     },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                     singleLine = true
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Forgot your password?",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .clickable { /* TODO */ }
-                )
-
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // 🚀 Tombol Login
                 Button(
                     onClick = { viewModel.handleLogin() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
-                    ),
-                    enabled = !uiState.isLoading
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text(
-                            text = "Sign in",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                    Text(text = if (uiState.isLoading) "Loading..." else "Login")
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Create new account",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = PrimaryPink,
-                    modifier = Modifier.clickable { /* TODO */ }
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }

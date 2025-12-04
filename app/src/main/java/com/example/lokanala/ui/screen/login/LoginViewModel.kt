@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lokanala.data.remote.retrofit.ApiClient
 import com.example.lokanala.data.remote.response.LoginRequest
+import com.example.lokanala.ui.screen.addumkm.AuthViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,7 +17,10 @@ data class LoginUiState(
     val success: Boolean = false
 )
 
-class LoginViewModel : ViewModel() {
+class LoginViewModel(
+    private val authViewModel: AuthViewModel
+) : ViewModel() {
+
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState
 
@@ -46,10 +50,16 @@ class LoginViewModel : ViewModel() {
                 val response = ApiClient.instance.loginUser(LoginRequest(email, password))
 
                 if (response.isSuccessful && response.body()?.token != null) {
+                    val user = response.body()!!.user!!
+                    val token = response.body()!!.token!!
+
+                    // Simpan user & token ke AuthViewModel (shared)
+                    authViewModel.saveUser(user, token)
+
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         success = true,
-                        message = "Login berhasil! Selamat datang ${response.body()?.user?.nama}"
+                        message = "Login berhasil! Selamat datang ${user.nama}"
                     )
                 } else {
                     _uiState.value = _uiState.value.copy(

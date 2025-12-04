@@ -1,5 +1,8 @@
 package com.example.lokanala.ui.screen.addumkm
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,8 +18,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,50 +29,71 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.lokanala.ui.theme.LokanalaTheme
+import kotlinx.coroutines.launch
+import com.example.lokanala.ui.navigation.Screen
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 
+import coil.compose.rememberAsyncImagePainter
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddUmkmScreen(
     modifier: Modifier = Modifier,
     viewModel: AddUmkmViewModel = viewModel(),
+    authViewModel: AuthViewModel = viewModel(),
     onBack: () -> Unit,
     navController: NavController
 ) {
+    val currentUserState by authViewModel.currentUser.collectAsState()
+    val currentUser = currentUserState
+
+    // Form inputs
     var umkmName by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var contact by remember { mutableStateOf("") }
+    var locationLink by remember { mutableStateOf("") }
 
-    val colors = MaterialTheme.colorScheme
+    var isLoading by remember { mutableStateOf(false) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // 🟦 Tambahkan state untuk gambar
+    var imageUri by remember { mutableStateOf<Uri?>(null) }
+
+    // 🟦 Launcher untuk memilih gambar dari galeri
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        imageUri = uri
+    }
+
+    // Kategori
+    val kategoriList by viewModel.kategoriList.collectAsState()
+    val kategoriNames = kategoriList.map { it.nama_kategori }
+    val kategoriMap = kategoriList.associate { it.nama_kategori to it.id_kategori_umkm }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadKategori()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Text(
-                        text = "Tambah UMKM",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
+                title = { Text(text = "Tambah UMKM", fontWeight = FontWeight.Bold, fontSize = 20.sp) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali",
-                            tint = colors.primary
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Kembali")
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                }
             )
         },
-        containerColor = colors.background
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
     ) { padding ->
         Column(
             modifier = modifier
@@ -76,74 +102,94 @@ fun AddUmkmScreen(
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = colors.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                shape = RoundedCornerShape(16.dp)
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    SimpleTextField(
-                        value = umkmName,
-                        onValueChange = { umkmName = it },
-                        label = "Nama UMKM:"
-                    )
+                Column(modifier = Modifier.padding(16.dp)) {
+
+                    SimpleTextField(umkmName, { umkmName = it }, "Nama UMKM:")
 
                     SimpleDropdownField(
                         label = "Kategori:",
-                        options = listOf("Kuliner", "Fashion", "Jasa", "Lainnya"),
+                        options = kategoriNames,
                         selectedOption = category,
                         onOptionSelected = { category = it }
                     )
 
-                    SimpleTextField(
-                        value = description,
-                        onValueChange = { description = it },
-                        label = "Deskripsi Singkat:",
-                        singleLine = false,
-                        minLines = 3
-                    )
+                    SimpleTextField(description, { description = it }, "Deskripsi:")
+                    SimpleTextField(address, { address = it }, "Alamat:")
+                    SimpleTextField(locationLink, { locationLink = it }, "Link Lokasi Map:")
 
-                    SimpleTextFieldWithIcon(
-                        value = address,
-                        onValueChange = { address = it },
-                        label = "Alamat (otomatis dari GPS):",
-                        icon = Icons.Default.LocationOn
-                    )
-
-                    SimpleTextFieldWithIcon(
+                    // 🟦 TextField upload foto → tombol pilih foto
+                    OutlinedTextField(
                         value = "",
                         onValueChange = {},
-                        label = "Upload Foto / Logo UMKM:",
-                        icon = Icons.Default.FolderOpen,
-                        readOnly = true
+                        label = { Text("Upload Foto UMKM") },
+                        trailingIcon = {
+                            IconButton(onClick = { imagePickerLauncher.launch("image/*") }) {
+                                Icon(Icons.Default.FolderOpen, contentDescription = "Pilih Foto")
+                            }
+                        },
+                        readOnly = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
 
-                    SimpleTextField(
-                        value = contact,
-                        onValueChange = { contact = it },
-                        label = "Nomor Kontak:"
-                    )
+                    // 🟦 Preview Gambar
+                    imageUri?.let {
+                        Spacer(Modifier.height(12.dp))
+                        Image(
+                            painter = rememberAsyncImagePainter(model = it),
+                            contentDescription = "Preview Image",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp)
+                                .clip(RoundedCornerShape(12.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+
+                    SimpleTextField(contact, { contact = it }, "Nomor Kontak:")
 
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { /* TODO: Aksi Simpan */ },
-                        modifier = Modifier.align(Alignment.End),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colors.primary,
-                            contentColor = colors.onPrimary
-                        )
+                        onClick = {
+                            if (currentUser == null) {
+                                scope.launch { snackbarHostState.showSnackbar("User belum login") }
+                                navController.navigate(Screen.Login.route)
+                                return@Button
+                            }
+
+                            val idKategori = kategoriMap[category]
+                            if (idKategori == null) {
+                                scope.launch { snackbarHostState.showSnackbar("Kategori belum dipilih") }
+                                return@Button
+                            }
+
+                            isLoading = true
+
+                            viewModel.addUMKM(
+                                idUser = currentUser.id_user,
+                                idKategori = idKategori,
+                                nama = umkmName,
+                                alamat = address,
+                                noTelp = contact,
+                                deskripsi = description,
+                                linkLokasi = locationLink,
+                                imageUri = imageUri   // 🟦 Kirim gambar ke ViewModel
+                            ) { success, msg ->
+                                isLoading = false
+                                scope.launch { snackbarHostState.showSnackbar(msg) }
+
+                                if (success) navController.popBackStack()
+                            }
+                        },
+                        enabled = !isLoading,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = "Simpan",
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        )
+                        Text(text = if (isLoading) "Menyimpan..." else "Simpan")
                     }
                 }
             }

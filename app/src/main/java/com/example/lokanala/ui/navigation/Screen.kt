@@ -43,4 +43,12 @@ sealed class Screen(val route: String) {
     object Detail : Screen("detail/{productId}") {
         fun createRoute(productId: Int) = "detail/$productId"
     }
+    object EditUmkm : Screen("edit_umkm/{umkmId}") {
+        fun createRoute(umkmId: Int) = "edit_umkm/$umkmId"
+    }
+
+//    companion object {
+//        val MerchantDetail: Any
+//    }
+
 }

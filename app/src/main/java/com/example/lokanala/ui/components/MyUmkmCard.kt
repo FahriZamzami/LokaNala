@@ -1,153 +1,100 @@
 package com.example.lokanala.ui.components
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import com.example.lokanala.R
+import coil.compose.AsyncImage
 import com.example.lokanala.model.MyUmkm
-import com.example.lokanala.ui.theme.*
 
 @Composable
 fun MyUmkmCard(
     umkm: MyUmkm,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    onMerchantClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onEditClick: () -> Unit = {},
+    onDeleteClick: () -> Unit = {},
+    onMerchantClick: () -> Unit = {}
 ) {
-    val colorScheme = MaterialTheme.colorScheme
+
+    val baseUrl = "https://mlszfdzz-3000.asse.devtunnels.ms/uploads/"
+    val imageUrl = baseUrl + umkm.gambar
 
     Card(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable { onMerchantClick() },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(260.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        onClick = onMerchantClick
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-            Image(
-                painter = painterResource(id = umkm.imageRes),
-                contentDescription = umkm.name,
-                contentScale = ContentScale.Crop,
+
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+
+            // Gambar
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(130.dp)
-                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             )
 
-            Column(
+            Spacer(Modifier.height(8.dp))
+
+            Text(
+                text = umkm.nama_umkm,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+
+            Text(
+                text = umkm.no_telepon,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(horizontal = 12.dp)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            // BUTTON EDIT + DELETE
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = umkm.name,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    color = colorScheme.onSurface
-                )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                // Edit
+                TextButton(onClick = onEditClick) {
                     Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Rating",
-                        tint = StarYellow,
-                        modifier = Modifier.size(16.dp)
+                        Icons.Default.Edit,
+                        contentDescription = "Edit",
+                        modifier = Modifier.size(18.dp)
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = umkm.rating.toString(),
-                        fontSize = 14.sp,
-                        color = colorScheme.onSurfaceVariant
-                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Edit", fontSize = 14.sp)
                 }
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Surface(
-                        color = KatalogChipBg,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "Katalog",
-                            color = KatalogChipText,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-
-                    Row {
-                        IconButton(
-                            onClick = { onEditClick() },
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit",
-                                tint = colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        IconButton(
-                            onClick = { onDeleteClick() },
-                            modifier = Modifier.size(36.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DeleteOutline,
-                                contentDescription = "Hapus",
-                                tint = colorScheme.error,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                    }
+                // Delete
+                TextButton(onClick = onDeleteClick) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Hapus", fontSize = 14.sp)
                 }
             }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MyUmkmCardPreview() {
-    LokanalaTheme {
-        Surface(color = MaterialTheme.colorScheme.background) {
-            MyUmkmCard(
-                umkm = MyUmkm(
-                    id = 1,
-                    name = "Sanjay Mama",
-                    rating = 4.2,
-                    imageRes = R.drawable.ic_launcher_background
-                ),
-                onEditClick = {},
-                onDeleteClick = {},
-                onMerchantClick = {},
-                modifier = Modifier
-                    .width(200.dp)
-                    .padding(16.dp)
-            )
         }
     }
 }

@@ -26,15 +26,17 @@ import com.example.lokanala.ui.screen.promotion_umkm.MyUMKMPromotionScreen
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
 import com.example.lokanala.ui.screen.rating.RatingScreen
 import com.example.lokanala.ui.screen.rating.RatingViewModel
+import com.example.lokanala.ui.screen.addumkm.AuthViewModel
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
-import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
+    // 🔑 Shared ViewModels
+    val authViewModel: AuthViewModel = viewModel() // shared AuthViewModel
     val promotionViewModel: PromotionViewModel = viewModel()
     val ratingViewModel: RatingViewModel = viewModel()
 
@@ -48,7 +50,10 @@ fun AppNavGraph(navController: NavHostController) {
     )  {
 
         composable(Screen.Login.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(
+                navController = navController,
+                authViewModel = authViewModel // pass shared AuthViewModel
+            )
         }
 
         composable(Screen.Home.route) {
@@ -80,14 +85,16 @@ fun AppNavGraph(navController: NavHostController) {
         composable(Screen.MyUmkm.route) {
             MyUmkmScreen(
                 onBack = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel   // ⬅️ tambahkan ini
             )
         }
 
         composable(Screen.AddUmkm.route) {
             AddUmkmScreen(
                 onBack = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                authViewModel = authViewModel // 🔑 pastikan shared
             )
         }
 

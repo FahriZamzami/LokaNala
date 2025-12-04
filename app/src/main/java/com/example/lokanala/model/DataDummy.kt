@@ -176,20 +176,20 @@ val dummyUmkmList = listOf(
         navigationRoute = Screen.Merchant.route
     )
 )
-val dummyMyUmkmList = listOf(
-    MyUmkm(
-        id = 1,
-        name = "Sanjay Nitta",
-        rating = 3.8,
-        imageRes = R.drawable.img_sanjay_nitta
-    ),
-    MyUmkm(
-        id = 2,
-        name = "Seblak sendik",
-        rating = 3.8,
-        imageRes = R.drawable.img_seblak_sendik_card
-    )
-)
+//val dummyMyUmkmList = listOf(
+//    MyUmkm(
+//        id = 1,
+//        name = "Sanjay Nitta",
+//        rating = 3.8,
+//        imageRes = R.drawable.img_sanjay_nitta
+//    ),
+//    MyUmkm(
+//        id = 2,
+//        name = "Seblak sendik",
+//        rating = 3.8,
+//        imageRes = R.drawable.img_seblak_sendik_card
+//    )
+//)
 val dummyNotifications = listOf(
     NotificationItem(
         id = 1,
