@@ -1,4 +1,4 @@
-package com.example.lokanala.data.remote.response.home
+package com.example.lokanala.data.remote.response_and_request.home
 
 import com.google.gson.annotations.SerializedName
 

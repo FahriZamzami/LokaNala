@@ -1,4 +1,4 @@
-package com.example.lokanala.data.remote.response.merchant
+package com.example.lokanala.data.remote.response_and_request.merchant
 
 import com.google.gson.annotations.SerializedName
 

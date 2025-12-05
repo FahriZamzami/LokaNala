@@ -3,17 +3,20 @@ package com.example.lokanala.ui.navigation
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.example.lokanala.ui.screen.add_merchant_product.AddProductScreen
+import com.example.lokanala.ui.screen.add_promotion_umkm.AddPromoViewModel
 import com.example.lokanala.ui.screen.addumkm.AddUmkmScreen
 import com.example.lokanala.ui.screen.add_promotion_umkm.AddPromotionScreen
 import com.example.lokanala.ui.screen.category.CategoryScreen
 import com.example.lokanala.ui.screen.category.CategoryViewModel
 import com.example.lokanala.ui.screen.detail.DetailScreen
 import com.example.lokanala.ui.screen.detail.UmkmDetailScreen
+import com.example.lokanala.ui.screen.edit_promotion_umkm.EditPromoViewModel
 import com.example.lokanala.ui.screen.edit_promotion_umkm.EditPromotionScreen
 import com.example.lokanala.ui.screen.home.HomeScreen
 import com.example.lokanala.ui.screen.login.LoginScreen
@@ -122,29 +125,52 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        composable(Screen.Promotion.route) {
+        composable(
+            route = Screen.Promotion.route,
+            arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: -1
+
             MyUMKMPromotionScreen(
                 navController = navController,
-                viewModel = promotionViewModel
+                viewModel = promotionViewModel,
+                umkmId = umkmId    // ⭐ KIRIM ID UMKM KE SCREEN ⭐
             )
         }
 
-        composable(Screen.AddPromotion.route) {
+        composable(
+            route = Screen.AddPromotion.route,
+            arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: -1
+            val addPromoViewModel = remember { AddPromoViewModel() }
+
             AddPromotionScreen(
                 navController = navController,
-                promotionViewModel = promotionViewModel
+                addPromoViewModel = addPromoViewModel,
+                umkmId = umkmId
             )
         }
 
         composable(
             route = Screen.EditPromotion.route,
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
+            arguments = listOf(
+                navArgument("promoId") { type = NavType.IntType },
+                navArgument("umkmId") { type = NavType.IntType }
+            )
         ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt("id") ?: return@composable
+
+            val promoId = backStackEntry.arguments?.getInt("promoId") ?: -1
+            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: -1
+
+            val editPromoViewModel = remember { EditPromoViewModel() }
+
             EditPromotionScreen(
                 navController = navController,
-                promotionId = id,
-                promotionViewModel = promotionViewModel
+                promotionId = promoId,
+                umkmId = umkmId,
+                promotionViewModel = promotionViewModel,
+                editPromoViewModel = editPromoViewModel
             )
         }
 

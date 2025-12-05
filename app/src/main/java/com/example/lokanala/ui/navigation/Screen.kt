@@ -27,10 +27,16 @@ sealed class Screen(val route: String) {
     object MyUmkm : Screen("my_umkm")
     object AddUmkm : Screen("add_umkm")
 
-    object Promotion : Screen("promotion")
-    object AddPromotion : Screen("add_promotion")
-    object EditPromotion : Screen("edit_promotion/{id}") {
-        fun createRoute(id: Int) = "edit_promotion/$id"
+    object Promotion : Screen("promotion/{umkmId}") {
+        fun createRoute(umkmId: Int) = "promotion/$umkmId"
+    }
+
+    object AddPromotion : Screen("add_promotion/{umkmId}") {
+        fun createRoute(umkmId: Int) = "add_promotion/$umkmId"
+    }
+
+    object EditPromotion : Screen("edit_promotion/{promoId}/{umkmId}") {
+        fun createRoute(promoId: Int, umkmId: Int) = "edit_promotion/$promoId/$umkmId"
     }
 
     object Rating : Screen("rating/{productId}") {

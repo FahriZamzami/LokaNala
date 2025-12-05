@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.UnfoldMore
@@ -102,6 +103,17 @@ fun MyMerchantScreen(
                         horizontalAlignment = Alignment.End,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
+                        ExtendedFloatingActionButton(
+                            onClick = {
+                                navController.navigate("promotion/1")
+                                isFabExpanded = false
+                            },
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.primary,
+                            icon = { Icon(imageVector = Icons.Default.LocalOffer, contentDescription = "Daftar Promosi UMKM") },
+                            text = { Text("Daftar Promosi UMKM") }
+                        )
+
                         ExtendedFloatingActionButton(
                             onClick = {
                                 navController.navigate(Screen.Category.createRoute(umkmId))

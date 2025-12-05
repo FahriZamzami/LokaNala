@@ -2,8 +2,8 @@ package com.example.lokanala.ui.screen.merchant
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.lokanala.data.remote.response.merchant.MerchantData
-import com.example.lokanala.data.remote.response.merchant.MerchantResponse
+import com.example.lokanala.data.remote.response_and_request.merchant.MerchantData
+import com.example.lokanala.data.remote.response_and_request.merchant.MerchantResponse
 import com.example.lokanala.data.remote.retrofit.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

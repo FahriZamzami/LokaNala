@@ -30,7 +30,7 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.rating.Review
+import com.example.lokanala.data.remote.response_and_request.rating.Review
 
 @Composable
 fun ReviewCard(
@@ -45,67 +45,72 @@ fun ReviewCard(
     var showFullImage by remember { mutableStateOf(false) }
     var fullImageUrl by remember { mutableStateOf<String?>(null) }
 
-    val displayName = if (isUserReview) "Anda" else review.name
+    // 🔥 Tambahkan state dialog hapus
+    var showDeleteDialog by remember { mutableStateOf(false) }
 
-    val photoUrls = review.photoUrl
-        ?.split(",")
-        ?.filter { it.isNotBlank() }
-        ?.take(5)
+    val displayName = if (isUserReview) "Anda" else review.name
+    val photoUrls = review.photoUrl?.split(",")?.filter { it.isNotBlank() }?.take(5)
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
+            modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // FOTO PROFIL
             AsyncImage(
                 model = ImageRequest.Builder(context).data(review.profilePicUrl).crossfade(true).build(),
                 placeholder = painterResource(R.drawable.logo_lokanala),
                 error = painterResource(R.drawable.logo_lokanala),
-                fallback = painterResource(R.drawable.logo_lokanala),
                 contentDescription = "Avatar",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
+                modifier = Modifier.size(40.dp).clip(CircleShape)
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                // HEADER (Nama, Tanggal, Menu)
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column {
-                        Text(text = displayName, style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold))
-                        Text(text = review.date, style = MaterialTheme.typography.bodySmall.copy(color = colorScheme.onSurfaceVariant, fontSize = 11.sp))
+                        Text(displayName, fontWeight = FontWeight.Bold)
+                        Text(review.date, fontSize = 11.sp, color = colorScheme.onSurfaceVariant)
                     }
 
-                    // Menu Edit/Hapus
                     if (isUserReview) {
                         Box {
-                            IconButton(onClick = { expanded = true }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.MoreVert, contentDescription = "Options", tint = colorScheme.onSurfaceVariant)
+                            IconButton(onClick = { expanded = true }) {
+                                Icon(Icons.Default.MoreVert, null, tint = colorScheme.onSurfaceVariant)
                             }
+
                             DropdownMenu(
                                 expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                modifier = Modifier.background(colorScheme.surfaceContainer)
+                                onDismissRequest = { expanded = false }
                             ) {
-                                DropdownMenuItem(text = { Text("Edit") }, onClick = { expanded = false; onEdit() }, leadingIcon = { Icon(Icons.Default.Edit, null, tint = colorScheme.primary) })
-                                DropdownMenuItem(text = { Text("Hapus", color = colorScheme.error) }, onClick = { expanded = false; onDelete() }, leadingIcon = { Icon(Icons.Default.Delete, null, tint = colorScheme.error) })
+                                DropdownMenuItem(
+                                    text = { Text("Edit") },
+                                    onClick = {
+                                        expanded = false
+                                        onEdit()
+                                    },
+                                    leadingIcon = { Icon(Icons.Default.Edit, null, tint = colorScheme.primary) }
+                                )
+
+                                DropdownMenuItem(
+                                    text = { Text("Hapus", color = colorScheme.error) },
+                                    onClick = {
+                                        expanded = false
+                                        showDeleteDialog = true   // ⬅️ Tampilkan dialog
+                                    },
+                                    leadingIcon = { Icon(Icons.Default.Delete, null, tint = colorScheme.error) }
+                                )
                             }
                         }
                     }
@@ -113,7 +118,6 @@ fun ReviewCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // BINTANG
                 Row {
                     repeat(5) { i ->
                         Icon(
@@ -125,33 +129,22 @@ fun ReviewCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // KOMENTAR
                 if (review.comment.isNotEmpty()) {
-                    Text(
-                        text = review.comment,
-                        style = MaterialTheme.typography.bodyMedium.copy(color = colorScheme.onSurface, lineHeight = 20.sp)
-                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(review.comment)
                 }
 
-                // GAMBAR ULASAN (LazyRow untuk Multi-Image)
                 if (!photoUrls.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(12.dp))
-
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(end = 8.dp)
-                    ) {
+                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         items(photoUrls) { url ->
                             AsyncImage(
                                 model = ImageRequest.Builder(context).data(url).crossfade(true).build(),
-                                contentDescription = "Foto Ulasan",
                                 contentScale = ContentScale.Crop,
+                                contentDescription = "Review Image",
                                 modifier = Modifier
-                                    .size(100.dp) // Ukuran Fix (Kotak 1:1)
+                                    .size(100.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(colorScheme.surfaceVariant)
                                     .clickable {
                                         fullImageUrl = url
                                         showFullImage = true
@@ -164,37 +157,50 @@ fun ReviewCard(
         }
     }
 
-    // 4. DIALOG GAMBAR BESAR (ZOOM) - PERBAIKAN DI SINI
+    // 🔥 DIALOG KONFIRMASI HAPUS
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Hapus Ulasan?") },
+            text = { Text("Apakah Anda yakin ingin menghapus ulasan ini?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete()     // ⬅️ Trigger fungsi delete
+                    }
+                ) {
+                    Text("Hapus", color = colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
+    }
+
+    // 🔥 Dialog fullscreen gambar (tetap sama)
     if (showFullImage && !fullImageUrl.isNullOrEmpty()) {
         Dialog(
             onDismissRequest = { showFullImage = false },
-            // TAMBAHKAN PROPERTI INI: Menonaktifkan padding default platform
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
-            // Perbaikan: Box ini sekarang mengisi seluruh layar yang diberikan oleh Dialog
             Box(
-                modifier = Modifier
-                    .fillMaxSize() // Mengisi seluruh ruang
-                    .background(Color.Black.copy(alpha = 0.7f))
-                    .clickable { showFullImage = false },
+                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.7f)).clickable { showFullImage = false },
                 contentAlignment = Alignment.Center
             ) {
-                // Gambar yang akan ditampilkan
                 AsyncImage(
                     model = fullImageUrl,
+                    contentScale = ContentScale.Fit,
                     contentDescription = "Full Image",
-                    // Gunakan FillMaxWidth dan FillMaxHeight
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Fit
+                    modifier = Modifier.fillMaxSize()
                 )
 
-                // Tombol Tutup
                 IconButton(
                     onClick = { showFullImage = false },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(16.dp)
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
+                    modifier = Modifier.align(Alignment.TopEnd).padding(16.dp).background(Color.Black.copy(alpha = 0.5f), CircleShape)
                 ) {
                     Icon(Icons.Default.Close, contentDescription = "Close", tint = Color.White)
                 }

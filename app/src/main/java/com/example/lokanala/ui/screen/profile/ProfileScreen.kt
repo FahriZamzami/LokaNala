@@ -190,11 +190,6 @@ private fun AccountSection(
                     text = "My UMKM",
                     onClick = { navController.navigate(Screen.MyUmkm.route) }
                 )
-                ProfileMenuItem(
-                    icon = Icons.Filled.Discount,
-                    text = "My UMKM Promotion",
-                    onClick = { navController.navigate("promotion") }
-                )
                 ProfileMenuItem(icon = Icons.Filled.StarOutline, text = "Ulasan")
                 ProfileMenuItem(icon = Icons.AutoMirrored.Filled.HelpOutline, text = "Pusat bantuan")
                 ProfileMenuItem(icon = Icons.Filled.LockOpen, text = "Keamanan akun")

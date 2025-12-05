@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.lokanala.data.remote.response.rating.Review
+import com.example.lokanala.data.remote.response_and_request.rating.Review
 import com.example.lokanala.ui.components.AddEditReviewSheetContent
 import com.example.lokanala.ui.components.RatingOverview
 import com.example.lokanala.ui.components.ReviewCard

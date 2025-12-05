@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.home.Umkm
+import com.example.lokanala.data.remote.response_and_request.home.Umkm
 import com.example.lokanala.ui.theme.StarYellow
 
 @Composable

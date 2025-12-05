@@ -9,9 +9,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lokanala.data.remote.response.rating.AddReviewResponse
-import com.example.lokanala.data.remote.response.rating.Review
-import com.example.lokanala.data.remote.response.rating.ReviewListResponse
+import com.example.lokanala.data.remote.response_and_request.rating.AddReviewResponse
+import com.example.lokanala.data.remote.response_and_request.rating.Review
+import com.example.lokanala.data.remote.response_and_request.rating.ReviewListResponse
 import com.example.lokanala.data.remote.retrofit.ApiClient
 
 // Pastikan import ini sesuai lokasi file Anda
@@ -31,7 +31,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 

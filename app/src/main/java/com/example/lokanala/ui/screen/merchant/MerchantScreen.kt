@@ -35,11 +35,10 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.merchant.MerchantData
-import com.example.lokanala.data.remote.response.merchant.MerchantPromo
+import com.example.lokanala.data.remote.response_and_request.merchant.MerchantData
+import com.example.lokanala.data.remote.response_and_request.merchant.MerchantPromo
 import com.example.lokanala.ui.components.MenuItemCard
 import com.example.lokanala.ui.navigation.Screen
-import com.example.lokanala.ui.theme.*
 
 @Composable
 fun MerchantScreen(

@@ -1,4 +1,4 @@
-package com.example.lokanala.data.remote.response.home
+package com.example.lokanala.data.remote.response_and_request.home
 
 data class Umkm(
     val id: Int,

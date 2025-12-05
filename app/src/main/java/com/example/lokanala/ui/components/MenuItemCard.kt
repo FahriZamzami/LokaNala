@@ -3,7 +3,6 @@ package com.example.lokanala.ui.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Star
@@ -23,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.merchant.MerchantProduct
+import com.example.lokanala.data.remote.response_and_request.merchant.MerchantProduct
 import com.example.lokanala.ui.theme.StarYellow
 import java.text.NumberFormat
 import java.util.Locale

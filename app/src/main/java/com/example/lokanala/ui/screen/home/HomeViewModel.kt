@@ -2,9 +2,9 @@ package com.example.lokanala.ui.screen.home
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
-import com.example.lokanala.data.remote.response.home.HomeResponse
+import com.example.lokanala.data.remote.response_and_request.home.HomeResponse
 import com.example.lokanala.data.remote.retrofit.ApiClient // Gunakan ApiClient
-import com.example.lokanala.data.remote.response.home.Umkm
+import com.example.lokanala.data.remote.response_and_request.home.Umkm
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

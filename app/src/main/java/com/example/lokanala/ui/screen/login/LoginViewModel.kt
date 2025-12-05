@@ -4,15 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lokanala.data.pref.UserModel
 import com.example.lokanala.data.pref.UserPreference
-import com.example.lokanala.data.remote.response.login.LoginRequest
-import com.example.lokanala.data.remote.response.login.UserData
+import com.example.lokanala.data.remote.response_and_request.login.LoginRequest
+import com.example.lokanala.data.remote.response_and_request.login.UserData
 import com.example.lokanala.data.remote.retrofit.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import retrofit2.HttpException
-import java.io.IOException
 
 // Data State UI
 data class LoginUiState(

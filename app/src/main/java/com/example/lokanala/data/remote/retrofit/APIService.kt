@@ -1,12 +1,17 @@
 package com.example.lokanala.data.remote.retrofit
 
-import com.example.lokanala.data.remote.response.login.LoginRequest
-import com.example.lokanala.data.remote.response.login.LoginResponse
-import com.example.lokanala.data.remote.response.home.HomeResponse
-import com.example.lokanala.data.remote.response.merchant.MerchantResponse
-import com.example.lokanala.data.remote.response.product.ProductDetailResponse
-import com.example.lokanala.data.remote.response.rating.AddReviewResponse
-import com.example.lokanala.data.remote.response.rating.ReviewListResponse
+import com.example.lokanala.data.remote.response_and_request.login.LoginRequest
+import com.example.lokanala.data.remote.response_and_request.login.LoginResponse
+import com.example.lokanala.data.remote.response_and_request.home.HomeResponse
+import com.example.lokanala.data.remote.response_and_request.merchant.MerchantResponse
+import com.example.lokanala.data.remote.response_and_request.myumkmpromo.CreatePromoRequest
+import com.example.lokanala.data.remote.response_and_request.myumkmpromo.PromoCreateUpdateResponse
+import com.example.lokanala.data.remote.response_and_request.myumkmpromo.PromoDetailResponse
+import com.example.lokanala.data.remote.response_and_request.myumkmpromo.PromoListResponse
+import com.example.lokanala.data.remote.response_and_request.myumkmpromo.UpdatePromoRequest
+import com.example.lokanala.data.remote.response_and_request.product.ProductDetailResponse
+import com.example.lokanala.data.remote.response_and_request.rating.AddReviewResponse
+import com.example.lokanala.data.remote.response_and_request.rating.ReviewListResponse
 // UpdateReviewRequest tidak lagi dibutuhkan di sini karena kita ganti jadi Multipart
 
 import okhttp3.MultipartBody
@@ -69,4 +74,33 @@ interface ApiService {
 
     @GET("produk/{id}")
     fun getProductDetail(@Path("id") id: Int): Call<ProductDetailResponse>
+
+    // -------------------- PROMO UMKM -------------------- //
+
+    @GET("{id_umkm}/promos")
+    fun getUmkmPromos(
+        @Path("id_umkm") idUmkm: Int
+    ): Call<PromoListResponse>
+
+    @GET("promo/{id_promo}")
+    fun getPromoDetail(
+        @Path("id_promo") idPromo: Int
+    ): Call<PromoDetailResponse>
+
+    @POST("{id_umkm}/promos")
+    fun createPromo(
+        @Path("id_umkm") idUmkm: Int,
+        @Body request: CreatePromoRequest
+    ): Call<PromoCreateUpdateResponse>
+
+    @PUT("promo/{id_promo}")
+    fun updatePromo(
+        @Path("id_promo") idPromo: Int,
+        @Body request: UpdatePromoRequest
+    ): Call<PromoCreateUpdateResponse>
+
+    @DELETE("promo/{id_promo}")
+    fun deletePromo(
+        @Path("id_promo") idPromo: Int
+    ): Call<Unit>
 }

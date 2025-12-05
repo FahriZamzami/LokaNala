@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.lokanala.ui.components.MyUMKMPromotionCard
 import com.example.lokanala.ui.components.UMKMPromotionDetailPopup
+import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.LokanalaTheme
 import java.util.Locale
 
@@ -29,9 +30,14 @@ import java.util.Locale
 @Composable
 fun MyUMKMPromotionScreen(
     navController: NavController,
+    umkmId: Int,
     viewModel: PromotionViewModel = viewModel()
 ) {
     val colorScheme = MaterialTheme.colorScheme
+
+    LaunchedEffect(umkmId) {
+        viewModel.loadPromotionsForUmkm(umkmId)
+    }
 
     val promotions by remember { derivedStateOf { viewModel.promotions } }
 
@@ -75,41 +81,28 @@ fun MyUMKMPromotionScreen(
                             tint = colorScheme.primary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colorScheme.background,
-                    titleContentColor = colorScheme.onSurface,
-                    navigationIconContentColor = colorScheme.onSurfaceVariant
-                )
+                }
             )
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { navController.navigate("add_promotion") },
+                onClick = { navController.navigate(Screen.AddPromotion.createRoute(umkmId)) },
                 containerColor = colorScheme.primary,
                 contentColor = colorScheme.onPrimary,
                 shape = CircleShape
             ) {
-                Icon(
-                    Icons.Filled.Add,
-                    contentDescription = "Tambah Promosi"
-                )
+                Icon(Icons.Filled.Add, contentDescription = "Tambah Promosi")
                 Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "Tambah Promosi",
-                    fontWeight = FontWeight.SemiBold,
-                    color = colorScheme.onPrimary
-                )
+                Text("Tambah Promosi")
             }
-        },
-        containerColor = colorScheme.background
+        }
     ) { paddingValues ->
 
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(colorScheme.background)
                 .padding(paddingValues)
+                .padding(top = 12.dp)
                 .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             contentPadding = PaddingValues(bottom = 100.dp)
@@ -125,18 +118,14 @@ fun MyUMKMPromotionScreen(
                         Text(
                             text = "Belum ada promosi UMKM.",
                             color = colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
             } else {
-                items(
-                    items = sortedPromotions,
-                    key = { it.id }
-                ) { promotion ->
+                items(sortedPromotions, key = { it.id }) { promotion ->
                     MyUMKMPromotionCard(
                         promotion = promotion,
-                        onEdit = { navController.navigate("edit_promotion/${promotion.id}") },
+                        onEdit = { navController.navigate(Screen.EditPromotion.createRoute(promotion.id, umkmId)) },
                         onDelete = { viewModel.deletePromotion(promotion.id) },
                         onItemClick = { selectedPromotion = it }
                     )
@@ -151,20 +140,12 @@ fun MyUMKMPromotionScreen(
             onDismiss = { selectedPromotion = null },
             onEdit = {
                 selectedPromotion = null
-                navController.navigate("edit_promotion/${promo.id}")
+                navController.navigate(Screen.EditPromotion.createRoute(promo.id, umkmId))
             },
             onDelete = {
                 viewModel.deletePromotion(promo.id)
                 selectedPromotion = null
             }
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewMyUMKMPromotionScreen() {
-    LokanalaTheme {
-        MyUMKMPromotionScreen(navController = rememberNavController())
     }
 }

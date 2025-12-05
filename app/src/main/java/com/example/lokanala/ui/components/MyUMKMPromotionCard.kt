@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Discount
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,6 +28,7 @@ fun MyUMKMPromotionCard(
     onItemClick: (Promotion) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }   // 🔥 Dialog hapus
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
@@ -44,6 +46,8 @@ fun MyUMKMPromotionCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
+
+            // 🔥 Ikon Promo
             Box(
                 modifier = Modifier
                     .size(44.dp)
@@ -51,11 +55,10 @@ fun MyUMKMPromotionCard(
                     .background(colorScheme.primary),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "%",
-                    color = colorScheme.onPrimary,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
+                Icon(
+                    imageVector = Icons.Filled.Discount,
+                    contentDescription = "Promo Icon",
+                    tint = colorScheme.onPrimary
                 )
             }
 
@@ -72,7 +75,7 @@ fun MyUMKMPromotionCard(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "${promotion.startDate} - ${promotion.endDate}",
+                    text = "${promotion.startDate} Sampai ${promotion.endDate}",
                     fontSize = 12.sp,
                     color = colorScheme.onSurfaceVariant
                 )
@@ -89,13 +92,10 @@ fun MyUMKMPromotionCard(
 
                 DropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .background(colorScheme.surface)
-                        .width(IntrinsicSize.Min)
+                    onDismissRequest = { expanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Edit", color = colorScheme.onSurface) },
+                        text = { Text("Edit") },
                         onClick = {
                             expanded = false
                             onEdit(promotion)
@@ -108,11 +108,13 @@ fun MyUMKMPromotionCard(
                             )
                         }
                     )
+
+                    // 🔥 Memunculkan dialog konfirmasi hapus
                     DropdownMenuItem(
                         text = { Text("Hapus", color = colorScheme.error) },
                         onClick = {
                             expanded = false
-                            onDelete(promotion)
+                            showDeleteDialog = true
                         },
                         leadingIcon = {
                             Icon(
@@ -125,5 +127,45 @@ fun MyUMKMPromotionCard(
                 }
             }
         }
+    }
+
+    // 🔥🔥 Dialog Konfirmasi Hapus Promo
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+
+            title = {
+                Text(
+                    "Hapus Promo?",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp
+                )
+            },
+
+            text = {
+                Text(
+                    "Apakah Anda yakin ingin menghapus promo ini?",
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                )
+            },
+
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDelete(promotion)   // 🔥 eksekusi delete
+                    }
+                ) {
+                    Text("Hapus", color = colorScheme.error)
+                }
+            },
+
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }

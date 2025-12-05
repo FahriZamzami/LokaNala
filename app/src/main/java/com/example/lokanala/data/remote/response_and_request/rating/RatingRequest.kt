@@ -1,4 +1,4 @@
-package com.example.lokanala.data.remote.response.rating
+package com.example.lokanala.data.remote.response_and_request.rating
 
 import android.net.Uri
 
