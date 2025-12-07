@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lokanala.data.pref.UserModel
 import com.example.lokanala.data.pref.UserPreference
+import com.example.lokanala.data.pref.UserProfile
 import com.example.lokanala.data.remote.response_and_request.login.LoginRequest
 import com.example.lokanala.data.remote.response_and_request.login.UserData
 import com.example.lokanala.data.remote.retrofit.ApiClient
@@ -56,12 +57,16 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
                 if (response.isSuccessful && body != null && body.token != null && body.user != null) {
 
                     // 1. Simpan Sesi ke DataStore lewat UserPreference
-                    val userModel = UserModel(
+                    val userProfile = UserProfile(
                         idUser = body.user.id_user,
                         name = body.user.nama,
+                        email = body.user.email,
+                        phone = body.user.no_telepon,
+                        photo = body.user.foto_profile,
                         token = body.token
                     )
-                    userPreference.saveSession(userModel)
+
+                    userPreference.saveSession(userProfile)
 
                     // 2. Update UI
                     _uiState.value = _uiState.value.copy(

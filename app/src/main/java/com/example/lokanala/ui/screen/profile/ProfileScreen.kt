@@ -14,12 +14,18 @@ import androidx.compose.material.icons.filled.Discount
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +42,7 @@ import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.LokanalaTheme
 import com.example.lokanala.ui.theme.PromoPinkBg
 import com.example.lokanala.ui.theme.TextGreyLight
+import coil.compose.AsyncImage
 
 @Composable
 fun ProfileScreen(
@@ -67,8 +74,10 @@ fun ProfileScreen(
                 ),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item { UserInfoCard() }
-                item { AccountSection(navController = navController) }
+                item {
+                    UserInfoCard(viewModel)
+                }
+                item { AccountSection(navController = navController, viewModel = viewModel) }
                 item { InfoSection() }
             }
         }
@@ -110,7 +119,8 @@ private fun ProfileTopBar() {
 }
 
 @Composable
-private fun UserInfoCard() {
+fun UserInfoCard(viewModel: ProfileViewModel) {
+    val user = viewModel.user
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
@@ -123,40 +133,44 @@ private fun UserInfoCard() {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.img_gracia_liora),
-                contentDescription = "Gracia Liora",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(60.dp)
-                    .clip(CircleShape)
-            )
+
+            // FOTO PROFIL DARI URL
+            if (!user.photoUrl.isNullOrEmpty()) {
+                AsyncImage(
+                    model = user.photoUrl,
+                    contentDescription = "Foto Profil",
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFE0E0E0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Default Profile Icon",
+                        tint = Color.DarkGray,
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.width(16.dp))
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Gracia Liora",
+                    text = user.name,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = colorScheme.onSurface
+                    fontSize = 18.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Lioragrace@gmail.com",
-                    fontSize = 14.sp,
-                    color = TextGreyLight
-                )
-                Text(
-                    text = "+6289786534217",
-                    fontSize = 14.sp,
-                    color = TextGreyLight
-                )
-            }
-            IconButton(onClick = { /* TODO: Edit Profile */ }) {
-                Icon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = "Edit Profile",
-                    tint = colorScheme.primary
-                )
+                Text(text = user.email, fontSize = 14.sp, color = TextGreyLight)
+                Text(text = user.phone, fontSize = 14.sp, color = TextGreyLight)
             }
         }
     }
@@ -164,9 +178,11 @@ private fun UserInfoCard() {
 
 @Composable
 private fun AccountSection(
-    navController: NavController
+    navController: NavController,
+    viewModel: ProfileViewModel
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     Column {
         Text(
@@ -193,9 +209,37 @@ private fun AccountSection(
                 ProfileMenuItem(icon = Icons.Filled.StarOutline, text = "Ulasan")
                 ProfileMenuItem(icon = Icons.AutoMirrored.Filled.HelpOutline, text = "Pusat bantuan")
                 ProfileMenuItem(icon = Icons.Filled.LockOpen, text = "Keamanan akun")
-                ProfileMenuItem(icon = Icons.AutoMirrored.Filled.Logout, text = "Log out")
+                ProfileMenuItem(
+                    icon = Icons.AutoMirrored.Filled.Logout,
+                    text = "Keluar",
+                    onClick = { showLogoutDialog = true }
+                )
             }
         }
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Keluar") },
+            text = { Text("Apakah Anda yakin ingin keluar?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.logout()
+                        showLogoutDialog = false
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(0)
+                        }
+                    }
+                ) { Text("Ya") }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showLogoutDialog = false }
+                ) { Text("Batal") }
+            }
+        )
     }
 }
 

@@ -12,7 +12,6 @@ import com.example.lokanala.data.remote.response_and_request.myumkmpromo.UpdateP
 import com.example.lokanala.data.remote.response_and_request.product.ProductDetailResponse
 import com.example.lokanala.data.remote.response_and_request.rating.AddReviewResponse
 import com.example.lokanala.data.remote.response_and_request.rating.ReviewListResponse
-// UpdateReviewRequest tidak lagi dibutuhkan di sini karena kita ganti jadi Multipart
 
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -22,7 +21,6 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    // ... (Login User tetap sama) ...
     @POST("user/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
 

@@ -88,7 +88,7 @@ fun EditPromotionScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Edit Promotion", fontWeight = FontWeight.Bold) },
+                title = { Text("Edit Promo", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(

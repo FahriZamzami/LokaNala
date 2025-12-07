@@ -61,7 +61,7 @@ fun MyUMKMPromotionScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Promosi UMKM Saya",
+                        text = "Promo UMKM Saya",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
                             color = colorScheme.onSurface

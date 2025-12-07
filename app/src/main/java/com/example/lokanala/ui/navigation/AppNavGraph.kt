@@ -3,11 +3,16 @@ package com.example.lokanala.ui.navigation
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.lokanala.data.pref.UserPreference
+import com.example.lokanala.data.pref.dataStore
+import com.example.lokanala.ui.ViewModelFactory
 import com.example.lokanala.ui.screen.add_merchant_product.AddProductScreen
 import com.example.lokanala.ui.screen.add_promotion_umkm.AddPromoViewModel
 import com.example.lokanala.ui.screen.addumkm.AddUmkmScreen
@@ -26,6 +31,7 @@ import com.example.lokanala.ui.screen.my_merchant.MyMerchantViewModel
 import com.example.lokanala.ui.screen.myumkm.MyUmkmScreen
 import com.example.lokanala.ui.screen.notification.NotificationScreen
 import com.example.lokanala.ui.screen.profile.ProfileScreen
+import com.example.lokanala.ui.screen.profile.ProfileViewModel
 import com.example.lokanala.ui.screen.promo.PromoScreen
 import com.example.lokanala.ui.screen.promo_detail.PromoDetailScreen
 import com.example.lokanala.ui.screen.promotion_umkm.MyUMKMPromotionScreen
@@ -36,11 +42,13 @@ import com.google.accompanist.navigation.animation.composable
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AppNavGraph(navController: NavHostController) {
+fun AppNavGraph(navController: NavHostController, userPreference: UserPreference) {
     // PromotionViewModel dibiarkan di sini jika ingin dishare antar screen promosi
     val promotionViewModel: PromotionViewModel = viewModel()
     val categoryViewModel: CategoryViewModel = viewModel()
     val myMerchantViewModel: MyMerchantViewModel = viewModel()
+    val isLoggedIn = userPreference.isLoggedIn().collectAsState(initial = false)
+    val startDest = if (isLoggedIn.value) Screen.Home.route else Screen.Login.route
 
     // HAPUS: val ratingViewModel: RatingViewModel = viewModel()
     // Kita hapus agar RatingViewModel dibuat ulang setiap kali masuk halaman Rating
@@ -48,7 +56,7 @@ fun AppNavGraph(navController: NavHostController) {
 
     AnimatedNavHost(
         navController = navController,
-        startDestination = Screen.Login.route,
+        startDestination = startDest,
         enterTransition = { fadeIn(animationSpec = tween(500)) },
         exitTransition = { fadeOut(animationSpec = tween(500)) },
         popEnterTransition = { fadeIn(animationSpec = tween(500)) },
@@ -75,7 +83,15 @@ fun AppNavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Profile.route) {
-            ProfileScreen(navController = navController)
+            val context = LocalContext.current
+            val factory = ViewModelFactory.getInstance(context)
+
+            val profileViewModel: ProfileViewModel = viewModel(factory = factory)
+
+            ProfileScreen(
+                navController = navController,
+                viewModel = profileViewModel
+            )
         }
 
         composable(Screen.Notification.route) {

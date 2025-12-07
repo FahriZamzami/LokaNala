@@ -24,6 +24,7 @@ import com.example.lokanala.ui.screen.promotion_umkm.Promotion
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
 import java.util.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddPromotionScreen(
     navController: NavController,
@@ -82,7 +83,20 @@ fun AddPromotionScreen(
     }
 
     Scaffold(
-        topBar = {},
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Tambah Promo", fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colorScheme.primary
+                        )
+                    }
+                }
+            )
+        },
         containerColor = colorScheme.background
     ) { paddingValues ->
         Column(
