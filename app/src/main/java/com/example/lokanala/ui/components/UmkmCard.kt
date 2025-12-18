@@ -17,10 +17,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.lokanala.R
 import com.example.lokanala.data.remote.response.home.Umkm
 import com.example.lokanala.ui.theme.StarYellow
-import com.example.lokanala.util.ImageLoader
 
 @Composable
 fun UmkmCard(
@@ -44,17 +44,14 @@ fun UmkmCard(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
-            // MENGGUNAKAN COIL (AsyncImage) dengan optimasi
-            val context = LocalContext.current
+            // MENGGUNAKAN COIL (AsyncImage)
             AsyncImage(
-                model = ImageLoader.createOptimizedRequest(
-                    context = context,
-                    data = umkm.imageUrl ?: "https://via.placeholder.com/150",
-                    widthDp = null, // Let Coil determine based on modifier
-                    heightDp = 140 // Constrain height to reduce memory
-                ),
-                placeholder = painterResource(R.drawable.logo_lokanala),
-                error = painterResource(R.drawable.logo_lokanala),
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(umkm.imageUrl ?: "https://via.placeholder.com/150") // Fallback URL jika null
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.logo_lokanala), // Ganti dengan gambar placeholder lokalmu
+                error = painterResource(R.drawable.logo_lokanala), // Ganti dengan gambar error lokalmu
                 contentDescription = umkm.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

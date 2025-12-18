@@ -37,17 +37,9 @@ class HomeViewModel : ViewModel() {
     
     private val _selectedKategori = MutableStateFlow<String?>(null)
     val selectedKategori: StateFlow<String?> = _selectedKategori.asStateFlow()
-    
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     init {
         loadUmkm()
-    }
-    
-    fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
-        applyFilters()
     }
     
     fun setFilter(filterType: FilterType) {
@@ -60,8 +52,12 @@ class HomeViewModel : ViewModel() {
     
     fun setKategori(kategori: String?) {
         _selectedKategori.value = kategori
-        // Set filter ke Tipe UMKM ketika kategori dipilih atau di-reset
+        if (kategori != null) {
             _selectedFilter.value = FilterType.TIPE_UMKM
+        } else {
+            // Jika kategori di-reset, kembali ke filter Trending
+            _selectedFilter.value = FilterType.TRENDING
+        }
         applyFilters()
     }
     
@@ -70,48 +66,24 @@ class HomeViewModel : ViewModel() {
             val allUmkm = _uiState.value.umkmList
             var filtered = allUmkm
             
-            // 1. Apply filter berdasarkan kategori atau filter type
             when (_selectedFilter.value) {
                 FilterType.TIPE_UMKM -> {
-                    // Jika kategori dipilih, filter berdasarkan kategori
-                    // Jika tidak, tampilkan semua UMKM
-                    filtered = _selectedKategori.value?.let { kategori ->
-                        allUmkm.filter { umkm ->
+                    _selectedKategori.value?.let { kategori ->
+                        filtered = allUmkm.filter { umkm ->
                             umkm.tag.equals(kategori, ignoreCase = true)
                         }
-                    } ?: allUmkm
+                    } ?: run {
+                        filtered = allUmkm
+                    }
                 }
                 FilterType.TERLARIS -> {
-                    // Sort berdasarkan rating tertinggi, kemudian review count
-                    filtered = allUmkm.sortedWith(
-                        compareByDescending<Umkm> { it.rating }
-                            .thenByDescending { it.reviewCount }
-                    )
+                    filtered = allUmkm.sortedByDescending { it.rating }
                 }
                 FilterType.TRENDING -> {
-                    // Sort berdasarkan tanggal terdaftar terbaru (UMKM baru lebih trending)
-                    filtered = allUmkm.sortedByDescending { umkm ->
-                        try {
-                            // Parse tanggal terdaftar untuk sorting
-                            // Format: "YYYY-MM-DD" atau format lain dari API
-                            umkm.tanggalTerdaftar
-                        } catch (e: Exception) {
-                            "" // Jika parsing gagal, taruh di akhir
-                        }
-                    }
+                    filtered = allUmkm.sortedByDescending { it.rating }
                 }
                 FilterType.NONE -> {
                     filtered = allUmkm
-                }
-            }
-            
-            // 2. Apply search filter jika ada query
-            val query = _searchQuery.value.trim()
-            if (query.isNotEmpty()) {
-                filtered = filtered.filter { umkm ->
-                    umkm.name.contains(query, ignoreCase = true) ||
-                    umkm.description?.contains(query, ignoreCase = true) == true ||
-                    umkm.tag.contains(query, ignoreCase = true)
                 }
             }
             
@@ -137,12 +109,10 @@ class HomeViewModel : ViewModel() {
                                 Umkm(
                                     id = item.idUmkm,
                                     name = item.namaUmkm,
-                                    rating = 4.5, // Default rating, bisa diupdate jika API menyediakan
+                                    rating = 4.5,
                                     tag = item.kategori?.namaKategori ?: "Umkm",
                                     imageUrl = item.linkLokasi,
-                                    description = item.deskripsi,
-                                    tanggalTerdaftar = item.tanggalTerdaftar,
-                                    reviewCount = 0 // Default, bisa diisi dari produk jika diperlukan
+                                    description = item.deskripsi
                                 )
                             }
                         }

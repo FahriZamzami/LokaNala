@@ -36,7 +36,6 @@ import com.example.lokanala.data.remote.response.product.TopReviewData
 import com.example.lokanala.ui.components.RatingItem
 import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.*
-import com.example.lokanala.util.ImageUrlHelper
 
 // Definisi Warna Khusus agar sesuai desain (Pink/Merah)
 val PrimaryPink = Color(0xFFD81B60) // Sesuaikan dengan warna di screenshot
@@ -74,7 +73,7 @@ fun DetailScreen(
                         Box {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current)
-                                    .data(ImageUrlHelper.getFullImageUrl(product.gambarUrl))
+                                    .data(product.gambarUrl)
                                     .crossfade(true)
                                     .build(),
                                 placeholder = painterResource(R.drawable.logo_lokanala),

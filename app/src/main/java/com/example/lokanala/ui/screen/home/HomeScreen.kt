@@ -9,11 +9,10 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -59,11 +58,8 @@ fun HomeScreen(
                 modifier = Modifier.padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                HomeSearchBar(
-                    searchQuery = viewModel.searchQuery.collectAsState().value,
-                    onSearchQueryChanged = viewModel::onSearchQueryChanged
-                )
-                FilterChips(viewModel = viewModel)
+                HomeSearchBar()
+                FilterChips()
             }
 
             // 2. Bagian Konten (Grid / Loading / Error)
@@ -114,7 +110,7 @@ fun HomeScreen(
                             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            items(uiState.filteredUmkmList, key = { it.id }) { umkm ->
+                            items(uiState.umkmList, key = { it.id }) { umkm ->
                                 UmkmCard(
                                     umkm = umkm,
                                     onClick = {
@@ -191,46 +187,20 @@ private fun HomeTopBar(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun FilterChips(
-    modifier: Modifier = Modifier,
-    viewModel: HomeViewModel
-) {
-    val selectedFilter by viewModel.selectedFilter.collectAsState()
-    val selectedKategori by viewModel.selectedKategori.collectAsState()
-    val kategoriList by viewModel.uiState.collectAsState()
-    
+private fun FilterChips(modifier: Modifier = Modifier) {
     LazyRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Button "Semua" di paling kiri
-        item {
-            FilterChipItem(
-                text = "Semua",
-                isSelected = selectedFilter == FilterType.TIPE_UMKM && selectedKategori == null,
-                onClick = { viewModel.setKategori(null) }
-            )
-        }
-        
-        // Dropdown "Tipe UMKM"
-        item {
-            KategoriDropdownChip(
-                viewModel = viewModel,
-                kategoriList = kategoriList.kategoriUmkmList,
-                selectedKategori = selectedKategori
-            )
-        }
+        item { FilterChipItem("Tipe UMKM", isSelected = false) }
+        item { FilterChipItem("Terlaris", isSelected = false) }
+        item { FilterChipItem("Trending", isSelected = true) }
     }
 }
 
 @Composable
-private fun FilterChipItem(
-    text: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
+private fun FilterChipItem(text: String, isSelected: Boolean) {
     val colorScheme = MaterialTheme.colorScheme
 
     val (bgColor, textColor, border) = if (isSelected) {
@@ -251,7 +221,7 @@ private fun FilterChipItem(
         color = bgColor,
         shape = RoundedCornerShape(20.dp),
         border = border,
-        onClick = onClick
+        onClick = { /* TODO: Filter action */ }
     ) {
         Text(
             text = text,
@@ -260,88 +230,6 @@ private fun FilterChipItem(
             fontSize = 14.sp,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
-    }
-}
-
-@Composable
-private fun KategoriDropdownChip(
-    modifier: Modifier = Modifier,
-    viewModel: HomeViewModel,
-    kategoriList: List<String>,
-    selectedKategori: String?
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val colorScheme = MaterialTheme.colorScheme
-    val selectedFilter by viewModel.selectedFilter.collectAsState()
-    
-    // Tentukan apakah kategori chip ini selected (aktif)
-    val isSelected = selectedFilter == FilterType.TIPE_UMKM || selectedKategori != null
-    
-    Box(modifier = modifier) {
-        Surface(
-            color = if (isSelected) {
-                colorScheme.primary.copy(alpha = 0.15f)
-            } else {
-                colorScheme.surfaceVariant.copy(alpha = 0.5f)
-            },
-            shape = RoundedCornerShape(20.dp),
-            border = if (isSelected) {
-                BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.3f))
-            } else {
-                BorderStroke(0.dp, Color.Transparent)
-            },
-            onClick = { expanded = !expanded }
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = selectedKategori ?: "Tipe UMKM",
-                    color = if (isSelected) colorScheme.primary else colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    maxLines = 1
-                )
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = if (isSelected) colorScheme.primary else colorScheme.onSurfaceVariant
-                )
-            }
-        }
-        
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.8f)
-        ) {
-            // Daftar kategori dari database
-            if (kategoriList.isEmpty()) {
-                DropdownMenuItem(
-                    text = { Text("Tidak ada kategori") },
-                    onClick = { expanded = false },
-                    enabled = false
-                )
-            } else {
-                kategoriList.forEach { kategori ->
-                    DropdownMenuItem(
-                        text = { 
-                            Text(
-                                text = kategori,
-                                fontWeight = if (selectedKategori == kategori) FontWeight.SemiBold else FontWeight.Normal
-                            ) 
-                        },
-                        onClick = {
-                            viewModel.setKategori(kategori)
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
     }
 }
 

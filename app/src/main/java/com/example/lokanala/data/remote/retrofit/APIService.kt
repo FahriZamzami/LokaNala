@@ -1,29 +1,33 @@
 package com.example.lokanala.data.remote.retrofit
 
-import com.example.lokanala.data.remote.response.*
+import com.example.lokanala.data.remote.response.UmkmResponse
 import com.example.lokanala.data.remote.response.home.HomeResponse
-import com.example.lokanala.data.remote.response.myumkm.MyUmkmResponse
 import com.example.lokanala.data.remote.response.login.LoginRequest
 import com.example.lokanala.data.remote.response.login.LoginResponse
 import com.example.lokanala.data.remote.response.merchant.MerchantResponse
 import com.example.lokanala.data.remote.response.product.ProductDetailResponse
 import com.example.lokanala.data.remote.response.rating.AddReviewResponse
 import com.example.lokanala.data.remote.response.rating.ReviewListResponse
+import com.example.lokanala.data.remote.response.MerchantDetailResponse
+import com.example.lokanala.data.remote.response.MyUmkmMainResponse
 import com.example.lokanala.model.Umkm
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.*
+import retrofit2.http.GET
+import retrofit2.http.Path
 
 interface ApiService {
 
     @POST("user/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
 
-    // --- RATING ---
     @GET("rating/{id_produk}")
-    fun getRatingByProduct(@Path("id_produk") idProduk: Int): Call<ReviewListResponse>
+    fun getRatingByProduct(
+        @Path("id_produk") idProduk: Int
+    ): Call<ReviewListResponse>
 
     @Multipart
     @POST("rating")
@@ -47,86 +51,35 @@ interface ApiService {
     ): Call<AddReviewResponse>
 
     @DELETE("rating/{id_rating}")
-    fun deleteRating(@Path("id_rating") idRating: Int, @Query("id_user") idUser: Int): Call<Unit>
+    fun deleteRating(
+        @Path("id_rating") idRating: Int,
+        @Query("id_user") idUser: Int
+    ): Call<Unit>
 
-    // --- UMKM ---
     @GET("umkm")
     fun getAllUmkm(): Call<HomeResponse>
-    
-    // Suspend version for coroutines
-    @GET("umkm")
-    suspend fun getAllUmkmSuspend(): Response<HomeResponse>
 
     @GET("merchant/{id}")
     fun getMerchantDetail(@Path("id") id: Long): Call<MerchantResponse>
 
-    // Versi Suspend untuk ViewModel (PENTING)
-    @GET("merchant/{id}")
-    suspend fun getMerchantDetailSuspend(@Path("id") id: Int): MerchantDetailResponse
-
     @GET("umkm/{id}")
-    suspend fun getUmkmDetail(@Path("id") umkmId: Int): Response<Umkm>
+    suspend fun getUmkmDetail(@Path("id") umkmId: Int): Response<Umkm> // Added
 
-    @GET("umkm/my")
-    suspend fun getMyUmkmByUserId(@Query("id_user") userId: Int): Response<MyUmkmResponse>
-
-    @GET("user/my-umkm")
-    suspend fun getMyUmkmByToken(@Header("Authorization") token: String): MyUmkmMainResponse
-
-    // --- PRODUK (PENTING UNTUK ViewModel) ---
     @GET("produk/{id}")
     fun getProductDetail(@Path("id") id: Int): Call<ProductDetailResponse>
-    
-    // Suspend version for coroutines
-    @GET("produk/{id}")
-    suspend fun getProductDetailSuspend(@Path("id") id: Int): Response<ProductDetailResponse>
 
-    @GET("umkm/{umkmId}/produk")
-    suspend fun getProductsByUmkm(@Path("umkmId") umkmId: Int): Response<ProductListResponse>
+    @GET("umkm/my")
+    suspend fun getMyUmkm(
+        @Query("id_user") userId: Int
+    ): Response<List<UmkmResponse>>
 
-    @DELETE("produk/{id}")
-    suspend fun deleteProduct(@Path("id") id: Int): Response<GeneralResponse>
+    @GET("merchant/{id}") // Sesuaikan path ini dengan router backend Anda
+    suspend fun getMerchantDetail(
+        @Path("id") id: Int
+    ): MerchantDetailResponse
 
-    @Multipart
-    @POST("produk")
-    suspend fun addProduct(
-        @Part("id_umkm") idUmkm: RequestBody,
-        @Part("id_kategori_produk") idKategori: RequestBody,
-        @Part("nama_produk") nama: RequestBody,
-        @Part("deskripsi") deskripsi: RequestBody,
-        @Part("harga") harga: RequestBody,
-        @Part gambar: MultipartBody.Part?
-    ): Response<AddProductResponse>
-
-    @Multipart
-    @PUT("produk/{id}")
-    suspend fun updateProduct(
-        @Path("id") productId: Int,
-        @Part("id_umkm") idUmkm: RequestBody,
-        @Part("id_kategori_produk") idKategori: RequestBody,
-        @Part("nama_produk") nama: RequestBody,
-        @Part("deskripsi") deskripsi: RequestBody,
-        @Part("harga") harga: RequestBody,
-        @Part gambar: MultipartBody.Part?
-    ): Response<AddProductResponse>
-
-    // --- KATEGORI ---
-    @GET("kategori-produk/umkm/{umkmId}")
-    suspend fun getCategories(@Path("umkmId") umkmId: Int): Response<CategoryResponse>
-
-    @POST("kategori-produk")
-    suspend fun addCategory(@Body request: CreateCategoryRequest): Response<SingleCategoryResponse>
-
-    @PUT("kategori-produk/{categoryId}")
-    suspend fun updateCategory(@Path("categoryId") categoryId: Int, @Body request: UpdateCategoryRequest): Response<SingleCategoryResponse>
-
-    @DELETE("kategori-produk/{categoryId}")
-    suspend fun deleteCategory(@Path("categoryId") categoryId: Int): Response<Unit>
-
-    // --- UPDATE URUTAN KATEGORI ---
-    @PUT("kategori-produk/urutan/{umkmId}")
-    suspend fun updateCategoryOrder(
-        @Path("umkmId") umkmId: Int,
-        @Body request: UpdateCategoryOrderRequest
-    ): Response<UpdateCategoryOrderResponse>
+    @GET("user/my-umkm")
+    suspend fun getMyUmkm(
+        @Header("Authorization") token: String
+    ): MyUmkmMainResponse
 }

@@ -24,10 +24,6 @@ sealed class Screen(val route: String) {
         fun createRoute(umkmId: Int) = "add_product/$umkmId"
     }
 
-    object EditProduct : Screen("edit_product/{umkmId}/{productId}") {
-        fun createRoute(umkmId: Int, productId: Int) = "edit_product/$umkmId/$productId"
-    }
-
     object MyUmkm : Screen("my_umkm")
     object AddUmkm : Screen("add_umkm")
 
@@ -55,9 +51,5 @@ sealed class Screen(val route: String) {
 
     object Category : Screen("category/{umkmId}") {
         fun createRoute(umkmId: Int) = "category/$umkmId"
-    }
-
-    object ManageCategory : Screen("manage_category/{umkmId}") {
-        fun createRoute(umkmId: Int) = "manage_category/$umkmId"
     }
 }

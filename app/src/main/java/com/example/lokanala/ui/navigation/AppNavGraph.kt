@@ -6,10 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.composable // Pastikan import ini benar (untuk Accompanist pakai yang animasi)
 import androidx.navigation.navArgument
 import com.example.lokanala.ui.screen.add_merchant_product.AddProductScreen
-import com.example.lokanala.ui.screen.edit_merchant_product.EditProductScreen
 import com.example.lokanala.ui.screen.addumkm.AddUmkmScreen
 import com.example.lokanala.ui.screen.add_promotion_umkm.AddPromotionScreen
 import com.example.lokanala.ui.screen.category.CategoryScreen
@@ -30,14 +28,13 @@ import com.example.lokanala.ui.screen.promo_detail.PromoDetailScreen
 import com.example.lokanala.ui.screen.promotion_umkm.MyUMKMPromotionScreen
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
 import com.example.lokanala.ui.screen.rating.RatingScreen
-// Import Accompanist jika pakai animasi navigasi
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavGraph(navController: NavHostController) {
-    // ViewModel instances yang dishare atau di-hoist
+    // ViewModel instances
     val promotionViewModel: PromotionViewModel = viewModel()
     val categoryViewModel: CategoryViewModel = viewModel()
     val myMerchantViewModel: MyMerchantViewModel = viewModel()
@@ -107,38 +104,18 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        // --- BAGIAN YANG DIPERBAIKI ---
         composable(
             route = Screen.AddProduct.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
         ) { backStackEntry ->
             val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
-
-            // Hapus parameter categoryViewModel & myMerchantViewModel
-            // AddProductScreen sekarang akan membuat viewModel-nya sendiri secara internal
             AddProductScreen(
                 navController = navController,
-                umkmId = umkmId
-            )
-        }
-        
-        composable(
-            route = Screen.EditProduct.route,
-            arguments = listOf(
-                navArgument("umkmId") { type = NavType.IntType },
-                navArgument("productId") { type = NavType.IntType }
-            )
-        ) { backStackEntry ->
-            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
-            val productId = backStackEntry.arguments?.getInt("productId") ?: return@composable
-            EditProductScreen(
-                navController = navController,
                 umkmId = umkmId,
-                productId = productId,
+                categoryViewModel = categoryViewModel,
                 myMerchantViewModel = myMerchantViewModel
             )
         }
-        // ------------------------------
 
         composable(Screen.Promotion.route) {
             MyUMKMPromotionScreen(
@@ -212,17 +189,15 @@ fun AppNavGraph(navController: NavHostController) {
             )
         }
 
-        // Pastikan Anda tidak menduplikasi rute CategoryScreen jika logic-nya sama
         composable(
-            route = Screen.ManageCategory.route, // Gunakan Screen.ManageCategory yang baru
+            route = Screen.Category.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
         ) { backStackEntry ->
             val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
             CategoryScreen(
                 navController = navController,
                 umkmId = umkmId,
-                viewModel = categoryViewModel,
-                myMerchantViewModel = myMerchantViewModel
+                viewModel = categoryViewModel
             )
         }
     }
