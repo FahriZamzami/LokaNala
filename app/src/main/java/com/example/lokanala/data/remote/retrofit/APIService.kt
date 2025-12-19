@@ -3,6 +3,8 @@ package com.example.lokanala.data.remote.retrofit
 import com.example.lokanala.data.remote.response_and_request.login.LoginRequest
 import com.example.lokanala.data.remote.response_and_request.login.LoginResponse
 import com.example.lokanala.data.remote.response_and_request.home.HomeResponse
+//import com.example.lokanala.data.remote.response_and_request.login.LogoutRequest
+//import com.example.lokanala.data.remote.response_and_request.login.LogoutResponse
 import com.example.lokanala.data.remote.response_and_request.merchant.MerchantResponse
 import com.example.lokanala.data.remote.response_and_request.myumkmpromo.CreatePromoRequest
 import com.example.lokanala.data.remote.response_and_request.myumkmpromo.PromoCreateUpdateResponse
@@ -11,6 +13,7 @@ import com.example.lokanala.data.remote.response_and_request.myumkmpromo.PromoLi
 import com.example.lokanala.data.remote.response_and_request.myumkmpromo.UpdatePromoRequest
 import com.example.lokanala.data.remote.response_and_request.product.ProductDetailResponse
 import com.example.lokanala.data.remote.response_and_request.rating.AddReviewResponse
+import com.example.lokanala.data.remote.response_and_request.rating.OwnerCheckResponse
 import com.example.lokanala.data.remote.response_and_request.rating.ReviewListResponse
 
 import okhttp3.MultipartBody
@@ -23,6 +26,11 @@ interface ApiService {
 
     @POST("user/login")
     suspend fun loginUser(@Body request: LoginRequest): Response<LoginResponse>
+
+//    @POST("user/logout")
+//    suspend fun logoutUser(
+//        @Body request: LogoutRequest
+//    ): Response<LogoutResponse>
 
     // -------------------- RATING / ULASAN -------------------- //
 
@@ -62,6 +70,12 @@ interface ApiService {
         @Path("id_rating") idRating: Int,
         @Query("id_user") idUser: Int // <--- TAMBAHKAN INI
     ): Call<Unit>
+
+    @GET("produk/{id_produk}/is-owner/{id_user}")
+    fun isProductOwner(
+        @Path("id_produk") productId: Int,
+        @Path("id_user") userId: Int
+    ): Call<OwnerCheckResponse>
 
     // ... (Endpoint UMKM, Merchant, Product tetap sama) ...
     @GET("umkm")

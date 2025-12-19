@@ -38,6 +38,7 @@ fun RatingScreen(
     val reviews = viewModel.reviews
     val isLoading by viewModel.isLoading.collectAsState()
     val currentUserId by viewModel.currentUserId.collectAsState()
+    val isOwner by viewModel.isOwner.collectAsState()
 
     // -----------------------------------------------------------------
     // 1. LOGIKA SORTING: USER SENDIRI PALING ATAS
@@ -75,7 +76,7 @@ fun RatingScreen(
             )
         },
         floatingActionButton = {
-            if (!isLoading && !hasReviewed && currentUserId != -1) {
+            if (!isLoading && !hasReviewed && currentUserId != -1 && !isOwner) {
                 ExtendedFloatingActionButton(
                     text = { Text("Tulis Ulasan", fontWeight = FontWeight.SemiBold) },
                     onClick = {

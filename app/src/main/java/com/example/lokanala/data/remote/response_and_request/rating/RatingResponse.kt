@@ -89,3 +89,8 @@ data class UpdateReviewRequest(
     @SerializedName("komentar")
     val komentar: String
 )
+
+data class OwnerCheckResponse(
+    val success: Boolean,
+    val isOwner: Boolean
+)

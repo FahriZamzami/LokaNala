@@ -84,7 +84,7 @@ fun LoginScreen(
 
                 // Button Login (Tidak perlu pass context lagi)
                 Button(
-                    onClick = { viewModel.handleLogin() }, // <--- CUKUP PANGGIL INI
+                    onClick = { viewModel.fetchFcmTokenAndLogin() }, // <--- CUKUP PANGGIL INI
                     modifier = Modifier.fillMaxWidth().height(55.dp),
                     enabled = !uiState.isLoading
                 ) {

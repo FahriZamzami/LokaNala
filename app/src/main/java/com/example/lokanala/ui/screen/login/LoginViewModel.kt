@@ -1,5 +1,6 @@
 package com.example.lokanala.ui.screen.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lokanala.data.pref.UserModel
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import com.google.firebase.messaging.FirebaseMessaging
 
 // Data State UI
 data class LoginUiState(
@@ -28,6 +30,26 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
+
+    private var fcmToken: String? = null
+
+    fun setFcmToken(token: String) {
+        fcmToken = token
+    }
+
+    fun fetchFcmTokenAndLogin() {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                fcmToken = task.result
+                Log.d("FCM", "FCM token siap: $fcmToken")
+            } else {
+                Log.e("FCM", "Gagal ambil FCM token", task.exception)
+            }
+
+            // Panggil login setelah token siap
+            handleLogin()
+        }
+    }
 
     fun onEmailChange(newEmail: String) {
         _uiState.value = _uiState.value.copy(email = newEmail)
@@ -51,7 +73,7 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
             _uiState.value = _uiState.value.copy(isLoading = true, message = null)
 
             try {
-                val response = ApiClient.instance.loginUser(LoginRequest(email, password))
+                val response = ApiClient.instance.loginUser(    LoginRequest(email, password, fcmToken ?: ""))
                 val body = response.body()
 
                 if (response.isSuccessful && body != null && body.token != null && body.user != null) {
