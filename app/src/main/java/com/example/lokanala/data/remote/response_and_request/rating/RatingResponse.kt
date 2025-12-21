@@ -90,6 +90,31 @@ data class UpdateReviewRequest(
     val komentar: String
 )
 
+data class ProductRatingResponse(
+    @SerializedName("success")
+    val success: Boolean,
+
+    @SerializedName("rating")
+    val rating: Double
+)
+
+data class ProductRatingData(
+    @SerializedName("rating")
+    val rating: Double
+)
+
+// Response untuk Rating UMKM (Logika Akumulasi)
+data class UmkmRatingResponse(
+    @SerializedName("success")
+    val success: Boolean,
+
+    @SerializedName("rating")
+    val rating: Double,
+
+    @SerializedName("total_ulasan")
+    val totalUlasan: Int
+)
+
 data class OwnerCheckResponse(
     val success: Boolean,
     val isOwner: Boolean

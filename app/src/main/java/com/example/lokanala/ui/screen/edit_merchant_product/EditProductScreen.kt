@@ -1,7 +1,8 @@
-package com.example.lokanala.ui.screen.add_merchant_product
+package com.example.lokanala.ui.screen.edit_merchant_product
 
 import android.Manifest
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,17 +19,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.lokanala.data.remote.response_and_request.CategoryItem
 import com.example.lokanala.ui.components.*
+import com.example.lokanala.ui.screen.add_merchant_product.AddProductViewModel
+import com.example.lokanala.ui.screen.my_merchant.MyMerchantViewModel
+import com.example.lokanala.util.ImageUrlHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddProductScreen(
+fun EditProductScreen(
     navController: NavController,
     umkmId: Int,
+    productId: Int,
     viewModel: AddProductViewModel = viewModel(),
-    modifier: Modifier = Modifier
+    myMerchantViewModel: MyMerchantViewModel
 ) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
@@ -36,18 +43,46 @@ fun AddProductScreen(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
-    var selectedCategory by remember { mutableStateOf<com.example.lokanala.data.remote.response_and_request.CategoryItem?>(null) }
+    var selectedCategory by remember { mutableStateOf<CategoryItem?>(null) }
+    var currentImageUrl by remember { mutableStateOf<String?>(null) }
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var showSourceDialog by remember { mutableStateOf(false) }
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
+    var showUpdateConfirmation by remember { mutableStateOf(false) }
 
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isSuccess by viewModel.isUploadSuccess.collectAsState()
     val message by viewModel.message.collectAsState()
+    val productData by viewModel.productData.collectAsState()
+    val productCategoryId by viewModel.productCategoryId.collectAsState()
 
-    LaunchedEffect(umkmId) {
+    LaunchedEffect(umkmId, productId) {
         viewModel.fetchCategories(umkmId)
+        viewModel.fetchProductDetail(productId)
+        val categoryIdFromList = myMerchantViewModel.getProductCategoryId(productId)
+        if (categoryIdFromList != null) {
+            viewModel.setProductCategoryId(categoryIdFromList)
+            Log.d("EditProductScreen", "Category ID dari list: $categoryIdFromList")
+        }
+    }
+
+    LaunchedEffect(productData, categories, productCategoryId) {
+        productData?.let { product ->
+            title = product.namaProduk
+            description = product.deskripsi ?: ""
+            price = product.harga.toInt().toString()
+            currentImageUrl = ImageUrlHelper.getFullImageUrl(product.gambarUrl)
+            val categoryId = productCategoryId
+            if (categoryId != null) {
+                val matchedCategory = categories.find { it.id == categoryId }
+                if (matchedCategory != null) {
+                    selectedCategory = matchedCategory
+                    Log.d("EditProductScreen", "Category matched dari categoryId: ${matchedCategory.name}")
+                }
+            }
+            Log.d("EditProductScreen", "Form pre-populated: title=$title, price=$price")
+        }
     }
 
     LaunchedEffect(message) {
@@ -86,7 +121,7 @@ fun AddProductScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tambah Produk", fontWeight = FontWeight.Bold) },
+                title = { Text("Edit Produk", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -107,7 +142,7 @@ fun AddProductScreen(
                 Text("Foto Produk", fontWeight = FontWeight.Medium)
                 ProductImagePicker(
                     selectedImageUri = selectedImageUri,
-                    currentImageUrl = null,
+                    currentImageUrl = currentImageUrl,
                     onImageSelected = { selectedImageUri = it },
                     onShowSourceDialog = { showSourceDialog = true }
                 )
@@ -126,15 +161,7 @@ fun AddProductScreen(
                 Button(
                     onClick = {
                         if (title.isNotEmpty() && price.isNotEmpty() && selectedCategory != null) {
-                            viewModel.addProduct(
-                                context = context,
-                                umkmId = umkmId,
-                                categoryId = selectedCategory!!.id,
-                                name = title,
-                                description = description,
-                                price = price,
-                                imageUri = selectedImageUri
-                            )
+                            showUpdateConfirmation = true
                         } else {
                             Toast.makeText(context, "Nama, Harga, dan Kategori Wajib Diisi!", Toast.LENGTH_SHORT).show()
                         }
@@ -146,15 +173,39 @@ fun AddProductScreen(
                     if (isLoading) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Menyimpan...")
+                        Text("Memperbarui...")
                     } else {
-                        Text("Simpan Produk")
+                        Text("Perbarui Produk")
                     }
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
+
+    UpdateProductConfirmationDialog(
+        showDialog = showUpdateConfirmation,
+        title = title,
+        description = description,
+        price = price,
+        selectedCategory = selectedCategory,
+        onConfirm = {
+            selectedCategory?.let { category ->
+                showUpdateConfirmation = false
+                viewModel.updateProduct(
+                    context = context,
+                    productId = productId,
+                    umkmId = umkmId,
+                    categoryId = category.id,
+                    name = title,
+                    description = description,
+                    price = price,
+                    imageUri = selectedImageUri
+                )
+            }
+        },
+        onDismiss = { showUpdateConfirmation = false }
+    )
 
     ImageSourceDialog(
         showDialog = showSourceDialog,

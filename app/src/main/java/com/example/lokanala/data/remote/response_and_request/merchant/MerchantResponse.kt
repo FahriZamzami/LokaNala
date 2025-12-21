@@ -28,8 +28,11 @@ data class MerchantData(
     @SerializedName("alamat")
     val alamat: String?,
 
+    @SerializedName("gambar_url")
+    val imageHeaderUrl: String?,
+
     @SerializedName("link_lokasi")
-    val imageHeaderUrl: String?, // Foto profil/header UMKM
+    val linkLokasi: String?, // Foto profil/header UMKM
 
     @SerializedName("rating")
     val rating: Double,
@@ -76,7 +79,7 @@ data class MerchantProduct(
     @SerializedName("harga")
     val harga: Double,
 
-    @SerializedName("gambar")
+    @SerializedName("gambar_url")
     val gambarUrl: String?,
 
     @SerializedName("kategori_produk")

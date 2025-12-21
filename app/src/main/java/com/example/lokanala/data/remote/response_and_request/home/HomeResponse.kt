@@ -37,6 +37,9 @@ data class UmkmItem(
     @SerializedName("deskripsi")
     val deskripsi: String?,
 
+    @SerializedName("gambar_url")
+    val gambarUrl: String?,
+
     @SerializedName("link_lokasi")
     val linkLokasi: String?, // Ini yang akan jadi gambar
 

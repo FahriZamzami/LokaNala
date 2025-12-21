@@ -8,9 +8,11 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.lokanala.data.pref.UserPreference
 import com.example.lokanala.data.pref.dataStore
 import com.example.lokanala.ui.screen.login.LoginViewModel
+import com.example.lokanala.ui.screen.merchant.MerchantViewModel
 import com.example.lokanala.ui.screen.profile.ProfileViewModel
 import com.example.lokanala.ui.screen.rating.RatingViewModel
 import com.example.lokanala.ui.splash.SplashViewModel
+import com.example.lokanala.ui.screen.myumkm.MyUmkmViewModel
 
 class ViewModelFactory(
     private val userPreference: UserPreference
@@ -39,6 +41,14 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(ProfileViewModel::class.java) -> {
                 ProfileViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(MyUmkmViewModel::class.java) -> {
+                MyUmkmViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(MerchantViewModel::class.java) -> {
+                MerchantViewModel(userPreference) as T
             }
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

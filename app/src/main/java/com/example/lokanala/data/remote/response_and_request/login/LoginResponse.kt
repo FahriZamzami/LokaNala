@@ -17,6 +17,10 @@ data class UserData(
     val tanggal_dibuat: String
 )
 
+data class FollowStatusResponse(
+    val isFollowing: Boolean
+)
+
 //data class LogoutResponse(
 //    @SerializedName("success")
 //    val success: Boolean,

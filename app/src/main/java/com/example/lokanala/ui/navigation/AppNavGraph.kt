@@ -21,6 +21,7 @@ import com.example.lokanala.ui.screen.category.CategoryScreen
 import com.example.lokanala.ui.screen.category.CategoryViewModel
 import com.example.lokanala.ui.screen.detail.DetailScreen
 import com.example.lokanala.ui.screen.detail.UmkmDetailScreen
+import com.example.lokanala.ui.screen.edit_merchant_product.EditProductScreen
 import com.example.lokanala.ui.screen.edit_promotion_umkm.EditPromoViewModel
 import com.example.lokanala.ui.screen.edit_promotion_umkm.EditPromotionScreen
 import com.example.lokanala.ui.screen.home.HomeScreen
@@ -42,17 +43,16 @@ import com.google.accompanist.navigation.animation.composable
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun AppNavGraph(navController: NavHostController, userPreference: UserPreference) {
-    // PromotionViewModel dibiarkan di sini jika ingin dishare antar screen promosi
+fun AppNavGraph(
+    navController: NavHostController,
+    userPreference: UserPreference
+) {
     val promotionViewModel: PromotionViewModel = viewModel()
     val categoryViewModel: CategoryViewModel = viewModel()
     val myMerchantViewModel: MyMerchantViewModel = viewModel()
+
     val isLoggedIn = userPreference.isLoggedIn().collectAsState(initial = false)
     val startDest = if (isLoggedIn.value) Screen.Home.route else Screen.Login.route
-
-    // HAPUS: val ratingViewModel: RatingViewModel = viewModel()
-    // Kita hapus agar RatingViewModel dibuat ulang setiap kali masuk halaman Rating
-    // supaya bisa menangkap productId terbaru.
 
     AnimatedNavHost(
         navController = navController,
@@ -61,31 +61,33 @@ fun AppNavGraph(navController: NavHostController, userPreference: UserPreference
         exitTransition = { fadeOut(animationSpec = tween(500)) },
         popEnterTransition = { fadeIn(animationSpec = tween(500)) },
         popExitTransition = { fadeOut(animationSpec = tween(500)) }
-    )  {
+    ) {
 
+        // ================= AUTH =================
         composable(Screen.Login.route) {
             LoginScreen(navController = navController)
         }
 
+        // ================= HOME =================
         composable(Screen.Home.route) {
             HomeScreen(navController = navController)
         }
 
+        // ================= MERCHANT =================
         composable(
             route = Screen.Merchant.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val umkmId = backStackEntry.arguments?.getLong("umkmId") ?: -1L
+        ) {
             MerchantScreen(
                 navController = navController,
-                umkmId = umkmId
+                umkmId = it.arguments?.getLong("umkmId") ?: -1L
             )
         }
 
+        // ================= PROFILE =================
         composable(Screen.Profile.route) {
             val context = LocalContext.current
             val factory = ViewModelFactory.getInstance(context)
-
             val profileViewModel: ProfileViewModel = viewModel(factory = factory)
 
             ProfileScreen(
@@ -94,27 +96,30 @@ fun AppNavGraph(navController: NavHostController, userPreference: UserPreference
             )
         }
 
+        // ================= NOTIFICATION =================
         composable(Screen.Notification.route) {
             NotificationScreen(
-                onBack = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                onBack = { navController.popBackStack() }
             )
         }
 
+        // ================= UMKM =================
         composable(Screen.MyUmkm.route) {
             MyUmkmScreen(
-                onBack = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                onBack = { navController.popBackStack() }
             )
         }
 
         composable(Screen.AddUmkm.route) {
             AddUmkmScreen(
-                onBack = { navController.popBackStack() },
-                navController = navController
+                navController = navController,
+                onBack = { navController.popBackStack() }
             )
         }
 
+        // ================= MY MERCHANT =================
         composable(
             route = Screen.MyMerchant.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
@@ -123,48 +128,61 @@ fun AppNavGraph(navController: NavHostController, userPreference: UserPreference
             MyMerchantScreen(
                 navController = navController,
                 umkmId = umkmId,
-                viewModel = myMerchantViewModel, // <-- Berikan ViewModel
-                categoryViewModel = categoryViewModel
+                viewModel = myMerchantViewModel
             )
         }
 
+        // ================= ADD PRODUCT =================
         composable(
             route = Screen.AddProduct.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
         ) { backStackEntry ->
             val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
+
+            // Hapus parameter categoryViewModel & myMerchantViewModel
+            // AddProductScreen sekarang akan membuat viewModel-nya sendiri secara internal
             AddProductScreen(
                 navController = navController,
-                umkmId = umkmId,
-                categoryViewModel = categoryViewModel, // <-- Berikan CategoryViewModel
-                myMerchantViewModel = myMerchantViewModel // <-- Berikan MyMerchantViewModel
+                umkmId = umkmId
             )
         }
 
+        // ================= EDIT PRODUCT (DITAMBAHKAN) =================
+        composable(
+            route = Screen.EditProduct.route,
+            arguments = listOf(
+                navArgument("umkmId") { type = NavType.IntType },
+                navArgument("productId") { type = NavType.IntType }
+            )
+        ) {
+            EditProductScreen(
+                navController = navController,
+                umkmId = it.arguments?.getInt("umkmId") ?: return@composable,
+                productId = it.arguments?.getInt("productId") ?: return@composable,
+                myMerchantViewModel = myMerchantViewModel
+            )
+        }
+
+        // ================= PROMOTION =================
         composable(
             route = Screen.Promotion.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: -1
-
+        ) {
             MyUMKMPromotionScreen(
                 navController = navController,
                 viewModel = promotionViewModel,
-                umkmId = umkmId    // ⭐ KIRIM ID UMKM KE SCREEN ⭐
+                umkmId = it.arguments?.getInt("umkmId") ?: -1
             )
         }
 
         composable(
             route = Screen.AddPromotion.route,
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: -1
-            val addPromoViewModel = remember { AddPromoViewModel() }
-
+        ) {
             AddPromotionScreen(
                 navController = navController,
-                addPromoViewModel = addPromoViewModel,
-                umkmId = umkmId
+                addPromoViewModel = remember { AddPromoViewModel() },
+                umkmId = it.arguments?.getInt("umkmId") ?: -1
             )
         }
 
@@ -174,41 +192,30 @@ fun AppNavGraph(navController: NavHostController, userPreference: UserPreference
                 navArgument("promoId") { type = NavType.IntType },
                 navArgument("umkmId") { type = NavType.IntType }
             )
-        ) { backStackEntry ->
-
-            val promoId = backStackEntry.arguments?.getInt("promoId") ?: -1
-            val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: -1
-
-            val editPromoViewModel = remember { EditPromoViewModel() }
-
+        ) {
             EditPromotionScreen(
                 navController = navController,
-                promotionId = promoId,
-                umkmId = umkmId,
+                promotionId = it.arguments?.getInt("promoId") ?: -1,
+                umkmId = it.arguments?.getInt("umkmId") ?: -1,
                 promotionViewModel = promotionViewModel,
-                editPromoViewModel = editPromoViewModel
+                editPromoViewModel = remember { EditPromoViewModel() }
             )
         }
 
-        // --- PERBAIKAN DI SINI ---
+        // ================= RATING =================
         composable(
-            route = Screen.Rating.route, // "rating/{productId}"
+            route = Screen.Rating.route,
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
         ) {
-            // Jangan oper viewModel dari luar.
-            // Biarkan RatingScreen membuat ViewModel-nya sendiri agar mendapat SavedStateHandle yang benar.
-            RatingScreen(
-                navController = navController
-                // viewModel akan diinisialisasi otomatis oleh RatingScreen
-            )
+            RatingScreen(navController = navController)
         }
-        // -------------------------
 
+        // ================= PROMO =================
         composable(Screen.Promo.route) {
             PromoScreen(
                 onBack = { navController.popBackStack() },
-                onPromoClick = { promoId ->
-                    navController.navigate(Screen.PromoDetail.createRoute(promoId))
+                onPromoClick = {
+                    navController.navigate(Screen.PromoDetail.createRoute(it))
                 }
             )
         }
@@ -220,6 +227,7 @@ fun AppNavGraph(navController: NavHostController, userPreference: UserPreference
             PromoDetailScreen(onBack = { navController.popBackStack() })
         }
 
+        // ================= DETAIL =================
         composable(
             route = Screen.Detail.route,
             arguments = listOf(navArgument("productId") { type = NavType.IntType })
@@ -230,26 +238,17 @@ fun AppNavGraph(navController: NavHostController, userPreference: UserPreference
             )
         }
 
+        // ================= CATEGORY =================
         composable(
-            route = "detailscreen/{umkmId}",
-            arguments = listOf(navArgument("umkmId") { type = NavType.LongType })
-        ) { backStackEntry ->
-            val umkmId = backStackEntry.arguments?.getLong("umkmId") ?: -1L
-            UmkmDetailScreen(
-                umkmId = umkmId,
-                navController = navController
-            )
-        }
-
-        composable(
-            route = Screen.Category.route,
+            route = Screen.ManageCategory.route, // Gunakan Screen.ManageCategory yang baru
             arguments = listOf(navArgument("umkmId") { type = NavType.IntType })
         ) { backStackEntry ->
             val umkmId = backStackEntry.arguments?.getInt("umkmId") ?: return@composable
             CategoryScreen(
                 navController = navController,
                 umkmId = umkmId,
-                viewModel = categoryViewModel
+                viewModel = categoryViewModel,
+                myMerchantViewModel = myMerchantViewModel
             )
         }
     }

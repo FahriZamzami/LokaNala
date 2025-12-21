@@ -1,13 +1,9 @@
 package com.example.lokanala.ui.screen.category
 
-import androidx.compose.foundation.background
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -17,14 +13,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.lokanala.ui.theme.LokanalaTheme
+import com.example.lokanala.data.remote.response_and_request.CategoryItem
+import com.example.lokanala.ui.components.AddEditCategoryDialog
+import com.example.lokanala.ui.components.CategoryCard
+import com.example.lokanala.ui.components.CategoryConfirmationDialog
+import com.example.lokanala.ui.components.CategorySnackbar
+import com.example.lokanala.ui.screen.my_merchant.MyMerchantViewModel
+import com.example.lokanala.util.CategoryOrderManager
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,297 +33,213 @@ import kotlinx.coroutines.launch
 fun CategoryScreen(
     navController: NavController,
     umkmId: Int,
-    viewModel: CategoryViewModel, // Terima ViewModel
-    modifier: Modifier = Modifier
+    viewModel: CategoryViewModel = viewModel(),
+    myMerchantViewModel: MyMerchantViewModel
 ) {
-    val colors = MaterialTheme.colorScheme
-    val coroutineScope = rememberCoroutineScope()
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val categories by viewModel.categories.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val products by myMerchantViewModel.products.collectAsState()
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+    
+    var categoryOrder by remember(umkmId) {
+        mutableStateOf(CategoryOrderManager.getCategoryOrder(context, umkmId))
+    }
+    val sortedCategories = remember(categories, categoryOrder) {
+        CategoryOrderManager.sortCategoriesByOrder(categories, categoryOrder)
+    }
 
-    // State untuk mengontrol dialog tambah/edit
-    var showAddEditSheet by remember { mutableStateOf(false) }
-    // State untuk menyimpan kategori yang sedang diedit
-    var selectedCategory by remember { mutableStateOf<Category?>(null) }
-
-    // State untuk dialog konfirmasi hapus
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showDialog by remember { mutableStateOf(false) }
+    var editingCategory by remember { mutableStateOf<CategoryItem?>(null) }
+    var showEditConfirmation by remember { mutableStateOf(false) }
+    var categoryToEdit by remember { mutableStateOf<CategoryItem?>(null) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var categoryToDelete by remember { mutableStateOf<CategoryItem?>(null) }
+    
+    fun getProductCount(categoryId: Int, categoryName: String) = products.count {
+        myMerchantViewModel.getProductCategoryId(it.id) == categoryId ||
+        it.categoryName?.equals(categoryName, ignoreCase = true) == true
+    }
+    
+    LaunchedEffect(umkmId) {
+        viewModel.fetchCategories(umkmId, context)
+        myMerchantViewModel.fetchMerchantProducts(umkmId)
+        CategoryOrderManager.syncCategoryOrderFromBackend(
+            context, umkmId, onSuccess = {}, 
+            onError = { Log.e("KategoriScreen", "Error syncing: $it") }
+        )
+    }
+    
+    LaunchedEffect(errorMessage) {
+        errorMessage?.let {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    message = it,
+                    duration = SnackbarDuration.Short
+                )
+                viewModel.clearError()
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Kategori", fontWeight = FontWeight.Bold, color = colors.onSurface) },
+                title = { Text("Kelola Kategori") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.primary)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colors.background)
+                }
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    selectedCategory = null // Pastikan null (mode Tambah)
-                    showAddEditSheet = true
-                },
-                containerColor = colors.primary,
-                contentColor = colors.onPrimary,
-                shape = CircleShape
-            ) {
+            FloatingActionButton(onClick = { editingCategory = null; showDialog = true }) {
                 Icon(Icons.Default.Add, "Tambah Kategori")
             }
         },
-        containerColor = colors.background
-    ) { innerPadding ->
-
-        // Tampilkan daftar kategori
-        LazyColumn(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(viewModel.categories, key = { it.id }) { category ->
-                CategoryItemCard(
-                    category = category,
-                    onEditClick = {
-                        selectedCategory = category // Set kategori (mode Edit)
-                        showAddEditSheet = true
-                    },
-                    onDeleteClick = {
-                        selectedCategory = category // Set kategori untuk dihapus
-                        showDeleteDialog = true
-                    }
-                )
-            }
-        }
-
-        // --- Bottom Sheet untuk Tambah/Edit Kategori ---
-        if (showAddEditSheet) {
-            ModalBottomSheet(
-                onDismissRequest = { showAddEditSheet = false },
-                sheetState = sheetState,
-                containerColor = colors.surface,
-                tonalElevation = 6.dp,
-                shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
-            ) {
-                AddEditCategorySheetContent(
-                    existingCategory = selectedCategory,
-                    onDismiss = {
-                        coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) showAddEditSheet = false
-                        }
-                    },
-                    onSubmit = { name, description ->
-                        if (selectedCategory == null) {
-                            // Mode Tambah
-                            viewModel.addCategory(name, description)
-                        } else {
-                            // Mode Edit
-                            viewModel.updateCategory(selectedCategory!!.id, name, description)
-                        }
-
-                        coroutineScope.launch { sheetState.hide() }.invokeOnCompletion {
-                            if (!sheetState.isVisible) showAddEditSheet = false
+        snackbarHost = { SnackbarHost(snackbarHostState) { CategorySnackbar(it) } }
+    ) { padding ->
+        Box(Modifier.padding(padding).fillMaxSize()) {
+            if (isLoading && categories.isEmpty()) {
+                CircularProgressIndicator(Modifier.align(Alignment.Center))
+            } else {
+                CategoryList(
+                    sortedCategories = sortedCategories,
+                    onEdit = { categoryToEdit = it; showEditConfirmation = true },
+                    onDelete = { categoryToDelete = it; showDeleteConfirmation = true },
+                    onDragEnd = { oldIdx, newIdx ->
+                        if (oldIdx != null && newIdx != null && oldIdx != newIdx) {
+                            viewModel.moveCategory(umkmId, sortedCategories, oldIdx, newIdx, context)
+                            scope.launch {
+                                delay(800)
+                                categoryOrder = CategoryOrderManager.getCategoryOrder(context, umkmId)
+                            }
                         }
                     }
                 )
             }
         }
+    }
 
-        // --- Dialog Konfirmasi Hapus ---
-        if (showDeleteDialog && selectedCategory != null) {
-            DeleteCategoryDialog(
-                category = selectedCategory!!,
-                onDismiss = {
-                    showDeleteDialog = false
-                    selectedCategory = null
+    categoryToEdit?.let { category ->
+        if (showEditConfirmation) {
+            CategoryConfirmationDialog(
+            category = category,
+                productCount = getProductCount(category.id, category.name),
+                title = "Edit Kategori",
+                icon = Icons.Default.Edit,
+                iconColor = MaterialTheme.colorScheme.primary,
+                confirmText = "Ya, Lanjutkan",
+                confirmColor = MaterialTheme.colorScheme.primary,
+                isDelete = false,
+            onConfirm = {
+                showEditConfirmation = false
+                editingCategory = category
+                showDialog = true
+                categoryToEdit = null
+            },
+                onDismiss = { showEditConfirmation = false; categoryToEdit = null }
+            )
+        }
+    }
+    
+    categoryToDelete?.let { category ->
+        if (showDeleteConfirmation) {
+            CategoryConfirmationDialog(
+            category = category,
+                productCount = getProductCount(category.id, category.name),
+                title = "Hapus Kategori",
+                icon = Icons.Default.Delete,
+                iconColor = MaterialTheme.colorScheme.error,
+                confirmText = "Ya, Hapus",
+                confirmColor = MaterialTheme.colorScheme.error,
+                isDelete = true,
+            onConfirm = {
+                    viewModel.deleteCategoryWithProducts(umkmId, category.id, getProductCount(category.id, category.name))
+                    myMerchantViewModel.fetchMerchantProducts(umkmId)
+                showDeleteConfirmation = false
+                categoryToDelete = null
+            },
+                onDismiss = { showDeleteConfirmation = false; categoryToDelete = null }
+            )
+            }
+    }
+
+    if (showDialog) {
+        AddEditCategoryDialog(
+            category = editingCategory,
+            onDismiss = { showDialog = false },
+            onSave = { name, desc ->
+                if (editingCategory == null) {
+                    viewModel.addCategory(umkmId, name, desc)
+                } else {
+                    viewModel.updateCategory(umkmId, editingCategory!!.id, name, desc)
+                }
+                showDialog = false
+                editingCategory = null
+            }
+        )
+    }
+}
+
+@Composable
+private fun CategoryList(
+    sortedCategories: List<CategoryItem>,
+    onEdit: (CategoryItem) -> Unit,
+    onDelete: (CategoryItem) -> Unit,
+    onDragEnd: (Int?, Int?) -> Unit
+) {
+    val density = LocalDensity.current
+    var draggedIndex by remember { mutableStateOf<Int?>(null) }
+    var draggedOffset by remember { mutableStateOf(0f) }
+    var targetIndex by remember { mutableStateOf<Int?>(null) }
+    val itemHeight = with(density) { 88.dp.toPx() }
+    
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(sortedCategories.size, key = { sortedCategories[it].id }) { index ->
+            val category = sortedCategories[index]
+            val isDragging = draggedIndex == index
+            val isTarget = targetIndex == index && targetIndex != draggedIndex
+            
+            val itemOffset = if (draggedIndex != null && !isDragging) {
+                val draggedIdx = draggedIndex!!
+                when {
+                    draggedIdx < index && targetIndex != null && index <= targetIndex!! -> 
+                        with(density) { (-itemHeight).toDp() }
+                    draggedIdx > index && targetIndex != null && index >= targetIndex!! -> 
+                        with(density) { itemHeight.toDp() }
+                    else -> 0.dp
+                }
+            } else 0.dp
+
+            CategoryCard(
+                category = category,
+                isDragging = isDragging,
+                isTarget = isTarget,
+                dragOffset = if (isDragging) with(density) { draggedOffset.toDp() } else itemOffset,
+                onEdit = { onEdit(category) },
+                onDelete = { onDelete(category) },
+                onDragStart = { draggedIndex = index; draggedOffset = 0f },
+                onDragEnd = {
+                    onDragEnd(draggedIndex, targetIndex)
+                    draggedIndex = null
+                    draggedOffset = 0f
+                    targetIndex = null
                 },
-                onConfirm = {
-                    viewModel.deleteCategory(selectedCategory!!)
-                    showDeleteDialog = false
-                    selectedCategory = null
+                onDrag = { dragAmount ->
+                    draggedOffset += dragAmount
+                    val newTarget = ((index * itemHeight + draggedOffset + itemHeight / 2) / itemHeight).toInt()
+                        .coerceIn(0, sortedCategories.size - 1)
+                    targetIndex = if (newTarget != index) newTarget else null
                 }
             )
         }
     }
 }
 
-/**
- * Card untuk menampilkan satu item kategori dengan tombol Edit & Hapus.
- */
-@Composable
-fun CategoryItemCard(
-    category: Category,
-    onEditClick: () -> Unit,
-    onDeleteClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val colors = MaterialTheme.colorScheme
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surfaceVariant),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = category.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = colors.onSurface
-                )
-                if (category.description.isNotBlank()) {
-                    Text(
-                        text = category.description,
-                        fontSize = 14.sp,
-                        color = colors.onSurfaceVariant
-                    )
-                }
-            }
-
-            Row {
-                IconButton(onClick = onEditClick) {
-                    Icon(Icons.Default.Edit, contentDescription = "Edit", tint = colors.primary)
-                }
-                IconButton(onClick = onDeleteClick) {
-                    Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = colors.error)
-                }
-            }
-        }
-    }
-}
-
-/**
- * Konten untuk Bottom Sheet Tambah/Edit Kategori.
- */
-@Composable
-fun AddEditCategorySheetContent(
-    existingCategory: Category?,
-    onDismiss: () -> Unit,
-    onSubmit: (name: String, description: String) -> Unit
-) {
-    var name by remember { mutableStateOf(existingCategory?.name ?: "") }
-    var description by remember { mutableStateOf(existingCategory?.description ?: "") }
-    val colors = MaterialTheme.colorScheme
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-            .verticalScroll(rememberScrollState())
-    ) {
-        // Handle (garis abu-abu di atas)
-        Box(
-            modifier = Modifier
-                .width(40.dp)
-                .height(4.dp)
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 16.dp)
-                .background(colors.outlineVariant, RoundedCornerShape(2.dp))
-        )
-
-        Text(
-            text = if (existingCategory == null) "Tambah Kategori Baru" else "Edit Kategori",
-            fontWeight = FontWeight.Bold,
-            fontSize = 20.sp,
-            color = colors.onSurface,
-            modifier = Modifier.fillMaxWidth().padding(bottom = 20.dp)
-        )
-
-        // Input Nama Kategori (sesuai gambar)
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("nama_kategori") },
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(10.dp),
-            singleLine = true
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Input Deskripsi (sesuai gambar)
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("deskripsi") },
-            modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
-            shape = RoundedCornerShape(10.dp)
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Tombol Aksi
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedButton(
-                onClick = onDismiss,
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.primary)
-            ) { Text("Batal") }
-
-            Button(
-                onClick = { onSubmit(name, description) },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary),
-                enabled = name.isNotBlank() // Tombol Simpan aktif jika nama tidak kosong
-            ) { Text("Simpan") }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp)) // Padding di bawah
-    }
-}
-
-/**
- * Dialog konfirmasi sebelum menghapus.
- */
-@Composable
-fun DeleteCategoryDialog(
-    category: Category,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(text = "Hapus Kategori") },
-        text = { Text(text = "Apakah Anda yakin ingin menghapus kategori '${category.name}'?") },
-        confirmButton = {
-            Button(
-                onClick = onConfirm,
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-            ) {
-                Text("Hapus")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Batal")
-            }
-        }
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CategoryScreenPreview() {
-    LokanalaTheme {
-        CategoryScreen(
-            navController = rememberNavController(),
-            umkmId = 1,
-            viewModel = viewModel() // Gunakan viewModel() untuk preview
-        )
-    }
-}

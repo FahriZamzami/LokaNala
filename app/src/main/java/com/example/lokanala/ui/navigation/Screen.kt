@@ -24,6 +24,12 @@ sealed class Screen(val route: String) {
         fun createRoute(umkmId: Int) = "add_product/$umkmId"
     }
 
+    // ✅ HASIL MERGE DARI KODINGAN KEDUA
+    object EditProduct : Screen("edit_product/{umkmId}/{productId}") {
+        fun createRoute(umkmId: Int, productId: Int) =
+            "edit_product/$umkmId/$productId"
+    }
+
     object MyUmkm : Screen("my_umkm")
     object AddUmkm : Screen("add_umkm")
 
@@ -36,17 +42,19 @@ sealed class Screen(val route: String) {
     }
 
     object EditPromotion : Screen("edit_promotion/{promoId}/{umkmId}") {
-        fun createRoute(promoId: Int, umkmId: Int) = "edit_promotion/$promoId/$umkmId"
+        fun createRoute(promoId: Int, umkmId: Int) =
+            "edit_promotion/$promoId/$umkmId"
     }
 
     object Rating : Screen("rating/{productId}") {
         fun createRoute(productId: Int) = "rating/$productId"
     }
 
-    // ⭐ TAMBAHKAN INI - Route untuk kamera review
+    // ⭐ Route kamera review
     object AddPictureReview : Screen("add_picture_review")
 
     object Promo : Screen("promo")
+
     object PromoDetail : Screen("promo_detail/{promoId}") {
         fun createRoute(promoId: Int) = "promo_detail/$promoId"
     }
@@ -57,5 +65,9 @@ sealed class Screen(val route: String) {
 
     object Category : Screen("category/{umkmId}") {
         fun createRoute(umkmId: Int) = "category/$umkmId"
+    }
+
+    object ManageCategory : Screen("manage_category/{umkmId}") {
+        fun createRoute(umkmId: Int) = "manage_category/$umkmId"
     }
 }
