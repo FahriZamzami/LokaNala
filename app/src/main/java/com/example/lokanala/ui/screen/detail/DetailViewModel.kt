@@ -3,8 +3,8 @@ package com.example.lokanala.ui.screen.detail
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import com.example.lokanala.data.remote.response.product.ProductDetailData
-import com.example.lokanala.data.remote.response.product.ProductDetailResponse
+import com.example.lokanala.data.remote.response_and_request.product.ProductDetailData
+import com.example.lokanala.data.remote.response_and_request.product.ProductDetailResponse
 import com.example.lokanala.data.remote.retrofit.ApiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

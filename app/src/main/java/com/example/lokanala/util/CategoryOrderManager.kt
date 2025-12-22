@@ -3,9 +3,9 @@ package com.example.lokanala.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import com.example.lokanala.data.remote.response.CategoryItem
-import com.example.lokanala.data.remote.response.CategoryOrderItem
-import com.example.lokanala.data.remote.response.UpdateCategoryOrderRequest
+import com.example.lokanala.data.remote.response_and_request.CategoryItem
+import com.example.lokanala.data.remote.response_and_request.CategoryOrderItem
+import com.example.lokanala.data.remote.response_and_request.UpdateCategoryOrderRequest
 import com.example.lokanala.data.remote.retrofit.ApiClient
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -70,9 +70,9 @@ object CategoryOrderManager {
      * @return List kategori yang sudah diurutkan
      */
     fun sortCategoriesByOrder(
-        categories: List<com.example.lokanala.data.remote.response.CategoryItem>,
+        categories: List<com.example.lokanala.data.remote.response_and_request.CategoryItem>,
         categoryOrder: Map<Int, Int>
-    ): List<com.example.lokanala.data.remote.response.CategoryItem> {
+    ): List<com.example.lokanala.data.remote.response_and_request.CategoryItem> {
         // Jika kategori sudah memiliki field urutan dari backend, gunakan itu
         // Jika tidak, gunakan urutan dari local storage
         return if (categories.isNotEmpty() && categories.first().urutan >= 0) {

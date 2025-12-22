@@ -1,7 +1,7 @@
 package com.example.lokanala.ui.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -17,6 +17,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import com.example.lokanala.R
 import com.example.lokanala.model.Product
 import com.example.lokanala.ui.theme.StarYellow
@@ -46,13 +49,21 @@ fun MyMenuItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Gambar Produk dengan placeholder dan error handling
+            val context = LocalContext.current
+            val imageUrl = product.imageUri ?: product.imageRes
             AsyncImage(
-                model = product.imageUri ?: product.imageRes, // Gunakan URI jika ada, jika tidak, gunakan Res
-                contentDescription = product.name,
+                model = ImageRequest.Builder(context)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.logo_lokanala),
+                error = painterResource(R.drawable.logo_lokanala),
+                contentDescription = product.name ?: "Gambar Produk",
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(80.dp)
-                    .clip(CircleShape)
+                    .clip(RoundedCornerShape(12.dp))
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -62,21 +73,21 @@ fun MyMenuItemCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = product.name,
+                    text = product.name ?: "Nama tidak tersedia",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     color = colorScheme.onSurface
                 )
 
                 Text(
-                    text = product.description,
+                    text = product.description ?: "Deskripsi tidak tersedia",
                     fontSize = 13.sp,
                     color = colorScheme.onSurfaceVariant,
                     maxLines = 2
                 )
 
                 Text(
-                    text = product.price,
+                    text = product.price ?: "Harga tidak tersedia",
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp,
                     color = colorScheme.primary
@@ -91,7 +102,7 @@ fun MyMenuItemCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${product.rating} (${product.reviewCount})",
+                        text = "${product.rating ?: 0.0} (${product.reviewCount ?: 0})",
                         fontSize = 13.sp,
                         color = colorScheme.onSurfaceVariant
                     )

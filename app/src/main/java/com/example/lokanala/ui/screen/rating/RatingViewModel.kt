@@ -9,13 +9,14 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lokanala.data.remote.response.rating.AddReviewResponse
-import com.example.lokanala.data.remote.response.rating.Review
-import com.example.lokanala.data.remote.response.rating.ReviewListResponse
+import com.example.lokanala.data.remote.response_and_request.rating.AddReviewResponse
+import com.example.lokanala.data.remote.response_and_request.rating.Review
+import com.example.lokanala.data.remote.response_and_request.rating.ReviewListResponse
 import com.example.lokanala.data.remote.retrofit.ApiClient
 
 // Pastikan import ini sesuai lokasi file Anda
 import com.example.lokanala.data.pref.UserPreference
+import com.example.lokanala.data.remote.response_and_request.rating.OwnerCheckResponse
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
-import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -54,6 +54,9 @@ class RatingViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _isOwner = MutableStateFlow(false)
+    val isOwner: StateFlow<Boolean> = _isOwner.asStateFlow()
+
     init {
         // Otomatis ambil ID dan load data saat ViewModel dibuat
         getRealUserAndLoadData()
@@ -62,16 +65,24 @@ class RatingViewModel(
     private fun getRealUserAndLoadData() {
         viewModelScope.launch {
             try {
-                // 1. Ambil ID User dulu
+                // 1. Ambil ID User
                 val userModel = userPreference.getSession().first()
                 _currentUserId.value = userModel.idUser
 
                 Log.d(TAG, "User Login ID: ${_currentUserId.value}")
+                Log.d(TAG, "Product ID: $productId")
 
-                // 2. Baru load review setelah ID didapat
+                // 2. Setelah ID benar-benar terisi → cek owner
+                if (productId != -1) {
+                    Log.d(TAG, "CALL checkIsOwner() NOW")
+                    checkIsOwner()
+                }
+
+                // 3. Load review
                 if (productId != -1) {
                     loadReviews()
                 }
+
             } catch (e: Exception) {
                 Log.e(TAG, "Gagal ambil sesi user: ${e.message}")
             }
@@ -110,6 +121,28 @@ class RatingViewModel(
                 _isLoading.value = false
             }
         })
+    }
+
+    fun checkIsOwner() {
+        Log.d(TAG, "Check Owner Called => productId=$productId userId=${_currentUserId.value}")
+
+        ApiClient.instance.isProductOwner(productId, _currentUserId.value)
+            .enqueue(object : Callback<OwnerCheckResponse> {
+                override fun onResponse(call: Call<OwnerCheckResponse>,
+                                        response: Response<OwnerCheckResponse>) {
+
+                    Log.d(TAG, "Owner Result => ${response.body()}")
+
+                    if (response.isSuccessful) {
+                        _isOwner.value = response.body()?.isOwner == true
+                        Log.d(TAG, "isOwner state => ${_isOwner.value}")
+                    }
+                }
+
+                override fun onFailure(call: Call<OwnerCheckResponse>, t: Throwable) {
+                    Log.e(TAG, "Owner Check Failed => ${t.message}")
+                }
+            })
     }
 
     // --- Add, Update, Delete Tetap Sama ---

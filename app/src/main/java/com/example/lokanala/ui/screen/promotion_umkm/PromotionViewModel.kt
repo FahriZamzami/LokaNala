@@ -1,51 +1,151 @@
 package com.example.lokanala.ui.screen.promotion_umkm
 
-import androidx.compose.runtime.mutableStateListOf
+import android.util.Log
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.lokanala.data.remote.retrofit.ApiClient
+import com.example.lokanala.data.remote.response_and_request.myumkmpromo.PromoListResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Response
 
 data class Promotion(
     val id: Int,
     var title: String,
-    var detail: String,
+    var detail: String,             // deskripsi
+    var syarat: String? = null,     // syarat_penggunaan
+    var cara: String? = null,       // cara_penggunaan
     var startDate: String,
     var endDate: String
 )
 
 class PromotionViewModel : ViewModel() {
-    var promotions = mutableStateListOf(
-        Promotion(1, "Discount 30% for All Item", "1. Berlaku untuk semua produk di toko offline.\n2. Tidak dapat digabung dengan promo lain.", "8 October 2025", "15 October 2025"),
-        Promotion(2, "Discount 15% for Member", "1. Hanya untuk member aktif.\n2. Wajib menunjukkan kartu member.", "10 November 2025", "15 November 2025"),
-        Promotion(3, "Buy 1 Get 1 Free", "1. Berlaku untuk produk makanan ringan.\n2. Tidak berlaku untuk pembelian online.", "1 December 2025", "7 December 2025"),
-        Promotion(4, "Free Delivery for Orders Above 100k", "1. Berlaku hanya untuk wilayah Jabodetabek.\n2. Minimal transaksi Rp100.000.", "20 October 2025", "30 October 2025"),
-        Promotion(5, "Cashback 20% via QRIS", "1. Maksimal cashback Rp20.000.\n2. Berlaku hanya untuk pembayaran menggunakan QRIS.", "5 November 2025", "12 November 2025"),
-        Promotion(6, "Discount 25% for New Customers", "1. Hanya untuk pelanggan baru.\n2. Berlaku untuk transaksi pertama kali.", "1 October 2025", "31 October 2025"),
-        Promotion(7, "Weekend Special: 40% Off", "1. Berlaku setiap Sabtu dan Minggu.\n2. Tidak berlaku untuk produk diskon lainnya.", "1 November 2025", "30 November 2025"),
-        Promotion(8, "Free Tote Bag for Purchases Above 200k", "1. Persediaan terbatas.\n2. Berlaku selama stok masih ada.", "10 October 2025", "10 December 2025"),
-        Promotion(9, "Discount 10% for Online Orders", "1. Berlaku di aplikasi Lokanala.\n2. Minimal transaksi Rp50.000.", "15 November 2025", "25 November 2025"),
-        Promotion(10, "Flash Sale 50%", "1. Berlaku pukul 12.00 - 15.00 WIB.\n2. Hanya untuk produk terpilih.", "20 November 2025", "20 November 2025")
-    )
+
+    private val TAG = "PromotionViewModel"
+
+    var promotions = mutableStateListOf<Promotion>()
         private set
 
+    var loading by mutableStateOf(false)
+        private set
+
+    var errorMessage by mutableStateOf<String?>(null)
+        private set
+
+
+    /** =====================
+     * LOAD PROMO BY UMKM ID
+     * ===================== */
+    fun loadPromotionsForUmkm(umkmId: Int) {
+        Log.d(TAG, "🔵 loadPromotionsForUmkm dipanggil dengan UMKM ID = $umkmId")
+
+        viewModelScope.launch {
+            loading = true
+            errorMessage = null
+
+            val result = withContext(Dispatchers.IO) {
+                try {
+                    val call = ApiClient.instance.getUmkmPromos(umkmId)
+
+                    Log.d(TAG, "🌐 Request URL: ${call.request().url}")
+                    Log.d(TAG, "📨 Mengirim request ke server...")
+
+                    call.execute()
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ ERROR saat request: ${e.message}")
+                    e
+                }
+            }
+
+            when (result) {
+                is Exception -> {
+                    errorMessage = result.localizedMessage
+                    Log.e(TAG, "❌ Exception terjadi: $errorMessage")
+                }
+
+                is Response<*> -> {
+                    Log.d(TAG, "📥 Response code: ${result.code()}")
+
+                    if (result.isSuccessful) {
+                        val body = result.body() as PromoListResponse
+                        Log.d(TAG, "✅ Response sukses. Jumlah data promo: ${body.data.size}")
+
+                        promotions.clear()
+                        promotions.addAll(
+                            body.data.map {
+                                Log.d(TAG, "📌 Promo diterima dari DB: id=${it.id_promo}, nama=${it.nama_promo}")
+
+                                Promotion(
+                                    id = it.id_promo,
+                                    title = it.nama_promo ?: "",
+                                    detail = it.deskripsi ?: "",
+                                    syarat = it.syarat_penggunaan ?: "",
+                                    cara = it.cara_penggunaan ?: "",
+                                    startDate = it.tanggal_mulai ?: "",
+                                    endDate = it.tanggal_berakhir ?: ""
+                                )
+                            }
+                        )
+                    } else {
+                        errorMessage = "Gagal memuat promo: ${result.message()}"
+                        Log.e(TAG, "❗ Response gagal: ${result.code()} - ${result.message()}")
+                    }
+                }
+            }
+
+            loading = false
+        }
+    }
+
+
+    /** =====================
+     * DELETE PROMO (LOCAL UI)
+     * ===================== */
+    fun deletePromotion(idPromo: Int) {
+        // Hapus lokal dulu
+        val removed = promotions.removeAll { it.id == idPromo }
+        if (removed) {
+            Log.d(TAG, "🗑 Promo dihapus secara lokal: $idPromo")
+        } else {
+            Log.w(TAG, "⚠ Promo tidak ditemukan di list lokal: $idPromo")
+        }
+
+        // Hapus dari server
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val call = ApiClient.instance.deletePromo(idPromo)
+                val response = call.execute()
+                if (response.isSuccessful) {
+                    Log.d(TAG, "✅ Promo dihapus di server: $idPromo")
+                } else {
+                    Log.e(TAG, "❌ Gagal hapus promo di server: HTTP ${response.code()} - ${response.message()}")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Exception saat hapus promo di server: ${e.message}", e)
+            }
+        }
+    }
+
+    /** =====================
+     * GET SINGLE PROMO
+     * ===================== */
+    fun getPromotionById(id: Int): Promotion? {
+        val promo = promotions.find { it.id == id }
+        Log.d(TAG, "🔍 getPromotionById($id) ditemukan: $promo")
+        return promo
+    }
+
+
+    /** =====================
+     * UPDATE PROMO LOCAL
+     * ===================== */
     fun updatePromotion(updated: Promotion) {
         val index = promotions.indexOfFirst { it.id == updated.id }
-        if (index != -1) promotions[index] = updated
+        if (index != -1) {
+            promotions[index] = updated
+            Log.d(TAG, "✏️ Promo diupdate lokal: $updated")
+        }
     }
-
-    fun deletePromotion(id: Int) {
-        promotions.removeAll { it.id == id }
-    }
-
-    fun getPromotionById(id: Int): Promotion? = promotions.find { it.id == id }
-}
-
-object MonthConverter {
-    private val months = listOf(
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    )
-
-    fun getMonthName(index: Int): String = months[index]
-
-    fun getMonthIndex(name: String): Int =
-        months.indexOfFirst { it.equals(name, ignoreCase = true) }.takeIf { it >= 0 } ?: 0
 }

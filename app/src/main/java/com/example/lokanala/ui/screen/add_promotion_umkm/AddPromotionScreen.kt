@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.lokanala.ui.screen.promotion_umkm.MonthConverter
 import com.example.lokanala.ui.screen.promotion_umkm.Promotion
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
 import java.util.*
@@ -29,32 +28,53 @@ import java.util.*
 @Composable
 fun AddPromotionScreen(
     navController: NavController,
-    promotionViewModel: PromotionViewModel
+    umkmId: Int,
+    addPromoViewModel: AddPromoViewModel
 ) {
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
 
+    // Ambil tanggal hari ini
+    val calendar = Calendar.getInstance()
+    val todayString = "%04d-%02d-%02d".format(
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH) + 1,
+        calendar.get(Calendar.DAY_OF_MONTH)
+    )
+
+    // State awal otomatis isi tanggal hari ini
     var titleText by remember { mutableStateOf("") }
     var detailText by remember { mutableStateOf("") }
-    var startText by remember { mutableStateOf("8 October 2025") }
-    var endText by remember { mutableStateOf("15 October 2025") }
+    var termsText by remember { mutableStateOf("") }
+    var usageText by remember { mutableStateOf("") }
+    var startText by remember { mutableStateOf(todayString) }
+    var endText by remember { mutableStateOf(todayString) }
+
+    val state by addPromoViewModel.state.collectAsState()
+
+    // Semua wajib diisi
+    val isFormValid = titleText.isNotBlank() &&
+            detailText.isNotBlank() &&
+            termsText.isNotBlank() &&
+            usageText.isNotBlank() &&
+            startText.isNotBlank() &&
+            endText.isNotBlank()
 
     fun showDatePicker(initialDate: String, onDateSelected: (String) -> Unit) {
         val calendar = Calendar.getInstance()
-        val dateParts = initialDate.split(" ")
-
-        if (dateParts.size == 3) {
-            val day = dateParts[0].toIntOrNull() ?: calendar.get(Calendar.DAY_OF_MONTH)
-            val month = try { MonthConverter.getMonthIndex(dateParts[1]) } catch (_: Exception) { calendar.get(Calendar.MONTH) }
-            val year = dateParts[2].toIntOrNull() ?: calendar.get(Calendar.YEAR)
+        val parts = initialDate.split("-")
+        if (parts.size == 3) {
+            val year = parts[0].toInt()
+            val month = parts[1].toInt() - 1
+            val day = parts[2].toInt()
             calendar.set(year, month, day)
         }
 
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                val selectedDate = "$dayOfMonth ${MonthConverter.getMonthName(month)} $year"
-                onDateSelected(selectedDate)
+                val dateStr = "%04d-%02d-%02d".format(year, month + 1, dayOfMonth)
+                onDateSelected(dateStr)
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -65,25 +85,16 @@ fun AddPromotionScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Add Promotion", fontWeight = FontWeight.Bold) },
+                title = { Text("Tambah Promo", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable { navController.popBackStack() },
-                        contentAlignment = Alignment.Center
-                    ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = colorScheme.primary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colorScheme.background,
-                    titleContentColor = colorScheme.onBackground
-                )
+                }
             )
         },
         containerColor = colorScheme.background
@@ -100,36 +111,37 @@ fun AddPromotionScreen(
                 value = titleText,
                 onValueChange = { titleText = it },
                 label = { Text("Title") },
-                placeholder = { Text("Add your title...") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colorScheme.primary,
-                    focusedLabelColor = colorScheme.primary,
-                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
-                    cursorColor = colorScheme.primary
-                )
+                modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = detailText,
                 onValueChange = { detailText = it },
                 label = { Text("Detail") },
-                placeholder = { Text("Add detail...") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 150.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colorScheme.primary,
-                    focusedLabelColor = colorScheme.primary,
-                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
-                    cursorColor = colorScheme.primary
-                )
+                modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp)
             )
 
-            PromotionDateField("Start", startText) { showDatePicker(startText) { startText = it } }
-            PromotionDateField("End", endText) { showDatePicker(endText) { endText = it } }
+            OutlinedTextField(
+                value = termsText,
+                onValueChange = { termsText = it },
+                label = { Text("Syarat Penggunaan") },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp)
+            )
+
+            OutlinedTextField(
+                value = usageText,
+                onValueChange = { usageText = it },
+                label = { Text("Cara Penggunaan") },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp)
+            )
+
+            PromotionDateField("Start", startText) {
+                showDatePicker(startText) { startText = it }
+            }
+
+            PromotionDateField("End", endText) {
+                showDatePicker(endText) { endText = it }
+            }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -137,37 +149,36 @@ fun AddPromotionScreen(
             ) {
                 OutlinedButton(
                     onClick = { navController.popBackStack() },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colorScheme.primary)
-                ) {
-                    Text("Cancel", fontWeight = FontWeight.Bold)
-                }
+                    modifier = Modifier.weight(1f)
+                ) { Text("Batal") }
 
                 Button(
                     onClick = {
-                        if (titleText.isNotBlank() && detailText.isNotBlank()) {
-                            val newId = (promotionViewModel.promotions.maxOfOrNull { it.id } ?: 0) + 1
-                            val newPromo = Promotion(
-                                id = newId,
-                                title = titleText,
-                                detail = detailText,
-                                startDate = startText,
-                                endDate = endText
-                            )
-                            promotionViewModel.promotions.add(newPromo)
-                            navController.popBackStack()
-                        }
+                        addPromoViewModel.addPromo(
+                            umkmId,
+                            titleText,
+                            detailText,
+                            termsText,
+                            usageText,
+                            startText,
+                            endText
+                        )
                     },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
-                    )
-                ) {
-                    Text("Add", fontWeight = FontWeight.Bold)
+                    enabled = isFormValid,
+                    modifier = Modifier.weight(1f)
+                ) { Text("Simpan") }
+            }
+
+            when (state) {
+                is AddPromoState.Loading -> Text("Loading...", color = colorScheme.primary)
+                is AddPromoState.Success -> {
+                    LaunchedEffect(state) { navController.popBackStack() }
                 }
+                is AddPromoState.Error -> Text(
+                    (state as AddPromoState.Error).message,
+                    color = MaterialTheme.colorScheme.error
+                )
+                else -> {}
             }
         }
     }
@@ -175,22 +186,21 @@ fun AddPromotionScreen(
 
 @Composable
 fun PromotionDateField(label: String, dateText: String, onClick: () -> Unit) {
-    val colorScheme = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(label, fontWeight = FontWeight.Medium)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(12.dp))
-                .background(colorScheme.surfaceVariant)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .clickable { onClick() }
                 .padding(horizontal = 12.dp, vertical = 14.dp),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Filled.CalendarMonth, contentDescription = null, tint = colorScheme.primary)
+                Icon(Icons.Filled.CalendarMonth, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text(dateText, color = colorScheme.onSurface)
+                Text(dateText)
             }
         }
     }

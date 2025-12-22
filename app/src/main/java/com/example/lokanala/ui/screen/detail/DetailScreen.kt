@@ -32,10 +32,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.product.TopReviewData
+import com.example.lokanala.data.remote.response_and_request.product.TopReviewData
 import com.example.lokanala.ui.components.RatingItem
 import com.example.lokanala.ui.navigation.Screen
-import com.example.lokanala.ui.theme.*
 
 // Definisi Warna Khusus agar sesuai desain (Pink/Merah)
 val PrimaryPink = Color(0xFFD81B60) // Sesuaikan dengan warna di screenshot
