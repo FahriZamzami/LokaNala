@@ -15,14 +15,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.lokanala.R
-import com.example.lokanala.data.remote.response.product.TopReviewData
-import com.example.lokanala.ui.theme.LokanalaTheme
+import com.example.lokanala.data.remote.response_and_request.product.TopReviewData
 import java.text.SimpleDateFormat
 import java.util.Locale
 

@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -17,57 +18,57 @@ import androidx.compose.ui.unit.sp
 import com.example.lokanala.R
 import com.example.lokanala.ui.theme.LokanalaTheme
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeSearchBar(
     modifier: Modifier = Modifier,
+    searchQuery: String = "",
+    onSearchQueryChanged: (String) -> Unit = {},
     placeholder: String = "Cari UMKM atau produk..."
 ) {
     val colorScheme = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
 
-    Surface(
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchQueryChanged,
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = colorScheme.surfaceVariant,
-        tonalElevation = 2.dp,
-        shadowElevation = 2.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.logo_lokanala),
-                contentDescription = "Logo Lokanala",
-                modifier = Modifier.size(28.dp)
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
+        placeholder = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo_lokanala),
+                    contentDescription = "Logo Lokanala",
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = placeholder,
+                    color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+        },
+        leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Search",
-                tint = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                modifier = Modifier.size(22.dp)
+                tint = colorScheme.primary
             )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Text(
-                text = placeholder,
-                color = colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                style = typography.bodyLarge.copy(
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Normal
-                ),
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
+        },
+        shape = RoundedCornerShape(14.dp),
+        colors = TextFieldDefaults.colors(
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            unfocusedContainerColor = colorScheme.surfaceVariant,
+            focusedContainerColor = colorScheme.surfaceVariant
+        ),
+        singleLine = true
+    )
 }
 
 @Preview(showBackground = true)

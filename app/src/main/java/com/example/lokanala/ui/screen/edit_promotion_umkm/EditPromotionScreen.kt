@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -21,10 +20,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.lokanala.ui.screen.promotion_umkm.MonthConverter
 import com.example.lokanala.ui.screen.promotion_umkm.PromotionViewModel
-import com.example.lokanala.ui.screen.promotion_umkm.Promotion
-
+import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,47 +29,54 @@ import java.util.*
 fun EditPromotionScreen(
     navController: NavController,
     promotionId: Int,
-    promotionViewModel: PromotionViewModel
+    umkmId: Int,
+    promotionViewModel: PromotionViewModel,
+    editPromoViewModel: EditPromoViewModel
 ) {
     val context = LocalContext.current
-    val promotion = promotionViewModel.getPromotionById(promotionId)
     val colorScheme = MaterialTheme.colorScheme
 
+    val promotion = promotionViewModel.getPromotionById(promotionId)
     if (promotion == null) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text("Promotion not found", color = colorScheme.onSurfaceVariant)
         }
         return
     }
 
+    // ----------------------- Fields -----------------------
     var titleText by remember { mutableStateOf(promotion.title) }
     var detailText by remember { mutableStateOf(promotion.detail) }
+    var termsText by remember { mutableStateOf(promotion.syarat ?: "") }
+    var usageText by remember { mutableStateOf(promotion.cara ?: "") }
     var startText by remember { mutableStateOf(promotion.startDate) }
     var endText by remember { mutableStateOf(promotion.endDate) }
 
+    // ----------------------- Validasi -----------------------
+    val isFormValid = titleText.isNotBlank() &&
+            detailText.isNotBlank() &&
+            termsText.isNotBlank() &&
+            usageText.isNotBlank() &&
+            startText.isNotBlank() &&
+            endText.isNotBlank()
+
+    val state by editPromoViewModel.state.collectAsState()
+
+    // --------------------- Date Picker ---------------------
     fun showDatePicker(initialDate: String, onDateSelected: (String) -> Unit) {
         val calendar = Calendar.getInstance()
-        val dateParts = initialDate.split(" ")
-
-        if (dateParts.size == 3) {
-            val day = dateParts[0].toIntOrNull() ?: calendar.get(Calendar.DAY_OF_MONTH)
-            val month = try {
-                MonthConverter.getMonthIndex(dateParts[1])
-            } catch (_: Exception) {
-                calendar.get(Calendar.MONTH)
-            }
-            val year = dateParts[2].toIntOrNull() ?: calendar.get(Calendar.YEAR)
+        val parts = initialDate.split(" ")
+        if (parts.size == 3) {
+            val day = parts[0].toIntOrNull() ?: calendar.get(Calendar.DAY_OF_MONTH)
+            val month = MonthConverter.getMonthIndex(parts[1])
+            val year = parts[2].toIntOrNull() ?: calendar.get(Calendar.YEAR)
             calendar.set(year, month, day)
         }
 
         DatePickerDialog(
             context,
             { _, year, month, dayOfMonth ->
-                val selectedDate = "$dayOfMonth ${MonthConverter.getMonthName(month)} $year"
-                onDateSelected(selectedDate)
+                onDateSelected("$dayOfMonth ${MonthConverter.getMonthName(month)} $year")
             },
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -80,32 +84,27 @@ fun EditPromotionScreen(
         ).show()
     }
 
+    // --------------------- UI ---------------------
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Edit Promotion", fontWeight = FontWeight.Bold) },
+                title = { Text("Edit Promo", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clickable { navController.popBackStack() },
-                        contentAlignment = Alignment.Center
-                    ) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back",
                             tint = colorScheme.primary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = colorScheme.background,
-                    titleContentColor = colorScheme.onBackground
-                )
+                }
             )
         },
         containerColor = colorScheme.background
     ) { paddingValues ->
+
+        var showDeleteDialog by remember { mutableStateOf(false) }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -114,109 +113,144 @@ fun EditPromotionScreen(
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            // ----------------------- Fields -----------------------
             OutlinedTextField(
                 value = titleText,
                 onValueChange = { titleText = it },
                 label = { Text("Title") },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colorScheme.primary,
-                    focusedLabelColor = colorScheme.primary,
-                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
-                    cursorColor = colorScheme.primary
-                )
+                modifier = Modifier.fillMaxWidth()
             )
+            if (titleText.isBlank()) Text("Title wajib diisi", color = colorScheme.error)
 
             OutlinedTextField(
                 value = detailText,
                 onValueChange = { detailText = it },
                 label = { Text("Detail") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 150.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = colorScheme.primary,
-                    focusedLabelColor = colorScheme.primary,
-                    unfocusedBorderColor = colorScheme.onSurfaceVariant,
-                    cursorColor = colorScheme.primary
-                )
+                modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp)
             )
+            if (detailText.isBlank()) Text("Detail wajib diisi", color = colorScheme.error)
+
+            OutlinedTextField(
+                value = termsText,
+                onValueChange = { termsText = it },
+                label = { Text("Syarat Penggunaan") },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
+            )
+            if (termsText.isBlank()) Text("Syarat wajib diisi", color = colorScheme.error)
+
+            OutlinedTextField(
+                value = usageText,
+                onValueChange = { usageText = it },
+                label = { Text("Cara Penggunaan") },
+                modifier = Modifier.fillMaxWidth().heightIn(min = 80.dp)
+            )
+            if (usageText.isBlank()) Text("Cara penggunaan wajib diisi", color = colorScheme.error)
 
             DateField(label = "Start Date", dateText = startText) {
-                showDatePicker(startText) { selected -> startText = selected }
+                showDatePicker(startText) { startText = it }
             }
-            DateField(label = "End Date", dateText = endText) {
-                showDatePicker(endText) { selected -> endText = selected }
-            }
+            if (startText.isBlank()) Text("Start date wajib diisi", color = colorScheme.error)
 
+            DateField(label = "End Date", dateText = endText) {
+                showDatePicker(endText) { endText = it }
+            }
+            if (endText.isBlank()) Text("End date wajib diisi", color = colorScheme.error)
+
+            // ----------------------- Buttons -----------------------
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
+
                 OutlinedButton(
-                    onClick = {
-                        promotionViewModel.deletePromotion(promotion.id)
-                        navController.popBackStack()
-                    },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.dp,
-                        brush = SolidColor(colorScheme.error)
-                    ),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = colorScheme.error
-                    )
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Text("Delete", fontWeight = FontWeight.Bold)
+                    Text("Hapus", fontWeight = FontWeight.Bold)
                 }
 
                 OutlinedButton(
                     onClick = { navController.popBackStack() },
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    border = ButtonDefaults.outlinedButtonBorder.copy(
-                        width = 1.dp,
-                        brush = SolidColor(colorScheme.primary)
-                    ),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = colorScheme.primary
-                    )
-                ) {
-                    Text("Cancel", fontWeight = FontWeight.Bold)
-                }
+                    modifier = Modifier.weight(1f)
+                ) { Text("Batal") }
 
                 Button(
                     onClick = {
-                        val updated = promotion.copy(
-                            title = titleText,
-                            detail = detailText,
-                            startDate = startText,
-                            endDate = endText
+                        val startIso = startText.toBackendISO()
+                        val endIso = endText.toBackendISO()
+
+                        editPromoViewModel.updatePromo(
+                            promotion.id,
+                            titleText,
+                            detailText,
+                            termsText,
+                            usageText,
+                            startIso,
+                            endIso
                         )
-                        promotionViewModel.updatePromotion(updated)
-                        navController.popBackStack()
                     },
                     modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colorScheme.primary,
-                        contentColor = colorScheme.onPrimary
-                    )
-                ) {
-                    Text("Save", fontWeight = FontWeight.Bold)
+                    enabled = isFormValid,   // ⬅️ VALIDASI AKTIF
+                ) { Text("Simpan") }
+            }
+
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Hapus Promo?", fontWeight = FontWeight.Bold) },
+                    text = { Text("Apakah Anda yakin ingin menghapus promo ini?") },
+
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showDeleteDialog = false
+                                editPromoViewModel.deletePromo(promotion.id)
+                                navController.popBackStack()
+                            }
+                        ) {
+                            Text("Hapus", color = colorScheme.error)
+                        }
+                    },
+
+                    dismissButton = {
+                        TextButton(onClick = { showDeleteDialog = false }) {
+                            Text("Batal")
+                        }
+                    }
+                )
+            }
+
+            when (state) {
+                is EditPromoState.Loading -> Text("Loading...", color = colorScheme.primary)
+                is EditPromoState.Success -> {
+                    LaunchedEffect(state) { navController.popBackStack() }
                 }
+                is EditPromoState.Error -> Text(
+                    (state as EditPromoState.Error).message,
+                    color = colorScheme.error
+                )
+                else -> {}
             }
         }
+    }
+}
+
+// ------------------- EXTENSION FORMAT -------------------
+fun String.toBackendISO(): String {
+    return try {
+        val sdfInput = SimpleDateFormat("d MMMM yyyy", Locale("id"))
+        val date = sdfInput.parse(this)
+        SimpleDateFormat("yyyy-MM-dd'T'00:00:00.000'Z'", Locale.getDefault()).format(date!!)
+    } catch (e: Exception) {
+        this
     }
 }
 
 @Composable
 fun DateField(label: String, dateText: String, onClick: () -> Unit) {
     val colorScheme = MaterialTheme.colorScheme
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column {
         Text(label, fontWeight = FontWeight.Medium)
         Box(
             modifier = Modifier
@@ -224,17 +258,12 @@ fun DateField(label: String, dateText: String, onClick: () -> Unit) {
                 .clip(RoundedCornerShape(12.dp))
                 .background(colorScheme.surfaceVariant)
                 .clickable { onClick() }
-                .padding(horizontal = 12.dp, vertical = 14.dp),
-            contentAlignment = Alignment.CenterStart
+                .padding(14.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Filled.CalendarMonth,
-                    contentDescription = null,
-                    tint = colorScheme.primary
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(dateText, color = colorScheme.onSurface)
+                Icon(Icons.Filled.CalendarMonth, contentDescription = null, tint = colorScheme.primary)
+                Spacer(Modifier.width(8.dp))
+                Text(dateText)
             }
         }
     }

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.lokanala.data.remote.response.rating.Review
+import com.example.lokanala.data.remote.response_and_request.rating.Review
 import com.example.lokanala.ui.components.AddEditReviewSheetContent
 import com.example.lokanala.ui.components.RatingOverview
 import com.example.lokanala.ui.components.ReviewCard
@@ -38,6 +38,7 @@ fun RatingScreen(
     val reviews = viewModel.reviews
     val isLoading by viewModel.isLoading.collectAsState()
     val currentUserId by viewModel.currentUserId.collectAsState()
+    val isOwner by viewModel.isOwner.collectAsState()
 
     // -----------------------------------------------------------------
     // 1. LOGIKA SORTING: USER SENDIRI PALING ATAS
@@ -75,7 +76,7 @@ fun RatingScreen(
             )
         },
         floatingActionButton = {
-            if (!isLoading && !hasReviewed && currentUserId != -1) {
+            if (!isLoading && !hasReviewed && currentUserId != -1 && !isOwner) {
                 ExtendedFloatingActionButton(
                     text = { Text("Tulis Ulasan", fontWeight = FontWeight.SemiBold) },
                     onClick = {
