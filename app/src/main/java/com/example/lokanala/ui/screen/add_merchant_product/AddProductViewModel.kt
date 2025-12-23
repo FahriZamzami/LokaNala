@@ -35,11 +35,11 @@ class AddProductViewModel : ViewModel() {
     private val _isUploadSuccess = MutableStateFlow(false)
     val isUploadSuccess: StateFlow<Boolean> = _isUploadSuccess
     
-    // State untuk edit product
+    
     private val _productData = MutableStateFlow<ProductDetailData?>(null)
     val productData: StateFlow<ProductDetailData?> = _productData.asStateFlow()
     
-    // State untuk kategori dari product list (fallback)
+    
     private val _productCategoryId = MutableStateFlow<Int?>(null)
     val productCategoryId: StateFlow<Int?> = _productCategoryId.asStateFlow()
     
@@ -65,7 +65,7 @@ class AddProductViewModel : ViewModel() {
         }
     }
 
-    // UPDATE: Menggunakan Single Uri (imageUri), bukan List
+    
     fun addProduct(
         context: Context,
         umkmId: Int,
@@ -73,35 +73,35 @@ class AddProductViewModel : ViewModel() {
         name: String,
         description: String,
         price: String,
-        imageUri: Uri? // <-- PERBAIKAN: Single Uri
+        imageUri: Uri? 
     ) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // 1. Convert Text ke RequestBody
+                
                 val idUmkmPart = umkmId.toString().toRequestBody("text/plain".toMediaType())
                 val idKatPart = categoryId.toString().toRequestBody("text/plain".toMediaType())
                 val namePart = name.toRequestBody("text/plain".toMediaType())
                 val descPart = description.toRequestBody("text/plain".toMediaType())
                 val pricePart = price.toRequestBody("text/plain".toMediaType())
 
-                // 2. Convert Gambar ke MultipartBody.Part (Single)
+                
                 var imagePart: MultipartBody.Part? = null
                 if (imageUri != null) {
                     val file = uriToFile(imageUri, context)
                     val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                    // Nama parameter harus "gambar" sesuai Backend
+                    
                     imagePart = MultipartBody.Part.createFormData("gambar", file.name, requestFile)
                 }
 
-                // 3. Panggil API
+                
                 val response = ApiClient.instance.addProduct(
                     idUmkm = idUmkmPart,
                     idKategori = idKatPart,
                     nama = namePart,
                     deskripsi = descPart,
                     harga = pricePart,
-                    gambar = imagePart // <-- PERBAIKAN: Kirim Single Part
+                    gambar = imagePart 
                 )
 
                 if (response.isSuccessful) {
@@ -155,14 +155,14 @@ class AddProductViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // 1. Convert Text ke RequestBody
+                
                 val idUmkmPart = umkmId.toString().toRequestBody("text/plain".toMediaType())
                 val idKatPart = categoryId.toString().toRequestBody("text/plain".toMediaType())
                 val namePart = name.toRequestBody("text/plain".toMediaType())
                 val descPart = description.toRequestBody("text/plain".toMediaType())
                 val pricePart = price.toRequestBody("text/plain".toMediaType())
 
-                // 2. Convert Gambar ke MultipartBody.Part (opsional)
+                
                 var imagePart: MultipartBody.Part? = null
                 if (imageUri != null) {
                     val file = uriToFile(imageUri, context)
@@ -170,7 +170,7 @@ class AddProductViewModel : ViewModel() {
                     imagePart = MultipartBody.Part.createFormData("gambar", file.name, requestFile)
                 }
 
-                // 3. Panggil API Update
+                
                 val response = ApiClient.instance.updateProduct(
                     productId = productId,
                     idUmkm = idUmkmPart,

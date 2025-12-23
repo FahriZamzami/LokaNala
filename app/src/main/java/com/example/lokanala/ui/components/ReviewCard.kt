@@ -45,7 +45,7 @@ fun ReviewCard(
     var showFullImage by remember { mutableStateOf(false) }
     var fullImageUrl by remember { mutableStateOf<String?>(null) }
 
-    // 🔥 Tambahkan state dialog hapus
+    
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val displayName = if (isUserReview) "Anda" else review.name
@@ -107,7 +107,7 @@ fun ReviewCard(
                                     text = { Text("Hapus", color = colorScheme.error) },
                                     onClick = {
                                         expanded = false
-                                        showDeleteDialog = true   // ⬅️ Tampilkan dialog
+                                        showDeleteDialog = true   
                                     },
                                     leadingIcon = { Icon(Icons.Default.Delete, null, tint = colorScheme.error) }
                                 )
@@ -157,7 +157,7 @@ fun ReviewCard(
         }
     }
 
-    // 🔥 DIALOG KONFIRMASI HAPUS
+    
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -167,7 +167,7 @@ fun ReviewCard(
                 TextButton(
                     onClick = {
                         showDeleteDialog = false
-                        onDelete()     // ⬅️ Trigger fungsi delete
+                        onDelete()     
                     }
                 ) {
                     Text("Hapus", color = colorScheme.error)
@@ -181,7 +181,7 @@ fun ReviewCard(
         )
     }
 
-    // 🔥 Dialog fullscreen gambar (tetap sama)
+    
     if (showFullImage && !fullImageUrl.isNullOrEmpty()) {
         Dialog(
             onDismissRequest = { showFullImage = false },

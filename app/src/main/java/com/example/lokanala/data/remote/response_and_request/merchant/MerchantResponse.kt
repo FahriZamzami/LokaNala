@@ -2,7 +2,7 @@ package com.example.lokanala.data.remote.response_and_request.merchant
 
 import com.google.gson.annotations.SerializedName
 
-// 1. Wrapper Utama
+
 data class MerchantResponse(
     @SerializedName("success")
     val success: Boolean,
@@ -14,7 +14,7 @@ data class MerchantResponse(
     val data: MerchantData?
 )
 
-// 2. Data Detail UMKM
+
 data class MerchantData(
     @SerializedName("id")
     val id: Int,
@@ -32,7 +32,7 @@ data class MerchantData(
     val imageHeaderUrl: String?,
 
     @SerializedName("link_lokasi")
-    val linkLokasi: String?, // Foto profil/header UMKM
+    val linkLokasi: String?, 
 
     @SerializedName("rating")
     val rating: Double,
@@ -47,7 +47,7 @@ data class MerchantData(
     val products: List<MerchantProduct>
 )
 
-// 3. Item Promo
+
 data class MerchantPromo(
     @SerializedName("id_promo")
     val idPromo: Int,
@@ -65,7 +65,7 @@ data class MerchantPromo(
     val berlakuSampai: String?
 )
 
-// 4. Item Produk
+
 data class MerchantProduct(
     @SerializedName("id_produk")
     val idProduk: Int,
@@ -84,6 +84,9 @@ data class MerchantProduct(
 
     @SerializedName("kategori_produk")
     val kategoriProduk: String,
+
+    @SerializedName("rating_produk") 
+    val ratingProduk: Double?,
 
     @SerializedName("jumlah_ulasan")
     val jumlahUlasan: Int

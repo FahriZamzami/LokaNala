@@ -34,7 +34,7 @@ fun AddPromotionScreen(
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
 
-    // Ambil tanggal hari ini
+    
     val calendar = Calendar.getInstance()
     val todayString = "%04d-%02d-%02d".format(
         calendar.get(Calendar.YEAR),
@@ -42,7 +42,7 @@ fun AddPromotionScreen(
         calendar.get(Calendar.DAY_OF_MONTH)
     )
 
-    // State awal otomatis isi tanggal hari ini
+    
     var titleText by remember { mutableStateOf("") }
     var detailText by remember { mutableStateOf("") }
     var termsText by remember { mutableStateOf("") }
@@ -52,7 +52,7 @@ fun AddPromotionScreen(
 
     val state by addPromoViewModel.state.collectAsState()
 
-    // Semua wajib diisi
+    
     val isFormValid = titleText.isNotBlank() &&
             detailText.isNotBlank() &&
             termsText.isNotBlank() &&

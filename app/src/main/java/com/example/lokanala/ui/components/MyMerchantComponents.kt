@@ -43,9 +43,6 @@ import com.example.lokanala.ui.screen.my_merchant.SortOrder
 
 val PromoGreenBg = Color(0xFFE8F5E9)
 
-// ==========================================
-// COMPONENT: MERCHANT HEADER
-// ==========================================
 @Composable
 fun MerchantHeader(
     onBack: () -> Unit,
@@ -57,15 +54,14 @@ fun MerchantHeader(
     val nama = merchantData?.nama ?: "Memuat..."
     val alamat = merchantData?.alamat ?: "Alamat tidak tersedia"
     val rating = merchantData?.rating ?: 0.0
-    val headerImage = merchantData?.linkLokasi
-    val logoImage = merchantData?.linkLokasi
+    val umkmImage = merchantData?.gambar
     val context = LocalContext.current
 
     Box(modifier = Modifier.fillMaxWidth().height(260.dp)) {
         if (merchantData == null) {
             Box(modifier = Modifier.fillMaxWidth().height(200.dp).background(Color.White))
         } else {
-            val headerUrl = headerImage?.takeIf { it.isNotBlank() }
+            val headerUrl = umkmImage?.takeIf { it.isNotBlank() }
             if (headerUrl != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(context).data(headerUrl).crossfade(true).build(),
@@ -105,7 +101,7 @@ fun MerchantHeader(
                     if (merchantData == null) {
                         Box(modifier = Modifier.size(60.dp).clip(CircleShape).background(Color.White))
                     } else {
-                        val logoUrl = logoImage?.takeIf { it.isNotBlank() }
+                        val logoUrl = umkmImage?.takeIf { it.isNotBlank() }
                         if (logoUrl != null) {
                             AsyncImage(
                                 model = ImageRequest.Builder(LocalContext.current).data(logoUrl).crossfade(true).build(),
@@ -140,11 +136,15 @@ fun MerchantHeader(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth().clickable { navController.navigate("detailscreen/$umkmId") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            navController.navigate(Screen.UmkmDetail.createRoute(umkmId.toLong()))
+                        },
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Lihat Tampilan Publik", fontWeight = FontWeight.Bold, color = colorScheme.primary, fontSize = 12.sp)
+                    Text("Lihat Detail UMKM", fontWeight = FontWeight.Bold, color = colorScheme.primary, fontSize = 12.sp)
                     Spacer(modifier = Modifier.width(4.dp))
                     Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, tint = colorScheme.primary, modifier = Modifier.size(14.dp))
                 }
@@ -153,13 +153,6 @@ fun MerchantHeader(
     }
 }
 
-// ==========================================
-// COMPONENT: PROMO SECTION
-// ==========================================
-
-// ==========================================
-// COMPONENT: SEARCH & FILTER
-// ==========================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MyMerchantSearchFilter(
@@ -287,9 +280,6 @@ private fun MyMerchantFilterChip(
     )
 }
 
-// ==========================================
-// COMPONENT: FAB MENU
-// ==========================================
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun MyMerchantFabMenu(
@@ -341,9 +331,6 @@ fun MyMerchantFabMenu(
     }
 }
 
-// ==========================================
-// COMPONENT: DELETE PRODUCT DIALOG
-// ==========================================
 @Composable
 fun DeleteProductDialog(
     product: Product,

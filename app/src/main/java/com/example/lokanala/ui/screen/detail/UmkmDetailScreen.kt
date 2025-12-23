@@ -24,13 +24,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.lokanala.model.UMKMDetail
+import coil.request.ImageRequest
+import com.example.lokanala.R
+import com.example.lokanala.data.remote.response_and_request.UMKMDetail
 import com.example.lokanala.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,6 +43,9 @@ fun UmkmDetailScreen(
     navController: NavController,
     viewModel: UmkmDetailViewModel = viewModel()
 ) {
+    
+    val context = LocalContext.current
+
     LaunchedEffect(umkmId) {
         viewModel.getUmkmDetailById(umkmId)
     }
@@ -67,13 +73,23 @@ fun UmkmDetailScreen(
             )
         },
         floatingActionButton = {
+            
+            val detail = (uiState as? UmkmDetailUiState.Success)?.umkmDetail
+
             FloatingActionButton(
-                onClick = { /* TODO: Buka Maps */ },
+                onClick = {
+                    
+                    if (detail != null && !detail.linkLokasi.isNullOrEmpty()) {
+                        openGoogleMaps(context, detail.linkLokasi)
+                    } else {
+                        android.widget.Toast.makeText(context, "Link lokasi tidak tersedia", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                },
                 shape = CircleShape,
                 containerColor = PrimaryPink,
                 contentColor = Color.White
             ) {
-                Icon(Icons.Default.LocationOn, contentDescription = "Lihat Lokasi")
+                Icon(Icons.Default.LocationOn, contentDescription = "Buka Google Maps")
             }
         }
     ) { paddingValues ->
@@ -117,15 +133,19 @@ private fun UmkmDetailContent(detail: UMKMDetail) {
                     .padding(top = 32.dp, bottom = 16.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = detail.logoRes),
+                coil.compose.AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(detail.gambarUrl)
+                        .crossfade(true)
+                        .build(),
                     contentDescription = "${detail.name} logo",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(120.dp)
                         .clip(CircleShape)
-                        .background(colorScheme.surface)
-                        .padding(8.dp)
+                        .background(colorScheme.surface),
+                    placeholder = painterResource(R.drawable.logo_lokanala),
+                    error = painterResource(R.drawable.logo_lokanala),
                 )
             }
         }
@@ -147,53 +167,23 @@ private fun UmkmDetailContent(detail: UMKMDetail) {
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Nama UMKM:",
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp,
-                                color = TextGrey
-                            )
-                            Text(
-                                text = detail.name,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp,
-                                color = colorScheme.onSurface
-                            )
-                        }
+                        Text(
+                            text = detail.name,
+                            fontWeight = FontWeight.ExtraBold, 
+                            fontSize = 20.sp, 
+                            color = colorScheme.onSurface,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
                         Divider(modifier = Modifier.padding(vertical = 12.dp), color = FilterChipBg)
 
-                        InfoSection(
-                            icon = Icons.Default.Description,
-                            title = "Deskripsi Singkat:",
-                            content = detail.description
-                        )
-                        InfoSection(
-                            icon = Icons.Default.LocationOn,
-                            title = "Alamat:",
-                            content = detail.address
-                        )
-                        InfoSection(
-                            icon = Icons.Default.Phone,
-                            title = "Kontak:",
-                            content = detail.contact
-                        )
-                        InfoSection(
-                            icon = Icons.Default.Campaign,
-                            title = "Daftar Promosi Aktif:",
-                            content = null
-                        )
+                        InfoSection(icon = Icons.Default.Description, title = "Deskripsi Singkat", content = detail.description)
+                        InfoSection(icon = Icons.Default.LocationOn, title = "Alamat", content = detail.address)
+                        InfoSection(icon = Icons.Default.Phone, title = "Kontak", content = detail.contact)
 
                         detail.promos.forEachIndexed { index, promo ->
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(start = 16.dp, top = 4.dp),
+                                modifier = Modifier.fillMaxWidth().padding(start = 16.dp, top = 4.dp),
                                 verticalAlignment = Alignment.Top
                             ) {
                                 Icon(
@@ -211,7 +201,27 @@ private fun UmkmDetailContent(detail: UMKMDetail) {
             }
         }
 
-        item { Spacer(modifier = Modifier.height(80.dp)) }
+        
+        item { Spacer(modifier = Modifier.height(100.dp)) }
+
+        
+    }
+}
+
+
+fun openGoogleMaps(context: android.content.Context, url: String?) {
+    if (!url.isNullOrEmpty()) {
+        try {
+            val uri = android.net.Uri.parse(url)
+            val mapIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+            
+            mapIntent.setPackage("com.google.android.apps.maps")
+            context.startActivity(mapIntent)
+        } catch (e: Exception) {
+            
+            val browserIntent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
+            context.startActivity(browserIntent)
+        }
     }
 }
 

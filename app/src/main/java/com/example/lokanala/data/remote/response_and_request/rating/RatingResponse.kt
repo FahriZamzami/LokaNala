@@ -2,10 +2,6 @@ package com.example.lokanala.data.remote.response_and_request.rating
 
 import com.google.gson.annotations.SerializedName
 
-// ==========================================
-// 1. RESPONSE UNTUK GET DATA (List Ulasan)
-// ==========================================
-
 data class ReviewListResponse(
     @SerializedName("success")
     val success: Boolean,
@@ -18,7 +14,6 @@ data class ReviewListResponse(
 )
 
 data class ReviewItemApi(
-    // Sesuai mapping di controller backend (alias id_ulasan)
     @SerializedName("id_rating")
     val idRating: Int,
 
@@ -49,10 +44,6 @@ data class UserShort(
     val fotoProfile: String?
 )
 
-// ==========================================
-// 2. RESPONSE UNTUK ADD DATA (Tambah Ulasan)
-// ==========================================
-
 data class AddReviewResponse(
     @SerializedName("success")
     val success: Boolean,
@@ -78,10 +69,6 @@ data class NewReviewData(
     val fotoUrl: String?
 )
 
-// ==========================================
-// 3. REQUEST BODY UNTUK UPDATE (BARU)
-// ==========================================
-// Digunakan saat mengirim data edit ke endpoint PUT
 data class UpdateReviewRequest(
     @SerializedName("nilai_rating")
     val nilaiRating: Int,
@@ -103,7 +90,6 @@ data class ProductRatingData(
     val rating: Double
 )
 
-// Response untuk Rating UMKM (Logika Akumulasi)
 data class UmkmRatingResponse(
     @SerializedName("success")
     val success: Boolean,

@@ -49,7 +49,7 @@ fun MyMenuItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gambar Produk dengan placeholder dan error handling
+            
             val context = LocalContext.current
             val imageUrl = product.imageUri ?: product.imageRes
             AsyncImage(

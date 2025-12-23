@@ -25,7 +25,7 @@ class EditPromoViewModel : ViewModel() {
     private val _state = MutableStateFlow<EditPromoState>(EditPromoState.Idle)
     val state: StateFlow<EditPromoState> = _state
 
-    // ------------------ Update Promo ------------------
+    
     fun updatePromo(
         promoId: Int,
         title: String,
@@ -69,7 +69,7 @@ class EditPromoViewModel : ViewModel() {
         })
     }
 
-    // ------------------ Delete Promo ------------------
+    
     fun deletePromo(promoId: Int) {
         _state.value = EditPromoState.Loading
 

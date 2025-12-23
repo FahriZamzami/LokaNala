@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.google.firebase.messaging.FirebaseMessaging
 
-// Data State UI
+
 data class LoginUiState(
     val email: String = "",
     val password: String = "",
@@ -25,7 +25,7 @@ data class LoginUiState(
     val user: UserData? = null
 )
 
-// Perhatikan: Constructor menerima UserPreference (Butuh Factory)
+
 class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
 
     private val _uiState = MutableStateFlow(LoginUiState())
@@ -46,7 +46,7 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
                 Log.e("FCM", "Gagal ambil FCM token", task.exception)
             }
 
-            // Panggil login setelah token siap
+            
             handleLogin()
         }
     }
@@ -59,7 +59,7 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
         _uiState.value = _uiState.value.copy(password = newPassword)
     }
 
-    // Tidak perlu parameter Context lagi di sini, karena UserPreference sudah ada di constructor
+    
     fun handleLogin() {
         val email = uiState.value.email.trim()
         val password = uiState.value.password.trim()
@@ -78,7 +78,7 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
 
                 if (response.isSuccessful && body != null && body.token != null && body.user != null) {
 
-                    // 1. Simpan Sesi ke DataStore lewat UserPreference
+                    
                     val userProfile = UserProfile(
                         idUser = body.user.id_user,
                         name = body.user.nama,
@@ -90,7 +90,7 @@ class LoginViewModel(private val userPreference: UserPreference) : ViewModel() {
 
                     userPreference.saveSession(userProfile)
 
-                    // 2. Update UI
+                    
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
                         success = true,

@@ -1,92 +1,158 @@
 package com.example.lokanala.ui.screen.promo
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.lokanala.ui.components.PromoItemCard
-import com.example.lokanala.ui.theme.LokanalaTheme
+import androidx.navigation.NavController
+import com.example.lokanala.ui.components.CustomerPromoCard
+import com.example.lokanala.ui.components.CustomerPromoDetailPopup
+import com.example.lokanala.ui.screen.promotion_umkm.Promotion
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PromoScreen(
-    modifier: Modifier = Modifier,
-    viewModel: PromoViewModel = viewModel(),
-    onBack: () -> Unit,
-    onPromoClick: (Int) -> Unit
+    navController: NavController,
+    umkmId: Long,
+    viewModel: PromoViewModel = viewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val colorScheme = MaterialTheme.colorScheme
+
+    LaunchedEffect(umkmId) {
+        if (umkmId > 0) {
+            viewModel.loadPromotionsForUmkm(umkmId.toInt())
+        }
+    }
+
+    var sortedPromotions by remember { mutableStateOf<List<Promotion>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { viewModel.promotions.toList() }
+            .collect { promotions ->
+                val dateFormat = java.text.SimpleDateFormat("d MMMM yyyy", Locale.ENGLISH)
+                sortedPromotions = promotions.sortedByDescending { promo ->
+                    try {
+                        dateFormat.parse(promo.startDate)?.time ?: 0L
+                    } catch (_: Exception) {
+                        0L
+                    }
+                }
+            }
+    }
+
+    // Observe loading state
+    LaunchedEffect(Unit) {
+        snapshotFlow { viewModel.loading }
+            .collect { loading ->
+                isLoading = loading
+            }
+    }
+
+    var selectedPromotion by remember { mutableStateOf<Promotion?>(null) }
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Promo menarik",
-                        fontWeight = FontWeight.Bold
+                        text = "Promo Menarik",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.onSurface
+                        )
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clickable { navController.popBackStack() },
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Kembali"
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Kembali",
+                            tint = colorScheme.primary
                         )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.Transparent,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
-                )
+                }
             )
         },
-        containerColor = MaterialTheme.colorScheme.background,
-        modifier = modifier
-    ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(vertical = 16.dp)
-        ) {
-            items(uiState.promos, key = { it.id }) { promo ->
-                PromoItemCard(
-                    promo = promo,
-                    onClick = { onPromoClick(promo.id) }
-                )
+    ) { paddingValues ->
+
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            sortedPromotions.isEmpty() -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(top = 12.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp)
+                ) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 120.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Belum ada promosi UMKM.",
+                                color = colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(top = 12.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(bottom = 100.dp)
+                ) {
+                    items(sortedPromotions, key = { it.id }) { promotion ->
+                        CustomerPromoCard(
+                            promotion = promotion,
+                            onClick = { selectedPromotion = it }
+                        )
+                    }
+                }
             }
         }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun PromoScreenPreview() {
-    LokanalaTheme {
-        PromoScreen(onBack = {}, onPromoClick = {})
+    selectedPromotion?.let { promo ->
+        CustomerPromoDetailPopup(
+            promotion = promo,
+            onDismiss = { selectedPromotion = null }
+        )
     }
 }

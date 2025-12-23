@@ -26,7 +26,7 @@ import java.util.Locale
 
 @Composable
 fun RatingItem(
-    review: TopReviewData, // Gunakan model dari API
+    review: TopReviewData, 
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -41,13 +41,13 @@ fun RatingItem(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // FOTO PROFIL USER (COIL)
+            
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(review.fotoUserUrl)
                     .crossfade(true)
                     .build(),
-                placeholder = painterResource(R.drawable.logo_lokanala), // Ganti placeholder user
+                placeholder = painterResource(R.drawable.logo_lokanala), 
                 error = painterResource(R.drawable.logo_lokanala),
                 fallback = painterResource(R.drawable.logo_lokanala),
                 contentDescription = review.namaUser,
@@ -80,7 +80,7 @@ fun RatingItem(
                 }
             }
 
-            // Format Tanggal (ISO String -> Readable)
+            
             Text(
                 text = formatDate(review.tanggal),
                 style = typography.bodySmall.copy(
@@ -103,7 +103,7 @@ fun RatingItem(
     }
 }
 
-// Helper format tanggal sederhana
+
 fun formatDate(isoDate: String): String {
     return try {
         val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
@@ -111,6 +111,6 @@ fun formatDate(isoDate: String): String {
         val date = inputFormat.parse(isoDate)
         outputFormat.format(date ?: "")
     } catch (e: Exception) {
-        isoDate.take(10) // Fallback ambil 10 karakter pertama saja
+        isoDate.take(10) 
     }
 }

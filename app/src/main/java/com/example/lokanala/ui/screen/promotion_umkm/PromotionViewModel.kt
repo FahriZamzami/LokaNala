@@ -14,9 +14,9 @@ import retrofit2.Response
 data class Promotion(
     val id: Int,
     var title: String,
-    var detail: String,             // deskripsi
-    var syarat: String? = null,     // syarat_penggunaan
-    var cara: String? = null,       // cara_penggunaan
+    var detail: String,             
+    var syarat: String? = null,     
+    var cara: String? = null,       
     var startDate: String,
     var endDate: String
 )
@@ -34,10 +34,6 @@ class PromotionViewModel : ViewModel() {
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-
-    /** =====================
-     * LOAD PROMO BY UMKM ID
-     * ===================== */
     fun loadPromotionsForUmkm(umkmId: Int) {
         Log.d(TAG, "🔵 loadPromotionsForUmkm dipanggil dengan UMKM ID = $umkmId")
 
@@ -99,12 +95,8 @@ class PromotionViewModel : ViewModel() {
         }
     }
 
-
-    /** =====================
-     * DELETE PROMO (LOCAL UI)
-     * ===================== */
     fun deletePromotion(idPromo: Int) {
-        // Hapus lokal dulu
+        
         val removed = promotions.removeAll { it.id == idPromo }
         if (removed) {
             Log.d(TAG, "🗑 Promo dihapus secara lokal: $idPromo")
@@ -112,7 +104,6 @@ class PromotionViewModel : ViewModel() {
             Log.w(TAG, "⚠ Promo tidak ditemukan di list lokal: $idPromo")
         }
 
-        // Hapus dari server
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 val call = ApiClient.instance.deletePromo(idPromo)
@@ -128,19 +119,12 @@ class PromotionViewModel : ViewModel() {
         }
     }
 
-    /** =====================
-     * GET SINGLE PROMO
-     * ===================== */
     fun getPromotionById(id: Int): Promotion? {
         val promo = promotions.find { it.id == id }
         Log.d(TAG, "🔍 getPromotionById($id) ditemukan: $promo")
         return promo
     }
 
-
-    /** =====================
-     * UPDATE PROMO LOCAL
-     * ===================== */
     fun updatePromotion(updated: Promotion) {
         val index = promotions.indexOfFirst { it.id == updated.id }
         if (index != -1) {

@@ -44,7 +44,7 @@ fun EditPromotionScreen(
         return
     }
 
-    // ----------------------- Fields -----------------------
+    
     var titleText by remember { mutableStateOf(promotion.title) }
     var detailText by remember { mutableStateOf(promotion.detail) }
     var termsText by remember { mutableStateOf(promotion.syarat ?: "") }
@@ -52,7 +52,7 @@ fun EditPromotionScreen(
     var startText by remember { mutableStateOf(promotion.startDate) }
     var endText by remember { mutableStateOf(promotion.endDate) }
 
-    // ----------------------- Validasi -----------------------
+    
     val isFormValid = titleText.isNotBlank() &&
             detailText.isNotBlank() &&
             termsText.isNotBlank() &&
@@ -62,7 +62,7 @@ fun EditPromotionScreen(
 
     val state by editPromoViewModel.state.collectAsState()
 
-    // --------------------- Date Picker ---------------------
+    
     fun showDatePicker(initialDate: String, onDateSelected: (String) -> Unit) {
         val calendar = Calendar.getInstance()
         val parts = initialDate.split(" ")
@@ -84,7 +84,7 @@ fun EditPromotionScreen(
         ).show()
     }
 
-    // --------------------- UI ---------------------
+    
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -114,7 +114,7 @@ fun EditPromotionScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // ----------------------- Fields -----------------------
+            
             OutlinedTextField(
                 value = titleText,
                 onValueChange = { titleText = it },
@@ -157,7 +157,7 @@ fun EditPromotionScreen(
             }
             if (endText.isBlank()) Text("End date wajib diisi", color = colorScheme.error)
 
-            // ----------------------- Buttons -----------------------
+            
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -191,7 +191,7 @@ fun EditPromotionScreen(
                         )
                     },
                     modifier = Modifier.weight(1f),
-                    enabled = isFormValid,   // ⬅️ VALIDASI AKTIF
+                    enabled = isFormValid,   
                 ) { Text("Simpan") }
             }
 
@@ -236,7 +236,7 @@ fun EditPromotionScreen(
     }
 }
 
-// ------------------- EXTENSION FORMAT -------------------
+
 fun String.toBackendISO(): String {
     return try {
         val sdfInput = SimpleDateFormat("d MMMM yyyy", Locale("id"))

@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 
 class CategoryViewModel : ViewModel() {
 
-    // Gunakan CategoryItem (sesuai file di Langkah 1)
     private val _categories = MutableStateFlow<List<CategoryItem>>(emptyList())
     val categories: StateFlow<List<CategoryItem>> = _categories
 
@@ -36,7 +35,7 @@ class CategoryViewModel : ViewModel() {
                         val fetchedCategories = responseBody.data ?: emptyList()
                         _categories.value = fetchedCategories
                         
-                        // Sinkronisasi urutan dari backend ke local storage
+                        
                         if (context != null) {
                             val orderMap = fetchedCategories.associate { it.id to it.urutan }
                             CategoryOrderManager.saveCategoryOrder(context, umkmId, orderMap)
@@ -45,7 +44,7 @@ class CategoryViewModel : ViewModel() {
                         _errorMessage.value = responseBody?.message ?: "Gagal mengambil data"
                     }
                 } else {
-                    // Parse error message dari JSON jika ada
+                    
                     val errorBodyString = try {
                         response.errorBody()?.string() ?: ""
                     } catch (e: Exception) {
@@ -105,7 +104,7 @@ class CategoryViewModel : ViewModel() {
             _isLoading.value = true
             try {
                 val request = CreateCategoryRequest(umkmId, name, description)
-                // PERBAIKAN: Gunakan ApiClient.instance
+                
                 val response = ApiClient.instance.addCategory(request)
                 if (response.isSuccessful) {
                     fetchCategories(umkmId)
@@ -125,7 +124,7 @@ class CategoryViewModel : ViewModel() {
             _isLoading.value = true
             try {
                 val request = UpdateCategoryRequest(name, description)
-                // PERBAIKAN: Gunakan ApiClient.instance
+                
                 val response = ApiClient.instance.updateCategory(categoryId, request)
                 if (response.isSuccessful) {
                     fetchCategories(umkmId)
@@ -144,7 +143,7 @@ class CategoryViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // PERBAIKAN: Gunakan ApiClient.instance
+                
                 val response = ApiClient.instance.deleteCategory(categoryId)
                 if (response.isSuccessful) {
                     fetchCategories(umkmId)
@@ -159,23 +158,23 @@ class CategoryViewModel : ViewModel() {
             }
         }
     }
-    
-    // Fungsi untuk menghapus kategori beserta produknya
+
+
     fun deleteCategoryWithProducts(umkmId: Int, categoryId: Int, productCount: Int) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // Jika ada produk, hapus produk terlebih dahulu sebelum menghapus kategori
+
                 if (productCount > 0) {
-                    // Ambil list produk dari kategori ini
+
                     val productsResponse = ApiClient.instance.getProductsByUmkm(umkmId)
                     if (productsResponse.isSuccessful) {
                         val products = productsResponse.body()?.data ?: emptyList()
-                        val productsToDelete = products.filter { 
-                            it.kategoriProduk?.idKategoriProduk == categoryId 
+                        val productsToDelete = products.filter {
+                            it.kategoriProduk?.idKategoriProduk == categoryId
                         }
-                        
-                        // Hapus semua produk dalam kategori
+
+
                         var deletedCount = 0
                         for (product in productsToDelete) {
                             try {
@@ -184,11 +183,11 @@ class CategoryViewModel : ViewModel() {
                                     deletedCount++
                                 }
                             } catch (e: Exception) {
-                                // Continue dengan produk berikutnya jika ada error
+
                             }
                         }
-                        
-                        // Setelah semua produk dihapus, hapus kategori
+
+
                         val categoryResponse = ApiClient.instance.deleteCategory(categoryId)
                         if (categoryResponse.isSuccessful) {
                             fetchCategories(umkmId)
@@ -197,7 +196,7 @@ class CategoryViewModel : ViewModel() {
                             _errorMessage.value = "Produk berhasil dihapus, tapi gagal menghapus kategori: ${categoryResponse.message()}"
                         }
                     } else {
-                        // Jika gagal ambil produk, tetap coba hapus kategori
+
                         val categoryResponse = ApiClient.instance.deleteCategory(categoryId)
                         if (categoryResponse.isSuccessful) {
                             fetchCategories(umkmId)
@@ -207,7 +206,7 @@ class CategoryViewModel : ViewModel() {
                         }
                     }
                 } else {
-                    // Jika tidak ada produk, langsung hapus kategori
+
                     val response = ApiClient.instance.deleteCategory(categoryId)
                     if (response.isSuccessful) {
                         fetchCategories(umkmId)
@@ -235,30 +234,30 @@ class CategoryViewModel : ViewModel() {
         if (oldIndex == newIndex || oldIndex < 0 || newIndex < 0 || 
             oldIndex >= categories.size || newIndex >= categories.size) return
         
-        // Buat list baru dengan memindahkan item dari oldIndex ke newIndex
+        
         val newCategoriesList = categories.toMutableList()
         val movedCategory = newCategoriesList.removeAt(oldIndex)
         newCategoriesList.add(newIndex, movedCategory)
         
-        // Update urutan di setiap kategori berdasarkan posisi baru
+        
         val updatedCategories = newCategoriesList.mapIndexed { index, category ->
             category.copy(urutan = index)
         }
         
-        // Sinkronisasi ke backend (akan otomatis simpan ke local juga)
+        
         CategoryOrderManager.syncCategoryOrderToBackend(
             context = context,
             umkmId = umkmId,
             categories = updatedCategories,
             onSuccess = {
                 Log.d("CategoryViewModel", "Urutan kategori berhasil disinkronisasi ke backend")
-                // Refresh categories untuk update UI
+                
                 fetchCategories(umkmId, context)
             },
             onError = { errorMsg ->
                 Log.e("CategoryViewModel", "Error syncing category order: $errorMsg")
                 _errorMessage.value = "Gagal menyinkronisasi urutan: $errorMsg"
-                // Tetap refresh categories meskipun error
+                
                 fetchCategories(umkmId, context)
             }
         )
@@ -270,7 +269,7 @@ class CategoryViewModel : ViewModel() {
     fun initializeCategoryOrder(umkmId: Int, context: Context) {
         val currentOrder = CategoryOrderManager.getCategoryOrder(context, umkmId)
         if (currentOrder.isEmpty() && _categories.value.isNotEmpty()) {
-            // Jika belum ada urutan, buat urutan default berdasarkan index
+            
             val defaultOrder = _categories.value.mapIndexed { index, category ->
                 category.id to index
             }.toMap()

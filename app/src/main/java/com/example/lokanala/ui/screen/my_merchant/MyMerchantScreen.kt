@@ -94,12 +94,14 @@ fun MyMerchantScreen(
                 categoriesState.value = response.body()?.data ?: emptyList()
             }
         } catch (e: Exception) {
-            // Ignore error
+            
         }
     }
 
-    val availableCategories = remember(categoriesState.value) {
-        categoriesState.value.map { it.name }.distinct()
+    val availableCategories = remember(products) {
+        products.mapNotNull { it.categoryName }
+            .distinct()
+            .sorted()
     }
 
     val colorScheme = MaterialTheme.colorScheme

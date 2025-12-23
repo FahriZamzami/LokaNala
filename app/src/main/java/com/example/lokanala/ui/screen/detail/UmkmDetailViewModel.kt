@@ -3,7 +3,8 @@ package com.example.lokanala.ui.screen.detail
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lokanala.R
-import com.example.lokanala.model.UMKMDetail
+import com.example.lokanala.data.remote.retrofit.ApiClient
+import com.example.lokanala.data.remote.response_and_request.UMKMDetail
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -17,34 +18,32 @@ class UmkmDetailViewModel : ViewModel() {
         viewModelScope.launch {
             _uiState.value = UmkmDetailUiState.Loading
             try {
-                val detail = allUmkmDetails.find { it.id == umkmId }
-                if (detail != null) {
-                    _uiState.value = UmkmDetailUiState.Success(detail)
+                
+                val response = ApiClient.instance.getUmkmById(umkmId.toInt())
+
+                if (response.isSuccessful && response.body() != null) {
+                    val apiData = response.body()!!.data
+                    if (apiData != null) {
+                        val detail = UMKMDetail(
+                            id = apiData.id.toLong(),
+                            name = apiData.nama ?: "Tanpa Nama", 
+                            description = apiData.deskripsi ?: "",
+                            address = apiData.alamat ?: "",
+                            contact = apiData.noTelepon ?: "",
+                            logoRes = 0,
+                            gambarUrl = apiData.gambarUrl, 
+                            promos = emptyList(),
+                            linkLokasi = apiData.linkLokasi
+                        )
+                        _uiState.value = UmkmDetailUiState.Success(detail)
+                    }
                 } else {
-                    _uiState.value = UmkmDetailUiState.Error("Data tidak ditemukan")
+                    _uiState.value = UmkmDetailUiState.Error("UMKM dengan ID $umkmId tidak ditemukan di server")
                 }
             } catch (e: Exception) {
-                _uiState.value = UmkmDetailUiState.Error(e.message ?: "Terjadi error")
+                _uiState.value = UmkmDetailUiState.Error("Koneksi gagal: ${e.message}")
             }
         }
-    }
-
-    companion object {
-        private val allUmkmDetails = listOf(
-            UMKMDetail(
-                id = 1,
-                logoRes = R.drawable.logo_seblak_sendik,
-                name = "Seblak Sendik",
-                description = "Seblak Sendik adalah usaha kuliner lokal yang menyajikan berbagai varian seblak khas Bandung dengan cita rasa pedas gurih yang menggugah selera. Tersedia topping beragam seperti ceker, sosis, bakso, dan kerupuk renyah yang dimasak langsung saat dipesan.",
-                address = "Jl. Limau Manis No. 23, Padang Utara, Kota Padang, Sumatera Barat",
-                contact = "0812-3456-7890 (WhatsApp & Telepon)",
-                promos = listOf(
-                    "Promo Pedas Level 5! Dapatkan diskon 10% untuk semua menu pedas level 5.",
-                    "Paket Hemat: Seblak Ceker + Es Teh Manis hanya Rp20.000."
-                )
-            ),
-
-        )
     }
 }
 

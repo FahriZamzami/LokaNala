@@ -1,4 +1,4 @@
-package com.example.lokanala.data.pref // Pastikan package ini sesuai folder
+package com.example.lokanala.data.pref 
 
 import android.content.Context
 import androidx.datastore.core.DataStore
@@ -11,8 +11,8 @@ import kotlinx.coroutines.flow.map
 import kotlin.collections.get
 import kotlin.text.get
 
-// --- PENTING: INI DEFINISI DATASTORE ---
-// Letakkan di LUAR class, di paling bawah atau paling atas file
+
+
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "session")
 
 private val EMAIL_KEY = stringPreferencesKey("email")
@@ -21,16 +21,16 @@ private val PHOTO_KEY = stringPreferencesKey("photo")
 
 class UserPreference private constructor(private val dataStore: DataStore<Preferences>) {
 
-    // Sesuaikan keys dengan kebutuhan
+    
     private val ID_USER_KEY = stringPreferencesKey("id_user")
     private val TOKEN_KEY = stringPreferencesKey("token")
     private val NAME_KEY = stringPreferencesKey("name")
 
-    // Fungsi getSession
-    fun getSession(): Flow<UserModel> { // Ganti UserModel dengan model user kamu
+    
+    fun getSession(): Flow<UserModel> { 
         return dataStore.data.map { preferences ->
             UserModel(
-                preferences[ID_USER_KEY]?.toInt() ?: -1, // Default -1
+                preferences[ID_USER_KEY]?.toInt() ?: -1, 
                 preferences[TOKEN_KEY] ?: "",
                 preferences[NAME_KEY] ?: ""
             )
@@ -43,7 +43,7 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         }
     }
 
-    // Fungsi saveSession (Contoh)
+    
     suspend fun saveSession(user: UserProfile) {
         dataStore.edit { preferences ->
             preferences[ID_USER_KEY] = user.idUser.toString()
@@ -55,7 +55,7 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
         }
     }
 
-    // Fungsi logout
+    
     suspend fun logout() {
         dataStore.edit { preferences ->
             preferences.clear()
@@ -89,7 +89,7 @@ class UserPreference private constructor(private val dataStore: DataStore<Prefer
     }
 }
 
-// Model Sederhana untuk User (Bisa dipisah file)
+
 data class UserModel(
     val idUser: Int,
     val token: String,
@@ -101,6 +101,6 @@ data class UserProfile(
     val name: String,
     val email: String,
     val phone: String,
-    val photo: String?,   // URL foto
+    val photo: String?,   
     val token: String
 )

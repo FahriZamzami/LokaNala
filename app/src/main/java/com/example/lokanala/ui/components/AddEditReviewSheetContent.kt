@@ -51,37 +51,37 @@ fun AddEditReviewSheetContent(
 
     var photoUris by remember {
         val initialUrls = existingReview?.photoUrl
-            ?.split(",") // 1. Pecah string URL (e.g., "url1,url2")
-            ?.filter { it.isNotBlank() } ?: emptyList() // Filter yang kosong
+            ?.split(",") 
+            ?.filter { it.isNotBlank() } ?: emptyList() 
 
-        // 2. Konversi setiap URL menjadi objek Uri
+        
         val initialUris = initialUrls.map { Uri.parse(it) }
 
-        mutableStateOf(initialUris) // Set state dengan semua Uri
+        mutableStateOf(initialUris) 
     }
 
     var showImageOptions by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
-    // --- 1. SETUP UNTUK KAMERA ---
+    
     var tempCameraUri by remember { mutableStateOf<Uri?>(null) }
 
-    // Launcher Kamera
+    
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success && tempCameraUri != null) {
             photoUris = photoUris + tempCameraUri!!
         }
     }
 
-    // Launcher Permission (Meminta Izin Kamera)
+    
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         if (isGranted) {
-            // Jika izin diberikan, langsung buka kamera
+            
             try {
                 val file = File(context.cacheDir, "temp_${System.currentTimeMillis()}.jpg")
-                // Authority HARUS sama dengan AndroidManifest.xml
+                
                 val authority = "com.example.lokanala.fileprovider"
                 val uri = FileProvider.getUriForFile(context, authority, file)
 
@@ -95,7 +95,7 @@ fun AddEditReviewSheetContent(
         }
     }
 
-    // Launcher Galeri
+    
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { selectedUris ->
         if (selectedUris.isNotEmpty()) photoUris = photoUris + selectedUris
         showImageOptions = false
@@ -120,7 +120,7 @@ fun AddEditReviewSheetContent(
 
         Spacer(Modifier.height(24.dp))
 
-        // Rating Stars
+        
         Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
             (1..5).forEach { star ->
                 IconButton(onClick = { rating = star }) {
@@ -136,7 +136,7 @@ fun AddEditReviewSheetContent(
 
         Spacer(Modifier.height(24.dp))
 
-        // Comment Input
+        
         OutlinedTextField(
             value = comment,
             onValueChange = { comment = it },
@@ -151,7 +151,7 @@ fun AddEditReviewSheetContent(
 
         Spacer(Modifier.height(24.dp))
 
-        // Photo Preview
+        
         if (photoUris.isNotEmpty()) {
             LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(photoUris) { uri ->
@@ -177,7 +177,7 @@ fun AddEditReviewSheetContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Button Tambah Foto
+        
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -195,7 +195,7 @@ fun AddEditReviewSheetContent(
 
         Spacer(Modifier.height(32.dp))
 
-        // Submit Button
+        
         Button(
             onClick = { onSubmit(rating, comment, photoUris) },
             modifier = Modifier.fillMaxWidth().height(52.dp),
@@ -211,12 +211,12 @@ fun AddEditReviewSheetContent(
         Spacer(Modifier.height(16.dp))
     }
 
-    // DIALOG PILIHAN SUMBER FOTO
+    
     if (showImageOptions) {
-        Dialog(onDismissRequest = { showImageOptions = false }) { // Gunakan Dialog biasa
-            Card( // Bungkus dengan Card agar ada elevated look
+        Dialog(onDismissRequest = { showImageOptions = false }) { 
+            Card( 
                 modifier = Modifier
-                    .wrapContentSize() // Penting: agar tidak full width
+                    .wrapContentSize() 
                     .padding(16.dp),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
@@ -224,18 +224,18 @@ fun AddEditReviewSheetContent(
                 Column(
                     modifier = Modifier
                         .padding(24.dp)
-                        .widthIn(max = 320.dp), // Batasi lebar maksimal
+                        .widthIn(max = 320.dp), 
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Pilih Foto", // Judul disingkat
+                        text = "Pilih Foto", 
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.padding(bottom = 16.dp)
                     )
 
-                    // OPSI KAMERA
+                    
                     TextButton(
                         onClick = {
                             showImageOptions = false
@@ -253,13 +253,13 @@ fun AddEditReviewSheetContent(
                                 contentDescription = "Kamera",
                                 modifier = Modifier.padding(end = 12.dp)
                             )
-                            Text("Ambil dengan Kamera") // Teks disingkat
+                            Text("Ambil dengan Kamera") 
                         }
                     }
 
                     Divider(modifier = Modifier.padding(vertical = 4.dp))
 
-                    // OPSI GALERI
+                    
                     TextButton(
                         onClick = {
                             showImageOptions = false
@@ -273,17 +273,17 @@ fun AddEditReviewSheetContent(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                Icons.Default.Image, // Menggunakan ikon Image
+                                Icons.Default.Image, 
                                 contentDescription = "Galeri",
                                 modifier = Modifier.padding(end = 12.dp)
                             )
-                            Text("Pilih dari Galeri") // Teks disingkat
+                            Text("Pilih dari Galeri") 
                         }
                     }
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Tombol Batal
+                    
                     Button(
                         onClick = { showImageOptions = false },
                         modifier = Modifier.fillMaxWidth().height(48.dp),

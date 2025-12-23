@@ -40,19 +40,13 @@ fun RatingScreen(
     val currentUserId by viewModel.currentUserId.collectAsState()
     val isOwner by viewModel.isOwner.collectAsState()
 
-    // -----------------------------------------------------------------
-    // 1. LOGIKA SORTING: USER SENDIRI PALING ATAS
-    // -----------------------------------------------------------------
     val sortedReviews by remember {
         derivedStateOf {
-            // Mengurutkan: Jika userId == currentUserId (True), taruh di atas
+            
             reviews.sortedByDescending { it.userId == currentUserId }
         }
     }
 
-    // -----------------------------------------------------------------
-    // 2. LOGIKA TOMBOL TAMBAH (Menggunakan derivedStateOf agar reaktif)
-    // -----------------------------------------------------------------
     val hasReviewed by remember {
         derivedStateOf {
             reviews.any { it.userId == currentUserId }
@@ -119,7 +113,6 @@ fun RatingScreen(
                     )
                 }
 
-                // 3. GUNAKAN 'sortedReviews' DI SINI, BUKAN 'reviews'
                 items(items = sortedReviews, key = { it.id }) { review ->
 
                     val isMyReview = (review.userId == currentUserId)

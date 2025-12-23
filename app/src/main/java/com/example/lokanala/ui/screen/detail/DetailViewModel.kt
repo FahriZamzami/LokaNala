@@ -15,7 +15,7 @@ import retrofit2.Response
 import java.text.NumberFormat
 import java.util.Locale
 
-// State untuk UI Detail
+
 data class DetailUiState(
     val isLoading: Boolean = false,
     val product: ProductDetailData? = null,
@@ -28,9 +28,9 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     init {
-        // PERBAIKAN:
-        // Langsung ambil sebagai Int karena di NavGraph sudah didefinisikan type = NavType.IntType.
-        // Jangan mencoba mengambil sebagai String agar tidak terjadi ClassCastException.
+        
+        
+        
         val productId = savedStateHandle.get<Int>("productId") ?: -1
 
         Log.d("DetailViewModel", "Product ID diterima: $productId")
@@ -45,7 +45,7 @@ class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
     private fun loadProductDetail(id: Int) {
         _uiState.value = _uiState.value.copy(isLoading = true)
 
-        // Pastikan ApiClient.instance tidak error saat inisialisasi
+        
         val client = ApiClient.instance.getProductDetail(id)
 
         client.enqueue(object : Callback<ProductDetailResponse> {

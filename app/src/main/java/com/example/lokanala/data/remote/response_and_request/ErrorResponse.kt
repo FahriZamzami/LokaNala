@@ -16,4 +16,3 @@ data class ErrorResponse(
         return message ?: messageAlt ?: error ?: "Terjadi kesalahan"
     }
 }
-

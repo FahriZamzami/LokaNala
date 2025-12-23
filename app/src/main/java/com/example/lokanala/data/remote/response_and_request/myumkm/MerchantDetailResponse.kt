@@ -12,11 +12,12 @@ data class MerchantData(
     @SerializedName("id") val id: Int,
     @SerializedName("nama") val nama: String,
     @SerializedName("deskripsi") val deskripsi: String?,
-    @SerializedName("alamat") val alamat: String?,       // <-- Tambahan
-    @SerializedName("link_lokasi") val linkLokasi: String?, // <-- Untuk Foto Header
-    @SerializedName("rating") val rating: Double?,       // <-- Tambahan
-    @SerializedName("kategori") val kategori: String?,   // <-- Tambahan
-    @SerializedName("products") val products: List<ProductItemResponse> = emptyList()
+    @SerializedName("alamat") val alamat: String?,       
+    @SerializedName("link_lokasi") val linkLokasi: String?, 
+    @SerializedName("rating") val rating: Double?,       
+    @SerializedName("kategori") val kategori: String?,   
+    @SerializedName("products") val products: List<ProductItemResponse> = emptyList(),
+    @field:SerializedName(value = "gambar_url") val gambar: String?,
 )
 
 data class ProductItemResponse(

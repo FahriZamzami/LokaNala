@@ -43,14 +43,39 @@ private fun LokaNalaApp() {
             val activity = context as? Activity
 
             LaunchedEffect(Unit) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    if (activity != null &&
-                        ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+                if (activity != null) {
+
+                    val permissionsToRequest = mutableListOf<String>()
+
+                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED
                     ) {
+                        permissionsToRequest.add(Manifest.permission.CAMERA)
+                    }
+
+                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        permissionsToRequest.add(Manifest.permission.ACCESS_FINE_LOCATION)
+                    }
+                    if (ContextCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        permissionsToRequest.add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.POST_NOTIFICATIONS)
+                            != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+                        }
+                    }
+
+                    if (permissionsToRequest.isNotEmpty()) {
                         ActivityCompat.requestPermissions(
                             activity,
-                            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                            permissionsToRequest.toTypedArray(),
                             101
                         )
                     }

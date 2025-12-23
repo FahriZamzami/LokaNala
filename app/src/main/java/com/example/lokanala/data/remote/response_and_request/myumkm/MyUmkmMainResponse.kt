@@ -10,5 +10,5 @@ data class MyUmkmMainResponse(
     val message: String,
 
     @SerializedName("data")
-    val data: List<UmkmResponse> // Data list ada di dalam field ini
+    val data: List<UmkmResponse>
 )

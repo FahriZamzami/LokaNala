@@ -28,7 +28,7 @@ fun MyUMKMPromotionCard(
     onItemClick: (Promotion) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }   // 🔥 Dialog hapus
+    var showDeleteDialog by remember { mutableStateOf(false) }   
     val colorScheme = MaterialTheme.colorScheme
 
     Card(
@@ -47,7 +47,7 @@ fun MyUMKMPromotionCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
 
-            // 🔥 Ikon Promo
+            
             Box(
                 modifier = Modifier
                     .size(44.dp)
@@ -109,7 +109,7 @@ fun MyUMKMPromotionCard(
                         }
                     )
 
-                    // 🔥 Memunculkan dialog konfirmasi hapus
+                    
                     DropdownMenuItem(
                         text = { Text("Hapus", color = colorScheme.error) },
                         onClick = {
@@ -129,7 +129,7 @@ fun MyUMKMPromotionCard(
         }
     }
 
-    // 🔥🔥 Dialog Konfirmasi Hapus Promo
+    
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -154,7 +154,7 @@ fun MyUMKMPromotionCard(
                 TextButton(
                     onClick = {
                         showDeleteDialog = false
-                        onDelete(promotion)   // 🔥 eksekusi delete
+                        onDelete(promotion)   
                     }
                 ) {
                     Text("Hapus", color = colorScheme.error)

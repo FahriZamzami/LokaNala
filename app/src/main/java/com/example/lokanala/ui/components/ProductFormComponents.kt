@@ -42,9 +42,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 import androidx.core.content.FileProvider
 
-// ==========================================
-// COMPONENT: IMAGE PICKER SECTION
-// ==========================================
+
+
+
 @Composable
 fun ProductImagePicker(
     selectedImageUri: Uri?,
@@ -116,9 +116,9 @@ fun ProductImagePicker(
     }
 }
 
-// ==========================================
-// COMPONENT: PRODUCT FORM FIELDS
-// ==========================================
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductFormFields(
@@ -202,9 +202,9 @@ fun ProductFormFields(
     }
 }
 
-// ==========================================
-// COMPONENT: IMAGE SOURCE DIALOG
-// ==========================================
+
+
+
 @Composable
 fun ImageSourceDialog(
     showDialog: Boolean,
@@ -233,9 +233,9 @@ fun ImageSourceDialog(
     }
 }
 
-// ==========================================
-// COMPONENT: UPDATE PRODUCT CONFIRMATION DIALOG
-// ==========================================
+
+
+
 @Composable
 fun UpdateProductConfirmationDialog(
     showDialog: Boolean,
@@ -337,9 +337,9 @@ fun UpdateProductConfirmationDialog(
     }
 }
 
-// ==========================================
-// HELPER: CAMERA FILE CREATION
-// ==========================================
+
+
+
 fun Context.createImageFileForCamera(): Uri {
     val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     val imageFile = File.createTempFile("JPEG_${timeStamp}_", ".jpg", externalCacheDir)

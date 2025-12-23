@@ -4,9 +4,13 @@ sealed class Screen(val route: String) {
 
     object Login : Screen("login")
 
+    object Register : Screen("register")
+
     object Home : Screen("home")
     object Profile : Screen("profile")
     object Notification : Screen("notification")
+
+    object Following : Screen("following")
 
     object Merchant : Screen("merchant/{umkmId}") {
         fun createRoute(umkmId: Long) = "merchant/$umkmId"
@@ -24,7 +28,7 @@ sealed class Screen(val route: String) {
         fun createRoute(umkmId: Int) = "add_product/$umkmId"
     }
 
-    // ✅ HASIL MERGE DARI KODINGAN KEDUA
+    
     object EditProduct : Screen("edit_product/{umkmId}/{productId}") {
         fun createRoute(umkmId: Int, productId: Int) =
             "edit_product/$umkmId/$productId"
@@ -50,10 +54,12 @@ sealed class Screen(val route: String) {
         fun createRoute(productId: Int) = "rating/$productId"
     }
 
-    // ⭐ Route kamera review
+    
     object AddPictureReview : Screen("add_picture_review")
 
-    object Promo : Screen("promo")
+    object Promo : Screen("promo/{umkmId}") {
+        fun createRoute(umkmId: Long) = "promo/$umkmId"
+    }
 
     object PromoDetail : Screen("promo_detail/{promoId}") {
         fun createRoute(promoId: Int) = "promo_detail/$promoId"
@@ -69,5 +75,13 @@ sealed class Screen(val route: String) {
 
     object ManageCategory : Screen("manage_category/{umkmId}") {
         fun createRoute(umkmId: Int) = "manage_category/$umkmId"
+    }
+
+    object EditUmkm : Screen("edit_umkm/{umkmId}") {
+        fun createRoute(umkmId: Int) = "edit_umkm/$umkmId"
+    }
+
+    object UmkmDetail : Screen("umkm_detail/{umkmId}") {
+        fun createRoute(umkmId: Long) = "umkm_detail/$umkmId"
     }
 }

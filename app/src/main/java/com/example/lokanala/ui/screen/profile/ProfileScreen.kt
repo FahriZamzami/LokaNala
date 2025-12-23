@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.StarOutline
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,7 +80,6 @@ fun ProfileScreen(
                     UserInfoCard(viewModel)
                 }
                 item { AccountSection(navController = navController, viewModel = viewModel) }
-                item { InfoSection() }
             }
         }
 
@@ -125,53 +126,70 @@ fun UserInfoCard(viewModel: ProfileViewModel) {
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(24.dp), 
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 32.dp, horizontal = 16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally, 
+            verticalArrangement = Arrangement.Center
         ) {
-
-            // FOTO PROFIL DARI URL
+            
             if (!user.photoUrl.isNullOrEmpty()) {
                 AsyncImage(
                     model = user.photoUrl,
                     contentDescription = "Foto Profil",
                     modifier = Modifier
-                        .size(60.dp)
-                        .clip(CircleShape),
+                        .size(120.dp) 
+                        .clip(CircleShape)
+                        .background(colorScheme.surfaceVariant),
                     contentScale = ContentScale.Crop
                 )
             } else {
                 Box(
                     modifier = Modifier
-                        .size(60.dp)
+                        .size(120.dp) 
                         .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0)),
+                        .background(colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Default Profile Icon",
-                        tint = Color.DarkGray,
-                        modifier = Modifier.size(32.dp)
+                        tint = colorScheme.primary,
+                        modifier = Modifier.size(64.dp) 
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = user.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-                Text(text = user.email, fontSize = 14.sp, color = TextGreyLight)
-                Text(text = user.phone, fontSize = 14.sp, color = TextGreyLight)
-            }
+            
+            Text(
+                text = user.name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 22.sp, 
+                textAlign = TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = user.email,
+                fontSize = 14.sp,
+                color = TextGreyLight,
+                textAlign = TextAlign.Center
+            )
+
+            Text(
+                text = user.phone,
+                fontSize = 14.sp,
+                color = TextGreyLight,
+                textAlign = TextAlign.Center
+            )
         }
     }
 }
@@ -186,7 +204,7 @@ private fun AccountSection(
 
     Column {
         Text(
-            text = "Account",
+            text = "Menu",
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp,
             color = colorScheme.onBackground,
@@ -206,9 +224,11 @@ private fun AccountSection(
                     text = "My UMKM",
                     onClick = { navController.navigate(Screen.MyUmkm.route) }
                 )
-                ProfileMenuItem(icon = Icons.Filled.StarOutline, text = "Ulasan")
-                ProfileMenuItem(icon = Icons.AutoMirrored.Filled.HelpOutline, text = "Pusat bantuan")
-                ProfileMenuItem(icon = Icons.Filled.LockOpen, text = "Keamanan akun")
+                ProfileMenuItem(
+                    icon = Icons.Filled.Favorite,
+                    text = "Following",
+                    onClick = { navController.navigate(Screen.Following.route) }
+                )
                 ProfileMenuItem(
                     icon = Icons.AutoMirrored.Filled.Logout,
                     text = "Keluar",
@@ -240,42 +260,6 @@ private fun AccountSection(
                 ) { Text("Batal") }
             }
         )
-    }
-}
-
-@Composable
-private fun InfoSection() {
-    val colorScheme = MaterialTheme.colorScheme
-
-    Column {
-        Text(
-            text = "Info Lainnya",
-            fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
-            color = colorScheme.onBackground,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                ProfileMenuItem(
-                    icon = Icons.Filled.Info,
-                    text = "Ketentuan & privasi",
-                    trailingText = "Setujui"
-                )
-                ProfileMenuItem(
-                    icon = Icons.Filled.StarOutline,
-                    text = "Beri rating",
-                    trailingText = "v 1.0.1"
-                )
-            }
-        }
     }
 }
 

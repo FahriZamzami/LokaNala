@@ -26,13 +26,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        // 🔑 Ambil target user dari FCM data payload
+        
         val targetUserId = message.data["targetUserId"] ?: return
 
-        // 🔐 Ambil user yang sedang login dari DataStore
+        
         val currentUserId = getCurrentUserId() ?: return
 
-        // 🚫 BUKAN MILIK USER YANG LOGIN → JANGAN TAMPILKAN
+        
         if (targetUserId != currentUserId) return
 
         val title = message.notification?.title ?: "Notifikasi"
@@ -45,7 +45,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Notification Channel (Android 8+)
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -77,14 +77,11 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
-    /**
-     * Ambil ID user yang sedang login dari DataStore
-     */
     private fun getCurrentUserId(): String? = runBlocking {
         val userPref = UserPreference.getInstance(applicationContext.dataStore)
         val user = userPref.getUser().first()
 
-        // Jika belum login → idUser = -1
+        
         if (user.idUser == -1) null else user.idUser.toString()
     }
 }

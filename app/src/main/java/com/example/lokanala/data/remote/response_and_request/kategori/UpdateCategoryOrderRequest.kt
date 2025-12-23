@@ -2,13 +2,13 @@ package com.example.lokanala.data.remote.response_and_request
 
 import com.google.gson.annotations.SerializedName
 
-// Request body untuk update urutan kategori
+
 data class UpdateCategoryOrderRequest(
     @SerializedName("urutan")
     val urutan: List<CategoryOrderItem>
 )
 
-// Item urutan kategori
+
 data class CategoryOrderItem(
     @SerializedName("id_kategori_produk")
     val idKategoriProduk: Int,
@@ -17,7 +17,7 @@ data class CategoryOrderItem(
     val urutan: Int
 )
 
-// Response untuk update urutan kategori
+
 data class UpdateCategoryOrderResponse(
     @SerializedName("success")
     val success: Boolean,

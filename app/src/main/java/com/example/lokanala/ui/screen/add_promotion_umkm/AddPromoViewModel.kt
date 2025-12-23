@@ -36,7 +36,7 @@ class AddPromoViewModel : ViewModel() {
     ) {
         _state.value = AddPromoState.Loading
 
-        // Buat request JSON
+        
         val request = CreatePromoRequest(
             nama_promo = title,
             deskripsi = description,

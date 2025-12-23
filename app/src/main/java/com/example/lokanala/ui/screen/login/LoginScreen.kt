@@ -29,7 +29,7 @@ import androidx.navigation.NavController
 import com.example.lokanala.R
 import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.theme.*
-// Import Factory
+
 import com.example.lokanala.ui.ViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -37,11 +37,11 @@ import com.example.lokanala.ui.ViewModelFactory
 fun LoginScreen(
     modifier: Modifier = Modifier,
     navController: NavController
-    // HAPUS parameter default viewModel di sini
+    
 ) {
     val context = LocalContext.current
 
-    // --- GUNAKAN FACTORY DI SINI ---
+    
     val viewModel: LoginViewModel = viewModel(
         factory = ViewModelFactory.getInstance(context)
     )
@@ -72,7 +72,7 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Text("Login here", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = colorScheme.primary)
 
-                // ... (Sisa kode UI sama persis, hanya beda di onClick Button) ...
+                
 
                 Spacer(modifier = Modifier.height(40.dp))
                 OutlinedTextField(value = uiState.email, onValueChange = viewModel::onEmailChange, label = { Text("Email") }, modifier = Modifier.fillMaxWidth())
@@ -82,9 +82,9 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Button Login (Tidak perlu pass context lagi)
+                
                 Button(
-                    onClick = { viewModel.fetchFcmTokenAndLogin() }, // <--- CUKUP PANGGIL INI
+                    onClick = { viewModel.fetchFcmTokenAndLogin() }, 
                     modifier = Modifier.fillMaxWidth().height(55.dp),
                     enabled = !uiState.isLoading
                 ) {
@@ -92,7 +92,16 @@ fun LoginScreen(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
-                Text("Create new account", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = PrimaryPink, modifier = Modifier.clickable { /* TODO */ })
+                Text(
+                    text = "Create new account",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PrimaryPink,
+                    modifier = Modifier.clickable {
+                        
+                        navController.navigate(Screen.Register.route)
+                    }
+                )
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }

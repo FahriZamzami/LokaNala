@@ -7,12 +7,17 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.lokanala.data.pref.UserPreference
 import com.example.lokanala.data.pref.dataStore
+import com.example.lokanala.ui.screen.addumkm.AddUmkmViewModel
+import com.example.lokanala.ui.screen.editumkm.EditUmkmViewModel
+import com.example.lokanala.ui.screen.following.FollowingViewModel
 import com.example.lokanala.ui.screen.login.LoginViewModel
 import com.example.lokanala.ui.screen.merchant.MerchantViewModel
 import com.example.lokanala.ui.screen.profile.ProfileViewModel
 import com.example.lokanala.ui.screen.rating.RatingViewModel
 import com.example.lokanala.ui.splash.SplashViewModel
 import com.example.lokanala.ui.screen.myumkm.MyUmkmViewModel
+import com.example.lokanala.ui.screen.notification.NotificationViewModel
+import com.example.lokanala.ui.screen.register.RegisterViewModel
 
 class ViewModelFactory(
     private val userPreference: UserPreference
@@ -49,6 +54,26 @@ class ViewModelFactory(
 
             modelClass.isAssignableFrom(MerchantViewModel::class.java) -> {
                 MerchantViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(AddUmkmViewModel::class.java) -> { 
+                AddUmkmViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(EditUmkmViewModel::class.java) -> {
+                EditUmkmViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(RegisterViewModel::class.java) -> {
+                RegisterViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(NotificationViewModel::class.java) -> {
+                NotificationViewModel(userPreference) as T
+            }
+
+            modelClass.isAssignableFrom(FollowingViewModel::class.java) -> {
+                FollowingViewModel(userPreference) as T
             }
 
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

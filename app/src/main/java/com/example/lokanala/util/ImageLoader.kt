@@ -25,8 +25,7 @@ object ImageLoader {
             .allowHardware(true) // Use hardware bitmaps when possible
             .memoryCachePolicy(coil.request.CachePolicy.ENABLED)
             .diskCachePolicy(coil.request.CachePolicy.ENABLED)
-        
-        // Add size constraints if provided to reduce memory usage
+
         if (widthDp != null || heightDp != null) {
             val density = context.resources.displayMetrics.density
             val widthPx = widthDp?.let { (it * density).toInt() }

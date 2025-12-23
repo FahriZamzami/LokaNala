@@ -33,17 +33,14 @@ import com.example.lokanala.data.remote.response_and_request.merchant.MerchantPr
 import com.example.lokanala.ui.navigation.Screen
 import com.example.lokanala.ui.screen.my_merchant.SortOrder
 
-// ==========================================
-// COMPONENT: MERCHANT HEADER (Public View)
-// ==========================================
 @Composable
 fun MerchantPublicHeader(
     data: MerchantData,
     onBack: () -> Unit,
     navController: NavController,
     umkmId: Long,
-    isFollowing: Boolean,            // Tambahan: status follow
-    onFollowClick: () -> Unit,         // Tambahan: aksi follow/unfollow
+    isFollowing: Boolean,            
+    onFollowClick: () -> Unit,         
     isOwner: Boolean
 ) {
     val colorScheme = MaterialTheme.colorScheme
@@ -57,7 +54,7 @@ fun MerchantPublicHeader(
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxWidth().height(200.dp)
         )
-        // Tombol Back
+        
         IconButton(
             onClick = onBack,
             modifier = Modifier.padding(top = 30.dp, start = 8.dp).clip(CircleShape)
@@ -99,7 +96,7 @@ fun MerchantPublicHeader(
                         Text(text = data.alamat ?: "Alamat tidak tersedia", fontSize = 13.sp, color = colorScheme.onSurfaceVariant, maxLines = 1)
                     }
 
-                    // Tombol Follow / Following
+                    
                     Spacer(modifier = Modifier.width(8.dp))
                     if (!isOwner) {
                         Button(
@@ -116,27 +113,30 @@ fun MerchantPublicHeader(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
-                    modifier = Modifier.fillMaxWidth().clickable { navController.navigate("detailscreen/$umkmId") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            
+                            navController.navigate(Screen.UmkmDetail.createRoute(umkmId))
+                        },
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("Lihat Detail UMKM", fontWeight = FontWeight.Bold, color = colorScheme.primary, fontSize = 12.sp)
                     Spacer(modifier = Modifier.width(4.dp))
-                    Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, "Lihat detail", tint = colorScheme.primary, modifier = Modifier.size(14.dp))
+                    Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, null, tint = colorScheme.primary, modifier = Modifier.size(14.dp))
                 }
             }
         }
     }
 }
 
-// ==========================================
-// COMPONENT: MERCHANT PROMO SECTION
-// ==========================================
 @Composable
 fun MerchantPromoSection(
     promo: MerchantPromo,
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    umkmId: Long
 ) {
     val GreenPromoColor = Color(0xFF104618)
     Column(modifier = modifier.fillMaxWidth().padding(top = 16.dp)) {
@@ -147,7 +147,7 @@ fun MerchantPromoSection(
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = GreenPromoColor),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            onClick = { navController.navigate(Screen.Promo.route) }
+            onClick = { navController.navigate(Screen.Promo.createRoute(umkmId)) }
         ) {
             Column(Modifier.fillMaxWidth().padding(16.dp)) {
                 Text(text = promo.namaPromo.uppercase(), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color.White, maxLines = 2)
@@ -164,9 +164,6 @@ fun MerchantPromoSection(
     }
 }
 
-// ==========================================
-// COMPONENT: MERCHANT SEARCH & FILTER
-// ==========================================
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MerchantSearchFilter(

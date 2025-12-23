@@ -1,6 +1,5 @@
 package com.example.lokanala.ui.screen.merchant
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,7 +40,7 @@ fun MerchantScreen(
     val selectedCategory by viewModel.selectedCategory.collectAsState()
     val sortOrder by viewModel.sortOrder.collectAsState()
     val umkmFollowStatus by viewModel.umkmFollowStatus.collectAsState()
-    val isOwner by viewModel.isOwner.collectAsState() // Tambahkan ini
+    val isOwner by viewModel.isOwner.collectAsState() 
 
     var categoryOrder by remember(umkmId) {
         mutableStateOf(CategoryOrderManager.getCategoryOrder(context, umkmId.toInt()))
@@ -55,12 +54,14 @@ fun MerchantScreen(
                 categoriesState.value = response.body()?.data ?: emptyList()
             }
         } catch (e: Exception) {
-            // Ignore error
+            
         }
     }
-    
-    val availableCategories = remember(categoriesState.value) {
-        categoriesState.value.map { it.name }.distinct()
+
+    val availableCategories = remember(products) {
+        products.mapNotNull { it.categoryName }
+            .distinct()
+            .sorted()
     }
     
     val categoryIdMap = remember(categoriesState.value) {
@@ -114,7 +115,7 @@ fun MerchantScreen(
                             onBack = { navController.popBackStack() },
                             navController = navController,
                             umkmId = umkmId,
-                            isFollowing = umkmFollowStatus[umkmId] ?: false,  // status follow
+                            isFollowing = umkmFollowStatus[umkmId] ?: false,  
                             onFollowClick = { viewModel.toggleFollow(umkmId) },
                             isOwner = isOwner
                         )
@@ -124,7 +125,8 @@ fun MerchantScreen(
                             MerchantPromoSection(
                                 promo = latestPromo,
                                 modifier = Modifier.padding(horizontal = 16.dp),
-                                navController = navController
+                                navController = navController,
+                                umkmId = umkmId
                             )
                         }
                     }

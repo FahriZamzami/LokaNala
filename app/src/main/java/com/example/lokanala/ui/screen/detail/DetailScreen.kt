@@ -16,6 +16,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,9 +38,11 @@ import com.example.lokanala.R
 import com.example.lokanala.data.remote.response_and_request.product.TopReviewData
 import com.example.lokanala.ui.components.RatingItem
 import com.example.lokanala.ui.navigation.Screen
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
-// Definisi Warna Khusus agar sesuai desain (Pink/Merah)
-val PrimaryPink = Color(0xFFD81B60) // Sesuaikan dengan warna di screenshot
+
+val PrimaryPink = Color(0xFFD81B60) 
 val TextGrey = Color(0xFF757575)
 val StarYellow = Color(0xFFFFC107)
 
@@ -62,12 +67,12 @@ fun DetailScreen(
                 color = MaterialTheme.colorScheme.error
             )
         } else {
-            // DATA ADA
+            
             if (product != null) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    // 1. GAMBAR HEADER PRODUK
+                    
                     item {
                         Box {
                             AsyncImage(
@@ -82,22 +87,22 @@ fun DetailScreen(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(300.dp) // Tinggi gambar sesuai desain
+                                    .height(300.dp) 
                             )
                         }
                     }
 
-                    // 2. KONTEN DETAIL (Overlap ke atas)
+                    
                     item {
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .offset(y = (-20).dp) // Efek overlap lengkungan
+                                .offset(y = (-20).dp) 
                                 .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
                                 .background(MaterialTheme.colorScheme.surface)
                                 .padding(16.dp)
                         ) {
-                            // Bagian Judul dan Harga
+                            
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 verticalAlignment = Alignment.Top
@@ -116,7 +121,7 @@ fun DetailScreen(
                                     text = viewModel.formatRupiah(product.harga),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 18.sp,
-                                    color = PrimaryPink // Warna Harga Pink
+                                    color = PrimaryPink 
                                 )
                             }
 
@@ -124,14 +129,14 @@ fun DetailScreen(
                             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f), thickness = 1.dp)
                             Spacer(Modifier.height(16.dp))
 
-                            // Deskripsi Produk
+                            
                             ProductDescription(description = product.deskripsi ?: "Tidak ada deskripsi")
 
                             Spacer(Modifier.height(16.dp))
-                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 6.dp) // Divider tebal
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f), thickness = 6.dp) 
                             Spacer(Modifier.height(16.dp))
 
-                            // Bagian Rating
+                            
                             RatingSection(
                                 productId = product.id,
                                 topReview = product.ulasanTerbaik,
@@ -141,7 +146,7 @@ fun DetailScreen(
                     }
                 }
 
-                // TOP BAR FLOATING
+                
                 DetailTopBar(
                     onBack = onBack,
                     modifier = Modifier.align(Alignment.TopCenter)
@@ -163,20 +168,20 @@ private fun DetailTopBar(onBack: () -> Unit, modifier: Modifier = Modifier) {
     ) {
         val iconModifier = Modifier
             .clip(CircleShape)
-            .background(Color(0x66000000)) // Transparan Hitam
+            .background(Color(0x66000000)) 
 
         IconButton(onClick = onBack, modifier = iconModifier) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Kembali", tint = Color.White)
         }
-        Row {
-            IconButton(onClick = { /* TODO */ }, modifier = iconModifier) {
-                Icon(Icons.Default.Search, "Cari", tint = Color.White)
-            }
-            Spacer(Modifier.width(8.dp))
-            IconButton(onClick = { /* TODO */ }, modifier = iconModifier) {
-                Icon(Icons.Default.Share, "Bagikan", tint = Color.White)
-            }
-        }
+
+
+
+
+
+
+
+
+
     }
 }
 
@@ -194,7 +199,7 @@ private fun RatingChip(rating: Double, reviewCount: Int) {
             Icon(
                 Icons.Filled.Star,
                 "Rating",
-                tint = StarYellow, // Warna Bintang Kuning
+                tint = StarYellow, 
                 modifier = Modifier.size(16.dp)
             )
             Spacer(Modifier.width(4.dp))
@@ -210,26 +215,45 @@ private fun RatingChip(rating: Double, reviewCount: Int) {
 
 @Composable
 private fun ProductDescription(description: String) {
+    
+    var isExpanded by remember { mutableStateOf(false) }
+    
+    var isClickable by remember { mutableStateOf(false) }
+
+    val lineLimit = 3 
+
     Column {
         Text(
             text = description,
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurface,
-            lineHeight = 22.sp
+            lineHeight = 22.sp,
+            
+            maxLines = if (isExpanded) Int.MAX_VALUE else lineLimit,
+            overflow = TextOverflow.Ellipsis,
+            onTextLayout = { textLayoutResult ->
+                
+                if (textLayoutResult.lineCount >= lineLimit) {
+                    isClickable = true
+                }
+            }
         )
 
-        Spacer(Modifier.height(12.dp))
-
-        // Tombol "selengkapnya" di tengah bawah
-        Text(
-            text = "selengkapnya",
-            fontSize = 13.sp,
-            color = TextGrey,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { /* Expand logic */ },
-            textAlign = TextAlign.Center
-        )
+        
+        if (isClickable) {
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = if (isExpanded) "tutup" else "selengkapnya",
+                fontSize = 13.sp,
+                color = TextGrey,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { isExpanded = !isExpanded }
+                    .padding(vertical = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }
 
@@ -246,7 +270,7 @@ private fun RatingSection(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "Rating", // Sesuai screenshot
+                text = "Rating", 
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.onSurface
@@ -254,7 +278,7 @@ private fun RatingSection(
             Text(
                 text = "Lihat semua >",
                 fontSize = 13.sp,
-                color = PrimaryPink, // Warna Pink
+                color = PrimaryPink, 
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable {
                     navController.navigate(Screen.Rating.createRoute(productId))

@@ -1,6 +1,7 @@
 package com.example.lokanala.data.remote.retrofit
 
 import com.example.lokanala.data.remote.response_and_request.*
+import com.example.lokanala.data.remote.response_and_request.following.FollowingResponse
 import com.example.lokanala.data.remote.response_and_request.login.LoginRequest
 import com.example.lokanala.data.remote.response_and_request.login.LoginResponse
 import com.example.lokanala.data.remote.response_and_request.home.HomeResponse
@@ -8,6 +9,7 @@ import com.example.lokanala.data.remote.response_and_request.login.FollowStatusR
 import com.example.lokanala.data.remote.response_and_request.merchant.MerchantResponse
 import com.example.lokanala.data.remote.response_and_request.myumkm.MyUmkmResponse
 import com.example.lokanala.data.remote.response_and_request.myumkmpromo.*
+import com.example.lokanala.data.remote.response_and_request.notification.NotificationResponse
 import com.example.lokanala.data.remote.response_and_request.product.ProductDetailResponse
 import com.example.lokanala.data.remote.response_and_request.rating.*
 
@@ -19,14 +21,23 @@ import retrofit2.http.*
 
 interface ApiService {
 
-    // ==================== AUTH ====================
+    @Multipart
+    @POST("user/register")
+    suspend fun registerUser(
+        @Part("nama") nama: RequestBody,
+        @Part("email") email: RequestBody,
+        @Part("no_telepon") noTelepon: RequestBody,
+        @Part("password") password: RequestBody,
+        @Part("fcm_token") fcmToken: RequestBody,
+        @Part foto: MultipartBody.Part
+    ): Response<LoginResponse>
 
     @POST("user/login")
     suspend fun loginUser(
         @Body request: LoginRequest
     ): Response<LoginResponse>
 
-    // ==================== RATING / ULASAN ====================
+    
 
     @GET("rating/{id_produk}")
     fun getRatingByProduct(
@@ -66,7 +77,7 @@ interface ApiService {
         @Path("id_user") userId: Int
     ): Call<OwnerCheckResponse>
 
-    // ==================== UMKM ====================
+    
 
     @GET("umkm")
     fun getAllUmkm(): Call<HomeResponse>
@@ -84,12 +95,53 @@ interface ApiService {
         @Query("id_user") userId: Int
     ): Response<MyUmkmResponse>
 
+    
+    @Multipart
+    @POST("create-umkm") 
+    suspend fun createUmkm(
+        @Part("id_user") idUser: RequestBody,
+        @Part("id_kategori_umkm") idKategori: RequestBody?,
+        @Part("nama_umkm") nama: RequestBody,
+        @Part("alamat") alamat: RequestBody,
+        @Part("no_telepon") noTelp: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part("link_lokasi") linkLokasi: RequestBody,
+        @Part gambar: MultipartBody.Part?
+    ): Response<UmkmSingleResponse>
+
+    @Multipart
+    @PUT("update-umkm/{id_umkm}")
+    suspend fun updateUmkm(
+        @Path("id_umkm") idUmkm: Int,
+        @Part("id_kategori_umkm") idKategori: RequestBody?,
+        @Part("nama_umkm") nama: RequestBody,
+        @Part("alamat") alamat: RequestBody,
+        @Part("no_telepon") noTelp: RequestBody,
+        @Part("deskripsi") deskripsi: RequestBody,
+        @Part("link_lokasi") linkLokasi: RequestBody,
+        @Part gambar: MultipartBody.Part?
+    ): Response<UmkmSingleResponse>
+
+    
+    @DELETE("delete/umkm/{id_umkm}")
+    suspend fun deleteUmkm(
+        @Path("id_umkm") idUmkm: Int
+    ): Response<UmkmActionResponse>
+
+    @GET("umkm-detail/{id}")
+    suspend fun getUmkmById(
+        @Path("id") idUmkm: Int
+    ): Response<UmkmSingleResponse>
+
+    @GET("umkm-category")
+    suspend fun getAllKategoriUmkm(): KategoriUmkmResponse
+
     @GET("user/my-umkm")
     suspend fun getMyUmkmByToken(
         @Header("Authorization") token: String
     ): MyUmkmMainResponse
 
-    // ==================== MERCHANT ====================
+    
 
     @GET("merchant/{id}")
     fun getMerchantDetail(
@@ -101,7 +153,7 @@ interface ApiService {
         @Path("id") id: Int
     ): MerchantDetailResponse
 
-    // ==================== PRODUK ====================
+    
 
     @GET("produk/{id}")
     fun getProductDetail(
@@ -146,7 +198,7 @@ interface ApiService {
         @Part gambar: MultipartBody.Part?
     ): Response<AddProductResponse>
 
-    // ==================== KATEGORI PRODUK ====================
+    
 
     @GET("kategori-produk/umkm/{umkmId}")
     suspend fun getCategories(
@@ -175,7 +227,7 @@ interface ApiService {
         @Body request: UpdateCategoryOrderRequest
     ): Response<UpdateCategoryOrderResponse>
 
-    // ==================== PROMO UMKM ====================
+    
 
     @GET("{id_umkm}/promos")
     fun getUmkmPromos(
@@ -204,35 +256,47 @@ interface ApiService {
         @Path("id_promo") idPromo: Int
     ): Call<Unit>
 
-    // CEK STATUS FOLLOW
+    
     @GET("follow/status/{id_umkm}")
     suspend fun checkFollowStatus(
         @Path("id_umkm") umkmId: Int,
-        @Header("Authorization") token: String // pastikan "Bearer <token>"
-    ): Response<FollowStatusResponse> // backend: { isFollowing: true/false }
+        @Header("Authorization") token: String 
+    ): Response<FollowStatusResponse> 
 
-    // FOLLOW UMKM
+    
     @POST("follow/{id_umkm}")
     suspend fun followUmkm(
         @Path("id_umkm") umkmId: Int,
         @Header("Authorization") token: String
-    ): Response<Unit> // backend hanya 201, body kosong
+    ): Response<Unit> 
 
-    // UNFOLLOW UMKM
+    
     @DELETE("follow/{id_umkm}")
     suspend fun unfollowUmkm(
         @Path("id_umkm") umkmId: Int,
         @Header("Authorization") token: String
-    ): Response<Unit> // backend hanya 200, body kosong
+    ): Response<Unit> 
 
     @GET("rating/product/{id_produk}")
     suspend fun getProductRating(
         @Path("id_produk") idProduk: Int
     ): retrofit2.Response<ProductRatingResponse>
 
-    // Mengambil rating akumulasi seluruh ulasan dalam satu UMKM
+    
     @GET("rating/umkm/{id_umkm}")
     suspend fun getUMKMRating(
         @Path("id_umkm") idUmkm: Int
     ): retrofit2.Response<UmkmRatingResponse>
+
+    
+    @GET("user/notifications")
+    suspend fun getUserNotifications(
+        @Header("Authorization") token: String
+    ): Response<NotificationResponse>
+
+    
+    @GET("user/following")
+    suspend fun getUserFollowing(
+        @Header("Authorization") token: String
+    ): Response<FollowingResponse>
 }

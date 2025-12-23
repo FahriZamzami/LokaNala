@@ -18,7 +18,8 @@ data class HomeUiState(
     val filteredUmkmList: List<Umkm> = emptyList(),
     val kategoriUmkmList: List<String> = emptyList(),
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val userLocation: String = "Mencari lokasi...",
 )
 
 enum class FilterType {
@@ -67,11 +68,11 @@ class HomeViewModel : ViewModel() {
      */
     private fun applyFilters(latestList: List<Umkm>? = null) {
         viewModelScope.launch(Dispatchers.Default) {
-            // Gunakan list yang dilempar (jika ada), jika tidak ambil dari state sekarang
+            
             val allUmkm = latestList ?: _uiState.value.umkmList
             var filtered = allUmkm
 
-            // 1. Filter Kategori
+            
             val currentFilter = _selectedFilter.value
             val currentKategori = _selectedKategori.value
 
@@ -79,7 +80,7 @@ class HomeViewModel : ViewModel() {
                 filtered = filtered.filter { it.tag.equals(currentKategori, ignoreCase = true) }
             }
 
-            // 2. Search
+            
             val query = _searchQuery.value.trim()
             if (query.isNotEmpty()) {
                 filtered = filtered.filter {
@@ -88,7 +89,7 @@ class HomeViewModel : ViewModel() {
                 }
             }
 
-            // 3. Sorting (Penting: Rating harus sudah masuk agar TERLARIS bekerja)
+            
             filtered = when (currentFilter) {
                 FilterType.TERLARIS -> {
                     filtered.sortedWith(
@@ -108,9 +109,19 @@ class HomeViewModel : ViewModel() {
         }
     }
 
+    fun refreshData() {
+        loadUmkm()
+    }
+
     private fun loadUmkm() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            
+            
+            _uiState.update { it.copy(
+                isLoading = it.umkmList.isEmpty(),
+                errorMessage = null
+            )}
+
             try {
                 val response = ApiClient.instance.getAllUmkmSuspend()
                 if (response.isSuccessful && response.body()?.success == true) {
@@ -121,7 +132,7 @@ class HomeViewModel : ViewModel() {
                             Umkm(
                                 id = item.idUmkm,
                                 name = item.namaUmkm,
-                                rating = null, // JANGAN set 0.0, set NULL agar UI tahu ini belum dimuat
+                                rating = 0.0,
                                 tag = item.kategori?.namaKategori ?: "Umkm",
                                 imageUrl = item.gambarUrl,
                                 description = item.deskripsi,
@@ -139,10 +150,9 @@ class HomeViewModel : ViewModel() {
                         isLoading = false
                     )}
 
-                    // Jalankan applyFilters awal
                     applyFilters(mappedList)
 
-                    // JALANKAN API RATING SECARA ASINKRON
+                    
                     mappedList.forEach { umkm ->
                         fetchRatingForUmkm(umkm.id.toLong())
                     }
@@ -156,7 +166,7 @@ class HomeViewModel : ViewModel() {
     private fun fetchRatingForUmkm(umkmId: Long) {
         viewModelScope.launch {
             try {
-                // Panggilan langsung (suspend)
+                
                 val response = ApiClient.instance.getUMKMRating(umkmId.toInt())
 
                 if (response.isSuccessful) {
@@ -169,8 +179,26 @@ class HomeViewModel : ViewModel() {
                     Log.e("API_ERROR", "Gagal fetch rating ID $umkmId: ${response.message()}")
                 }
             } catch (e: Exception) {
-                // Error "Unable to create call adapter" SEHARUSNYA HILANG setelah tambah 'suspend'
+                
                 Log.e("API_EXCEPTION", "ID: $umkmId, Error: ${e.message}")
+            }
+        }
+    }
+
+    fun updateLocationName(context: android.content.Context, latitude: Double, longitude: Double) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val geocoder = android.location.Geocoder(context, java.util.Locale.getDefault())
+                val addresses = geocoder.getFromLocation(latitude, longitude, 1)
+                if (!addresses.isNullOrEmpty()) {
+                    
+                    val village = addresses[0].subLocality ?: addresses[0].locality ?: "Lokasi tidak dikenal"
+                    withContext(Dispatchers.Main) {
+                        _uiState.update { it.copy(userLocation = village) }
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("Geocoder", "Error: ${e.message}")
             }
         }
     }
@@ -189,7 +217,7 @@ class HomeViewModel : ViewModel() {
             currentState.copy(umkmList = updatedMasterList)
         }
 
-        // PERBAIKAN: Paksa applyFilters menggunakan list terbaru yang baru saja diupdate
+        
         applyFilters(updatedMasterList)
     }
 }

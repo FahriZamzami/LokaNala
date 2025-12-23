@@ -1,5 +1,7 @@
 package com.example.lokanala.ui.screen.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -37,11 +40,51 @@ import com.example.lokanala.ui.theme.*
 fun HomeScreen(
     modifier: Modifier = Modifier,
     viewModel: HomeViewModel = viewModel(),
-    navController: NavController
+    navController: NavController,
 ) {
-    // Mengambil state dari ViewModel (termasuk list data, loading, dan error)
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
+
+    val fusedLocationClient = remember {
+        com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineLocationGranted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true
+        val coarseLocationGranted = permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (fineLocationGranted || coarseLocationGranted) {
+            
+            if (androidx.core.app.ActivityCompat.checkSelfPermission(
+                    context, android.Manifest.permission.ACCESS_FINE_LOCATION
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                androidx.core.app.ActivityCompat.checkSelfPermission(
+                    context, android.Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    location?.let {
+                        viewModel.updateLocationName(context, it.latitude, it.longitude)
+                    }
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.refreshData()
+        
+        locationPermissionLauncher.launch(
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
 
     Box(
         modifier = modifier
@@ -52,8 +95,11 @@ fun HomeScreen(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 1. Bagian Atas (TopBar, Search, Filter) selalu tampil
-            HomeTopBar(navController = navController)
+            
+            HomeTopBar(
+                navController = navController,
+                locationName = uiState.userLocation 
+            )
 
             Column(
                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -66,13 +112,13 @@ fun HomeScreen(
                 FilterChips(viewModel = viewModel)
             }
 
-            // 2. Bagian Konten (Grid / Loading / Error)
+            
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.TopCenter
             ) {
                 when {
-                    // KONDISI A: Sedang Loading
+                    
                     uiState.isLoading -> {
                         CircularProgressIndicator(
                             modifier = Modifier
@@ -81,7 +127,7 @@ fun HomeScreen(
                         )
                     }
 
-                    // KONDISI B: Ada Error (Misal koneksi gagal)
+                    
                     uiState.errorMessage != null -> {
                         Text(
                             text = uiState.errorMessage ?: "Terjadi kesalahan",
@@ -93,7 +139,7 @@ fun HomeScreen(
                         )
                     }
 
-                    // KONDISI C: Data Kosong tapi sukses
+                    
                     uiState.umkmList.isEmpty() -> {
                         Text(
                             text = "Belum ada data UMKM",
@@ -104,13 +150,13 @@ fun HomeScreen(
                         )
                     }
 
-                    // KONDISI D: Tampilkan Data
+                    
                     else -> {
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(2),
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            // Tambahkan padding bottom extra agar konten terbawah tidak tertutup BottomBar
+                            
                             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 100.dp),
                             modifier = Modifier.fillMaxSize()
                         ) {
@@ -128,7 +174,7 @@ fun HomeScreen(
             }
         }
 
-        // 3. Bottom Navigation Bar (Paling bawah, di atas konten lain)
+        
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -144,12 +190,13 @@ fun HomeScreen(
     }
 }
 
-// --- Components lainnya tetap sama ---
+
 
 @Composable
 private fun HomeTopBar(
     modifier: Modifier = Modifier,
-    navController: NavController
+    navController: NavController,
+    locationName: String
 ) {
     val colorScheme = MaterialTheme.colorScheme
 
@@ -172,7 +219,7 @@ private fun HomeTopBar(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Limau Manis, Unand",
+                text = locationName,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 color = colorScheme.onSurface,
@@ -205,7 +252,7 @@ private fun FilterChips(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Button "Semua" di paling kiri
+        
         item {
             FilterChipItem(
                 text = "Semua",
@@ -214,7 +261,7 @@ private fun FilterChips(
             )
         }
         
-        // Dropdown "Tipe UMKM"
+        
         item {
             KategoriDropdownChip(
                 viewModel = viewModel,
@@ -274,7 +321,7 @@ private fun KategoriDropdownChip(
     val colorScheme = MaterialTheme.colorScheme
     val selectedFilter by viewModel.selectedFilter.collectAsState()
     
-    // Tentukan apakah kategori chip ini selected (aktif)
+    
     val isSelected = selectedFilter == FilterType.TIPE_UMKM || selectedKategori != null
     
     Box(modifier = modifier) {
@@ -318,7 +365,7 @@ private fun KategoriDropdownChip(
             onDismissRequest = { expanded = false },
             modifier = Modifier.fillMaxWidth(0.8f)
         ) {
-            // Daftar kategori dari database
+            
             if (kategoriList.isEmpty()) {
                 DropdownMenuItem(
                     text = { Text("Tidak ada kategori") },

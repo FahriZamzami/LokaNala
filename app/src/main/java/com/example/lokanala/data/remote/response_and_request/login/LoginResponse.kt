@@ -3,8 +3,16 @@ package com.example.lokanala.data.remote.response_and_request.login
 import com.google.gson.annotations.SerializedName
 
 data class LoginResponse(
+    @SerializedName("success")
+    val success: Boolean,
+
+    @SerializedName("message")
     val message: String,
+
+    @SerializedName("token")
     val token: String?,
+
+    @SerializedName("user")
     val user: UserData?
 )
 
@@ -20,11 +28,3 @@ data class UserData(
 data class FollowStatusResponse(
     val isFollowing: Boolean
 )
-
-//data class LogoutResponse(
-//    @SerializedName("success")
-//    val success: Boolean,
-//
-//    @SerializedName("message")
-//    val message: String
-//)

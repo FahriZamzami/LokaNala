@@ -2,7 +2,6 @@ package com.example.lokanala.data.remote.response_and_request.product
 
 import com.google.gson.annotations.SerializedName
 
-// 1. Wrapper Utama
 data class ProductDetailResponse(
     @SerializedName("success")
     val success: Boolean,
@@ -14,7 +13,6 @@ data class ProductDetailResponse(
     val data: ProductDetailData?
 )
 
-// 2. Data Utama Produk
 data class ProductDetailData(
     @SerializedName("id")
     val id: Int,
@@ -41,10 +39,9 @@ data class ProductDetailData(
     val umkm: UmkmShortData,
 
     @SerializedName("ulasan_terbaik")
-    val ulasanTerbaik: TopReviewData? // Bisa null jika belum ada ulasan
+    val ulasanTerbaik: TopReviewData? 
 )
 
-// 3. Info Singkat UMKM (Pemilik Produk)
 data class UmkmShortData(
     @SerializedName("id")
     val id: Int,
@@ -56,7 +53,6 @@ data class UmkmShortData(
     val logoUrl: String?
 )
 
-// 4. Info Ulasan Terbaik
 data class TopReviewData(
     @SerializedName("id_ulasan")
     val idUlasan: Int,

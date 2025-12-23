@@ -8,7 +8,4 @@ data class AddProductResponse(
 
     @SerializedName("message")
     val message: String
-
-    // Kita tidak perlu mengambil object 'data' di sini
-    // karena biasanya setelah add sukses, kita hanya butuh statusnya saja.
 )

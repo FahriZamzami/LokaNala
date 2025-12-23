@@ -27,7 +27,7 @@ import retrofit2.Response
 import java.text.NumberFormat
 import java.util.Locale
 
-// State untuk UI
+
 data class MerchantUiState(
     val isLoading: Boolean = false,
     val merchantData: MerchantData? = null,
@@ -35,7 +35,7 @@ data class MerchantUiState(
 )
 
 data class UmkmUiModel(
-    val umkm: MerchantData,   // gunakan MerchantData atau tipe UMKM yang relevan
+    val umkm: MerchantData,   
     val isFollowing: Boolean = false
 )
 
@@ -43,10 +43,10 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
     private val _uiState = MutableStateFlow(MerchantUiState())
     val uiState: StateFlow<MerchantUiState> = _uiState.asStateFlow()
 
-    // Produk mentah dari API
+    
     private val _rawProducts = MutableStateFlow<List<Product>>(emptyList())
 
-    // Filter & Search State
+    
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
@@ -62,7 +62,7 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
     private val _isOwner = MutableStateFlow(false)
     val isOwner: StateFlow<Boolean> = _isOwner.asStateFlow()
 
-    // Logika Filtering Produk (sama dengan MyMerchantViewModel)
+    
     val products: StateFlow<List<Product>> = combine(
         _rawProducts,
         _searchQuery,
@@ -71,22 +71,22 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
     ) { products, query, category, sort ->
         var filtered = products
 
-        // 1. Filter Pencarian
+        
         if (query.isNotEmpty()) {
             filtered = filtered.filter { it.name?.contains(query, ignoreCase = true) == true }
         }
 
-        // 2. Filter Kategori (nonaktif saat Terpopuler aktif)
+        
         if (category != null && sort != SortOrder.RATING_DESC) {
             filtered = filtered.filter { it.categoryName == category }
         }
 
-        // 3. Sorting
+        
         filtered = when (sort) {
             SortOrder.PRICE_ASC -> filtered.sortedBy { extractPriceValue(it.price) }
             SortOrder.PRICE_DESC -> filtered.sortedByDescending { extractPriceValue(it.price) }
             SortOrder.RATING_DESC -> {
-                // Terpopuler: kombinasi rating tinggi dan banyak review
+                
                 filtered.sortedByDescending { product ->
                     val rating = product.rating ?: 0.0
                     val reviewCount = product.reviewCount ?: 0
@@ -163,13 +163,13 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
     fun checkIfOwner(productId: Int) {
         viewModelScope.launch {
             try {
-                // Ambil data user dari preference
+                
                 val user = userPreference.getUser().first()
                 val userId = user.idUser.toInt()
 
                 if (userId == 0) return@launch
 
-                // Panggil API menggunakan Call
+                
                 val client = ApiClient.instance.isProductOwner(productId, userId)
 
                 client.enqueue(object : Callback<OwnerCheckResponse> {
@@ -177,7 +177,7 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
                         call: Call<OwnerCheckResponse>,
                         response: Response<OwnerCheckResponse>
                     ) {
-                        // Di sini isSuccessful dan body() sudah bisa diakses
+                        
                         if (response.isSuccessful) {
                             val body = response.body()
                             _isOwner.value = body?.isOwner ?: false
@@ -199,10 +199,10 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
             }
         }
     }
-
-    // Fungsi dipanggil saat layar dibuka
+    
     fun loadMerchantDetail(id: Long) {
         _uiState.value = _uiState.value.copy(isLoading = true, errorMessage = null)
+        _isOwner.value = false
 
         val client = ApiClient.instance.getMerchantDetail(id)
         client.enqueue(object : Callback<MerchantResponse> {
@@ -213,8 +213,8 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
                         _uiState.value = MerchantUiState(isLoading = false, merchantData = body.data)
                         _rawProducts.value = body.data.products?.map { mapMerchantProductToProduct(it) } ?: emptyList()
 
-                        // --- TAMBAHKAN LOGIKA CEK OWNER DI SINI ---
-                        // Kita ambil salah satu ID produk dari list untuk mengecek apakah user ini pemiliknya
+                        
+                        
                         body.data.products?.firstOrNull()?.let { firstProduct ->
                             checkIfOwner(firstProduct.idProduk)
                         }
@@ -232,7 +232,7 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
         })
     }
 
-    // Event Handlers
+    
     fun onSearchQueryChanged(query: String) { _searchQuery.value = query }
 
     fun onCategorySelected(category: String?) {
@@ -265,14 +265,11 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
         }
     }
 
-    // Helper untuk mapping MerchantProduct ke Product
+    
     private fun mapMerchantProductToProduct(merchantProduct: MerchantProduct): Product {
         val priceFormat = NumberFormat.getCurrencyInstance(Locale("id", "ID"))
         val formattedPrice = priceFormat.format(merchantProduct.harga).replace("Rp", "Rp ").trim()
 
-        // BACKEND SINKRONISASI:
-        // Karena backend mengirim URL lengkap (misal: https://.../uploads/file.jpg),
-        // kita ambil string mentahnya. Jika ada banyak gambar (dipisah koma), ambil yang pertama.
         val rawImageUrl = merchantProduct.gambarUrl?.split(",")?.firstOrNull()?.trim()
 
         return Product(
@@ -280,14 +277,17 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
             name = merchantProduct.namaProduk,
             description = merchantProduct.deskripsi,
             price = formattedPrice,
-            rating = null,
+
+            
+            rating = merchantProduct.ratingProduk ?: 0.0,
+
             reviewCount = merchantProduct.jumlahUlasan,
             categoryName = merchantProduct.kategoriProduk,
-            imageUri = rawImageUrl // Langsung gunakan URL dari backend
+            imageUri = rawImageUrl
         )
     }
 
-    // Helper untuk extract nilai numerik dari price string
+    
     private fun extractPriceValue(priceString: String?): Double {
         if (priceString.isNullOrBlank()) return 0.0
         val cleanPrice = priceString
@@ -303,7 +303,7 @@ class MerchantViewModel(private val userPreference: UserPreference) : ViewModel(
         }
     }
 
-    // Helper untuk format Rupiah
+    
     fun formatRupiah(number: Double): String {
         val localeID = Locale("in", "ID")
         val formatRupiah = NumberFormat.getCurrencyInstance(localeID)

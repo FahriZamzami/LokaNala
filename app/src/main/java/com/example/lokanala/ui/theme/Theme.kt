@@ -9,7 +9,6 @@ import androidx.compose.runtime.SideEffect
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import androidx.compose.ui.graphics.Color
 
-//LOKANALA LIGHT THEME
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryPink,
     onPrimary = WhiteText,
@@ -33,7 +32,6 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = WhiteText
 )
 
-//LOKANALA DARK THEME
 private val DarkColorScheme = darkColorScheme(
     primary = Color(0xFFFF80AB),
     onPrimary = Color.Black,
@@ -57,7 +55,6 @@ private val DarkColorScheme = darkColorScheme(
     onTertiary = Color.Black
 )
 
-//FINAL LOKANALA THEME
 @Composable
 fun LokanalaTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

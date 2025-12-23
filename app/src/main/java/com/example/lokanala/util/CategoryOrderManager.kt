@@ -73,16 +73,12 @@ object CategoryOrderManager {
         categories: List<com.example.lokanala.data.remote.response_and_request.CategoryItem>,
         categoryOrder: Map<Int, Int>
     ): List<com.example.lokanala.data.remote.response_and_request.CategoryItem> {
-        // Jika kategori sudah memiliki field urutan dari backend, gunakan itu
-        // Jika tidak, gunakan urutan dari local storage
         return if (categories.isNotEmpty() && categories.first().urutan >= 0) {
-            // Kategori dari backend sudah terurut berdasarkan urutan
             categories.sortedBy { it.urutan }
         } else {
-            // Fallback ke local storage order
             if (categoryOrder.isEmpty()) return categories
             categories.sortedBy { category ->
-                categoryOrder[category.id] ?: Int.MAX_VALUE // Kategori tanpa urutan akan di akhir
+                categoryOrder[category.id] ?: Int.MAX_VALUE
             }
         }
     }
@@ -122,7 +118,6 @@ object CategoryOrderManager {
         onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {}
     ) {
-        // Buat request body dari list kategori
         val orderItems = categories.mapIndexed { index, category ->
             CategoryOrderItem(
                 idKategoriProduk = category.id,
@@ -132,13 +127,11 @@ object CategoryOrderManager {
 
         val request = UpdateCategoryOrderRequest(urutan = orderItems)
 
-        // Kirim ke backend di background thread
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response = ApiClient.instance.updateCategoryOrder(umkmId, request)
                 if (response.isSuccessful && response.body()?.success == true) {
                     Log.d(TAG, "Urutan kategori berhasil disinkronisasi ke backend")
-                    // Simpan juga ke local sebagai backup
                     val orderMap = categories.associate { it.id to it.urutan }
                     saveCategoryOrder(context, umkmId, orderMap)
                     CoroutineScope(Dispatchers.Main).launch {
@@ -153,7 +146,6 @@ object CategoryOrderManager {
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Exception syncing category order", e)
-                // Simpan ke local sebagai fallback
                 val orderMap = categories.associate { it.id to it.urutan }
                 saveCategoryOrder(context, umkmId, orderMap)
                 CoroutineScope(Dispatchers.Main).launch {
@@ -181,9 +173,7 @@ object CategoryOrderManager {
                 val response = ApiClient.instance.getCategories(umkmId)
                 if (response.isSuccessful && response.body()?.success == true) {
                     val categories = response.body()?.data ?: emptyList()
-                    // Buat map urutan dari response (kategori sudah terurut berdasarkan urutan)
                     val orderMap = categories.associate { it.id to it.urutan }
-                    // Simpan ke local
                     saveCategoryOrder(context, umkmId, orderMap)
                     Log.d(TAG, "Urutan kategori berhasil disinkronisasi dari backend")
                     CoroutineScope(Dispatchers.Main).launch {

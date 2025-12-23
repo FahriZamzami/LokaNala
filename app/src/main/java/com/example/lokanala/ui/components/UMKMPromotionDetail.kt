@@ -36,7 +36,7 @@ fun UMKMPromotionDetailPopup(
     val colorScheme = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
 
-    // 🔥 State untuk dialog hapus
+    
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     Dialog(
@@ -62,7 +62,7 @@ fun UMKMPromotionDetailPopup(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                // 🔹 Ikon Promo
+                
                 Box(
                     modifier = Modifier
                         .size(90.dp)
@@ -140,7 +140,7 @@ fun UMKMPromotionDetailPopup(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // 🔥 Tombol Hapus → membuka dialog konfirmasi
+                    
                     OutlinedButton(
                         onClick = { showDeleteDialog = true },
                         modifier = Modifier.weight(1f),
@@ -170,7 +170,7 @@ fun UMKMPromotionDetailPopup(
         }
     }
 
-    // 🔥🔥 Dialog Konfirmasi Hapus Promo
+    
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },

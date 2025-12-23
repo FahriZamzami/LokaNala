@@ -43,11 +43,11 @@ fun MyUmkmCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column {
-            // --- GAMBAR UMKM ---
+            
             AsyncImage(
                 model = umkm.gambarUrl,
                 contentDescription = "Gambar UMKM",
-                placeholder = painterResource(R.drawable.ic_launcher_background), // Pastikan ada resource ini
+                placeholder = painterResource(R.drawable.ic_launcher_background), 
                 error = painterResource(R.drawable.ic_launcher_background),
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
@@ -56,10 +56,10 @@ fun MyUmkmCard(
                     .background(Color.LightGray)
             )
 
-            // --- KONTEN TEKS ---
+            
             Column(modifier = Modifier.padding(12.dp)) {
 
-                // PERBAIKAN 1: Tambahkan "?: ..." (Elvis Operator)
+                
                 Text(
                     text = umkm.nama ?: "Nama Tidak Tersedia",
                     style = MaterialTheme.typography.titleMedium,
@@ -70,7 +70,7 @@ fun MyUmkmCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // PERBAIKAN 2: Tambahkan default untuk alamat
+                
                 Text(
                     text = umkm.alamat ?: "Alamat belum diisi",
                     style = MaterialTheme.typography.bodySmall,
@@ -95,7 +95,7 @@ fun MyUmkmCard(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        // PERBAIKAN 3: Handle rating null
+                        
                         Text(
                             text = (umkm.rating ?: 0.0).toString(),
                             style = MaterialTheme.typography.bodyMedium,

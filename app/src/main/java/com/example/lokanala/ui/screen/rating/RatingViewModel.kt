@@ -13,11 +13,8 @@ import com.example.lokanala.data.remote.response_and_request.rating.AddReviewRes
 import com.example.lokanala.data.remote.response_and_request.rating.Review
 import com.example.lokanala.data.remote.response_and_request.rating.ReviewListResponse
 import com.example.lokanala.data.remote.retrofit.ApiClient
-
-// Pastikan import ini sesuai lokasi file Anda
 import com.example.lokanala.data.pref.UserPreference
 import com.example.lokanala.data.remote.response_and_request.rating.OwnerCheckResponse
-
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,7 +32,6 @@ import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-// Constructor menerima UserPreference -> Butuh Factory
 class RatingViewModel(
     savedStateHandle: SavedStateHandle,
     private val userPreference: UserPreference
@@ -44,7 +40,6 @@ class RatingViewModel(
     private val TAG = "RATING_DEBUG"
     private val productId: Int = savedStateHandle.get<Int>("productId") ?: -1
 
-    // Default -1
     private val _currentUserId = MutableStateFlow(-1)
     val currentUserId: StateFlow<Int> = _currentUserId.asStateFlow()
 
@@ -58,27 +53,27 @@ class RatingViewModel(
     val isOwner: StateFlow<Boolean> = _isOwner.asStateFlow()
 
     init {
-        // Otomatis ambil ID dan load data saat ViewModel dibuat
+        
         getRealUserAndLoadData()
     }
 
     private fun getRealUserAndLoadData() {
         viewModelScope.launch {
             try {
-                // 1. Ambil ID User
+                
                 val userModel = userPreference.getSession().first()
                 _currentUserId.value = userModel.idUser
 
                 Log.d(TAG, "User Login ID: ${_currentUserId.value}")
                 Log.d(TAG, "Product ID: $productId")
 
-                // 2. Setelah ID benar-benar terisi → cek owner
+                
                 if (productId != -1) {
                     Log.d(TAG, "CALL checkIsOwner() NOW")
                     checkIsOwner()
                 }
 
-                // 3. Load review
+                
                 if (productId != -1) {
                     loadReviews()
                 }
@@ -109,7 +104,7 @@ class RatingViewModel(
                             comment = apiItem.komentar ?: "",
                             photoUrl = apiItem.fotoUrl,
                             profilePicUrl = apiItem.user?.fotoProfile,
-                            // LOGIKA UTAMA: Cek apakah review ini milik user yang login
+                            
                             isUserReview = (reviewUserId == myId)
                         )
                     }
@@ -145,7 +140,6 @@ class RatingViewModel(
             })
     }
 
-    // --- Add, Update, Delete Tetap Sama ---
     fun addReview(context: Context, rating: Int, comment: String, photoUris: List<Uri>) {
         _isLoading.value = true
         val idUserBody = _currentUserId.value.toString().toRequestBody("text/plain".toMediaTypeOrNull())
@@ -202,7 +196,6 @@ class RatingViewModel(
         })
     }
 
-    // Helpers
     private fun prepareFilePart(context: Context, uri: Uri, name: String): MultipartBody.Part {
         val extension = getExtension(context, uri)
         val file = uriToFile(uri, context, extension)

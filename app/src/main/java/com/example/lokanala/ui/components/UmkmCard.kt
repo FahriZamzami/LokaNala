@@ -44,14 +44,14 @@ fun UmkmCard(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
-            // MENGGUNAKAN COIL (AsyncImage)
+            
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(umkm.imageUrl ?: "https://via.placeholder.com/150") // Fallback URL jika null
                     .crossfade(true)
                     .build(),
-                placeholder = painterResource(R.drawable.logo_lokanala), // Ganti dengan gambar placeholder lokalmu
-                error = painterResource(R.drawable.logo_lokanala), // Ganti dengan gambar error lokalmu
+                placeholder = painterResource(R.drawable.logo_lokanala), 
+                error = painterResource(R.drawable.logo_lokanala), 
                 contentDescription = umkm.name,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

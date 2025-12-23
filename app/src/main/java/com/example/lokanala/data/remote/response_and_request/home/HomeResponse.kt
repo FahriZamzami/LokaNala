@@ -2,7 +2,7 @@ package com.example.lokanala.data.remote.response_and_request.home
 
 import com.google.gson.annotations.SerializedName
 
-// Wrapper utama response
+
 data class HomeResponse(
     @SerializedName("success")
     val success: Boolean,
@@ -14,7 +14,7 @@ data class HomeResponse(
     val data: List<UmkmItem>
 )
 
-// Detail item UMKM
+
 data class UmkmItem(
     @SerializedName("id_umkm")
     val idUmkm: Int,
@@ -41,7 +41,7 @@ data class UmkmItem(
     val gambarUrl: String?,
 
     @SerializedName("link_lokasi")
-    val linkLokasi: String?, // Ini yang akan jadi gambar
+    val linkLokasi: String?, 
 
     @SerializedName("tanggal_terdaftar")
     val tanggalTerdaftar: String,
@@ -50,7 +50,7 @@ data class UmkmItem(
     val kategori: KategoriUmkm?
 )
 
-// Detail Kategori
+
 data class KategoriUmkm(
     @SerializedName("id_kategori_umkm")
     val idKategori: Int,

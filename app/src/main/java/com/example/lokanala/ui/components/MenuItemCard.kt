@@ -46,7 +46,7 @@ fun MenuItemCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gambar Produk (Square dengan rounded corners)
+            
             val context = LocalContext.current
             val imageUrl = product.imageUri ?: product.imageRes
             AsyncImage(
@@ -65,7 +65,6 @@ fun MenuItemCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Informasi Produk
             Column(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
