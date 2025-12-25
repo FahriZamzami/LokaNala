@@ -20,6 +20,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.lokanala.R
 import com.example.lokanala.model.Product
 import com.example.lokanala.ui.theme.StarYellow
@@ -76,14 +77,17 @@ fun MyMenuItemCard(
                     text = product.name ?: "Nama tidak tersedia",
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    color = colorScheme.onSurface
+                    color = colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Text(
                     text = product.description ?: "Deskripsi tidak tersedia",
                     fontSize = 13.sp,
                     color = colorScheme.onSurfaceVariant,
-                    maxLines = 2
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
 
                 Text(

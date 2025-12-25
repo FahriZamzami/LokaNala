@@ -24,21 +24,25 @@ data class DetailUiState(
 
 class DetailViewModel(savedStateHandle: SavedStateHandle) : ViewModel() {
 
+    private val productId: Int =
+        savedStateHandle.get<Int>("productId") ?: -1
+
     private val _uiState = MutableStateFlow(DetailUiState())
     val uiState: StateFlow<DetailUiState> = _uiState.asStateFlow()
 
     init {
-        
-        
-        
-        val productId = savedStateHandle.get<Int>("productId") ?: -1
-
         Log.d("DetailViewModel", "Product ID diterima: $productId")
 
         if (productId != -1) {
             loadProductDetail(productId)
         } else {
             _uiState.value = DetailUiState(errorMessage = "ID Produk tidak valid/tidak ditemukan")
+        }
+    }
+
+    fun refresh() {
+        if (productId != -1) {
+            loadProductDetail(productId)
         }
     }
 

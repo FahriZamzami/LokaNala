@@ -62,10 +62,6 @@ class HomeViewModel : ViewModel() {
         applyFilters()
     }
 
-    /**
-     * PERBAIKAN: Menambahkan parameter [latestList] agar fungsi selalu
-     * menggunakan data terbaru saat proses asinkron (rating) selesai.
-     */
     private fun applyFilters(latestList: List<Umkm>? = null) {
         viewModelScope.launch(Dispatchers.Default) {
             

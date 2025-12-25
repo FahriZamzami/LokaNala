@@ -1,5 +1,6 @@
 package com.example.lokanala.ui.screen.my_merchant
 
+import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -136,18 +137,43 @@ class MyMerchantViewModel : ViewModel() {
     
     fun deleteProduct(product: Product) {
         viewModelScope.launch {
+
+            Log.d(TAG, "Delete requested for product: id=${product.id}, name=${product.name}")
+
             try {
                 _isLoading.value = true
+
+                Log.d(TAG, "Calling deleteProduct API for id=${product.id}")
+
                 val response = ApiClient.instance.deleteProduct(product.id)
+
+                Log.d(
+                    TAG,
+                    "Delete API response: success=${response.isSuccessful}, code=${response.code()}, message=${response.message()}"
+                )
+
                 if (response.isSuccessful) {
+
+                    Log.d(TAG, "Product list size BEFORE delete: ${_rawProducts.value.size}")
                     
                     _rawProducts.update { list -> list.filter { it.id != product.id } }
+
+                    Log.d(TAG, "Product list size AFTER delete: ${_rawProducts.value.size}")
+                    Log.i(TAG, "Product deleted successfully: id=${product.id}")
                 } else {
+
+                    Log.e(
+                        TAG,
+                        "Failed to delete product. Code=${response.code()}, Message=${response.message()}"
+                    )
+
                     _errorMessage.value = "Gagal menghapus produk: ${response.message()}"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Exception while deleting product", e)
                 _errorMessage.value = "Error: ${e.message}"
             } finally {
+                Log.d(TAG, "Delete process finished for product id=${product.id}")
                 _isLoading.value = false
             }
         }
@@ -207,7 +233,6 @@ class MyMerchantViewModel : ViewModel() {
 
         
         val categoryName = dto.kategoriProduk?.namaKategori
-
         
         val imageUrl = ImageUrlHelper.getFullImageUrl(dto.gambar)
 
